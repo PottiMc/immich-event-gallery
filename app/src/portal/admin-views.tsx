@@ -6,6 +6,7 @@
 
 import { adminFormToken } from './admin-forms'
 import { brandUrl } from './branding'
+import { CardOptions } from './card'
 import { ComponentChildren } from 'preact'
 import { Lang, Messages, t } from './i18n'
 import { DownloadQuality } from './runtime-settings'
@@ -337,45 +338,123 @@ export function AdminLogin (props: AdminLoginProps) {
 
 export interface CardProps {
   lang: Lang
-  title: string
+  options: CardOptions
+  /** Share title without the date, shown when the title field is empty */
+  defaultTitle: string
+  /** Current query without `lang`, kept by the language switch */
+  query: string
   password: string | null
   hostLabel: string
   qrSvg: string
-  dark: boolean
 }
 
-/** Printable A6 card for guests: QR code plus password as a fallback. */
+const ICONS = {
+  calendar: <><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></>,
+  camera: <><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/></>,
+  globe: <><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.4 2.5 3.6 5.5 3.6 9s-1.2 6.5-3.6 9c-2.4-2.5-3.6-5.5-3.6-9S9.6 5.5 12 3z"/></>,
+  lock: <><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7.5a4 4 0 0 1 8 0V11"/></>,
+  glass: <><path d="M7 3h10v4.5a5 5 0 0 1-10 0z"/><path d="M12 12.5V21M8 21h8"/></>
+}
+
+function Icon ({ name }: { name: keyof typeof ICONS }) {
+  return (
+    <svg class="card-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round">{ICONS[name]}</svg>
+  )
+}
+
+function Card ({ props }: { props: CardProps }) {
+  const m = t(props.lang)
+  const { options } = props
+  return (
+    <section class="card">
+      <img class="card-logo" src={brandUrl(options.dark ? 'logo-banner.png' : 'logo-light.png')} alt={brandName(props.lang)}/>
+      <p class="card-kicker">{m.card.kicker}</p>
+      <h1 class="card-title" data-card="title">{options.title}</h1>
+      <p class="card-date" hidden={!options.date}><Icon name="calendar"/><span data-card="date">{options.date}</span></p>
+      <div class="card-qr" dangerouslySetInnerHTML={{ __html: props.qrSvg }}/>
+      <p class="card-scan"><Icon name="camera"/>{m.card.scan}</p>
+      {props.password && (
+        <div class="card-alt">
+          <p><Icon name="globe"/>{m.card.altSite(<strong>{props.hostLabel}</strong>)}</p>
+          <p><Icon name="lock"/>{m.card.altPassword(<strong class="card-password">{props.password}</strong>)}</p>
+        </div>
+      )}
+      <p class="card-thanks">{m.card.thanks}<Icon name="glass"/></p>
+    </section>
+  )
+}
+
+/** Crop marks around the 2 × 2 grid: three cut lines per direction. */
+function CropMarks () {
+  return (
+    <>
+      {[0, 1, 2].map(i => <>
+        <i class="mark mark-top" style={`--i: ${i}`}/>
+        <i class="mark mark-bottom" style={`--i: ${i}`}/>
+        <i class="mark mark-left" style={`--i: ${i}`}/>
+        <i class="mark mark-right" style={`--i: ${i}`}/>
+      </>)}
+    </>
+  )
+}
+
+/**
+ * Printable guest card: QR code plus password as a fallback. By default four
+ * cards on an A4 sheet with crop marks, optionally a single A6 card.
+ */
 export function PrintCard (props: CardProps) {
   const m = t(props.lang)
+  const { options } = props
+  const sheet = options.layout === 'sheet'
   return (
     <html lang={m.htmlLang}>
       <head>
         <meta charSet="utf-8"/>
         <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
         <meta name="robots" content="noindex, nofollow"/>
-        <title>{m.card.title + ' – ' + props.title}</title>
+        <title>{m.card.title + ' – ' + options.title}</title>
         <link rel="stylesheet" href={`${STATIC}/portal/card.css`}/>
+        {!sheet && <style>{'@page { size: 105mm 148mm; margin: 0; }'}</style>}
       </head>
-      <body class={props.dark ? 'card-dark' : ''}>
-        <div class="card-tools">
+      <body class={(options.dark ? 'card-dark ' : '') + (sheet ? 'card-sheet' : 'card-single')}>
+        <form class="card-tools" id="card-form" method="get" data-page-title={m.card.title}>
+          <label class="card-field card-field-wide">
+            <span>{m.card.titleLabel}</span>
+            <input name="titel" value={options.title} placeholder={props.defaultTitle} maxLength={120} autoComplete="off"/>
+          </label>
+          <label class="card-field">
+            <span>{m.card.dateLabel}</span>
+            <input name="datum" value={options.date} placeholder={m.card.datePlaceholder} maxLength={120} autoComplete="off"/>
+          </label>
+          <label class="card-field">
+            <span>{m.card.layoutLabel}</span>
+            <select name="format">
+              <option value="a4" selected={sheet}>{m.card.layoutSheet}</option>
+              <option value="a6" selected={!sheet}>{m.card.layoutSingle}</option>
+            </select>
+          </label>
+          <label class="card-check">
+            <input type="checkbox" name="dunkel" value="" checked={options.dark}/>
+            {m.card.dark}
+          </label>
           <button type="button" id="card-print">{m.card.print}</button>
-          <a href={props.dark ? '?' : '?dunkel'}>{props.dark ? m.card.light : m.card.dark}</a>
-          <LangSwitch lang={props.lang} class="card-lang" keep={props.dark ? 'dunkel' : undefined}/>
-          <span>{m.card.hint}</span>
-        </div>
-        <section class="card">
-          <img class="card-logo" src={brandUrl(props.dark ? 'logo-banner.png' : 'logo-light.png')} alt={brandName(props.lang)}/>
-          <p class="card-kicker">{m.card.kicker}</p>
-          <h1 class="card-title">{props.title}</h1>
-          <div class="card-qr" dangerouslySetInnerHTML={{ __html: props.qrSvg }}/>
-          <p class="card-scan">{m.card.scan}</p>
-          {props.password && (
-            <p class="card-alt">
-              {m.card.alt(<strong>{props.hostLabel}</strong>, <strong class="card-password">{props.password}</strong>)}
-            </p>
-          )}
-          <p class="card-thanks">{m.card.thanks}</p>
-        </section>
+          <LangSwitch lang={props.lang} class="card-lang" keep={props.query || undefined}/>
+          <p class="card-hint">{sheet ? m.card.hintSheet : m.card.hintSingle}</p>
+        </form>
+        {sheet
+          ? (
+            <main class="sheet">
+              <div class="sheet-bleed"/>
+              {[0, 1, 2, 3].map(i => (
+                <div key={i} class="sheet-cell" style={`--c: ${i % 2}; --r: ${Math.floor(i / 2)}`}>
+                  <Card props={props}/>
+                </div>
+              ))}
+              <CropMarks/>
+            </main>
+            )
+          : <Card props={props}/>}
         <script src={`${STATIC}/portal/card.js`}/>
       </body>
     </html>

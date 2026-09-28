@@ -29,6 +29,7 @@ import { respondToInvalidRequest } from './invalidRequestHandler'
 import { ASSET_VERSION } from './version'
 import { registerPortalRoutes, unlockShare } from './portal/routes'
 import { startAdminServer } from './portal/admin'
+import { handleRemovalRequest } from './portal/removal'
 import { securityHeaders } from './portal/security'
 import { BRAND, brandAsset, sendBrandFile } from './portal/branding'
 import { languageMiddleware } from './portal/i18n'
@@ -264,6 +265,19 @@ app.post('/:shareType(share|s)/:key/download', decodeCookie, asyncHandler(async 
   }
 
   await downloadAssets(res, resolved.link, validAssets)
+}))
+
+/*
+ * [ROUTE] Portal: a guest asks for photos of this share to be removed for
+ * privacy reasons. Sends an e-mail to the operator - see portal/removal.ts.
+ */
+app.post('/share/:key/removal-request', decodeCookie, asyncHandler(async (req, res) => {
+  const resolved = await resolveShare(req, KeyType.key)
+  if (!resolved.ok) {
+    respondToInvalidRequest(res, resolved.status, resolved.reason)
+    return
+  }
+  await handleRemovalRequest(req, res, resolved.link)
 }))
 
 /*

@@ -10,8 +10,10 @@
 
 import crypto from 'crypto'
 import dayjs from 'dayjs'
-import { apiUrl } from '../immich'
+import { apiUrl, authHeaders, buildUrl } from '../immich'
+import { KeyType, TimelineBucket } from '../types'
 import { log } from '../utils/log'
+import { TtlLruCache } from '../utils/ttlLruCache'
 import { immichApiKey } from './settings'
 import { accessToken } from './tokens'
 
@@ -80,6 +82,42 @@ async function fetchSharedLinks (): Promise<LinkListResult> {
   } catch (e) {
     log.warn('Listing shared links failed: ' + (e instanceof Error ? e.message : String(e)))
     return { ok: false, status: 0, message: 'Immich ist nicht erreichbar (' + apiUrl() + ').' }
+  }
+}
+
+const countCache = new TtlLruCache<Promise<number | undefined>>({ ttlMs: 60_000, max: 200 })
+
+/**
+ * Number of assets in an album share. Since Immich 3.0 the shared-link list
+ * reports `assetCount: 0` for every album, so this sums the album's timeline
+ * buckets with the share's own key (the access the gallery uses, one request
+ * per album). undefined when the link is expired or Immich refuses.
+ */
+export function albumAssetCount (link: PortalLink): Promise<number | undefined> {
+  const albumId = link.album?.id
+  if (link.type !== 'ALBUM' || !albumId || isExpired(link)) return Promise.resolve(undefined)
+  const cacheKey = `${link.key}:${link.password ?? ''}`
+  const cached = countCache.get(cacheKey)
+  if (cached) return cached
+  const promise = fetchAlbumAssetCount(albumId, link.key, link.password ?? undefined)
+  countCache.set(cacheKey, promise)
+  promise.then(count => { if (count === undefined) countCache.delete(cacheKey) })
+  return promise
+}
+
+async function fetchAlbumAssetCount (albumId: string, key: string, password?: string): Promise<number | undefined> {
+  try {
+    const headers = await authHeaders(KeyType.key, key, password)
+    const res = await fetch(buildUrl(apiUrl() + '/timeline/buckets', { albumId, key }), { headers })
+    if (!res.ok) {
+      log.warn('Counting album ' + albumId + ' failed with status ' + res.status)
+      return undefined
+    }
+    const buckets = await res.json() as TimelineBucket[]
+    return Array.isArray(buckets) ? buckets.reduce((sum, bucket) => sum + (bucket.count || 0), 0) : undefined
+  } catch (e) {
+    log.warn('Counting album ' + albumId + ' failed: ' + (e instanceof Error ? e.message : String(e)))
+    return undefined
   }
 }
 

@@ -1,4 +1,4 @@
-/* Portal – printable A6 guest card */
+/* Portal – printable guest card: 4 per A4 sheet with crop marks, or a single A6 card */
 
 @font-face {
   font-family: 'Outfit';
@@ -7,7 +7,8 @@
   font-display: swap;
 }
 
-@page { size: A6 portrait; margin: 0; }
+/* The single A6 layout overrides this in the page head */
+@page { size: 210mm 297mm; margin: 0; }
 
 * { box-sizing: border-box; }
 
@@ -20,16 +21,42 @@ body {
   print-color-adjust: exact;
 }
 
+/* Toolbar */
+
 .card-tools {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 12px;
-  max-width: 105mm;
+  align-items: flex-end;
+  gap: 10px 14px;
+  max-width: 210mm;
   margin: 16px auto;
+  padding: 0 16px;
   font-size: 13px;
   color: #555;
 }
+
+.card-single .card-tools { max-width: 140mm; }
+
+.card-field { display: flex; flex-direction: column; gap: 4px; flex: 1 1 140px; }
+.card-field-wide { flex: 3 1 260px; }
+.card-field span { font-weight: 600; color: #333; }
+
+.card-field input,
+.card-field select {
+  width: 100%;
+  padding: 7px 10px;
+  color: #1a1612;
+  background: #fff;
+  border: 1px solid #c9c1b4;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 15px;
+}
+
+.card-field input:focus,
+.card-field select:focus { outline: 2px solid #A3005A; outline-offset: 1px; }
+
+.card-check { display: inline-flex; align-items: center; gap: 6px; padding-bottom: 9px; cursor: pointer; }
 
 .card-tools button {
   padding: 8px 18px;
@@ -45,6 +72,14 @@ body {
 
 .card-tools a { color: #A3005A; }
 
+.card-lang { display: inline-flex; gap: 6px; padding-bottom: 9px; }
+.card-lang a { text-decoration: none; }
+.card-lang a[aria-current] { font-weight: 700; text-decoration: underline; }
+
+.card-hint { flex-basis: 100%; margin: 0; line-height: 1.4; }
+
+/* Card (designed at A6, scaled down on the sheet) */
+
 .card {
   width: 105mm;
   height: 148mm;
@@ -59,10 +94,26 @@ body {
   overflow: hidden;
 }
 
-.card-logo { height: 30mm; width: auto; margin-bottom: 3mm; }
+.card p { margin: 0; }
+
+.card-icon {
+  flex: none;
+  width: 1.15em;
+  height: 1.15em;
+  vertical-align: -0.2em;
+  margin-right: 0.35em;
+}
+
+.card-logo {
+  height: 27mm;
+  width: auto;
+  margin-bottom: 3mm;
+  padding: 2.5mm;
+  background: #0d0b0a;
+  border-radius: 3mm;
+}
 
 .card-kicker {
-  margin: 0;
   color: #8a7320;
   font-size: 10pt;
   letter-spacing: 0.12em;
@@ -70,44 +121,135 @@ body {
 }
 
 .card-title {
-  margin: 1mm 0 4mm;
+  margin: 1mm 0 0;
   color: #1a1612;
   font-size: 17pt;
   font-weight: 700;
   line-height: 1.15;
 }
 
-.card-qr { width: 46mm; height: 46mm; }
+.card p.card-date {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 1.5mm;
+  color: #8a7320;
+  font-size: 12pt;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.card-date[hidden] { display: none !important; }
+
+.card-qr { width: 48mm; height: 48mm; margin-top: 4mm; flex: none; }
 .card-qr svg { display: block; width: 100%; height: 100%; }
 
-.card-scan {
-  margin: 2mm 0 3mm;
+.card p.card-scan {
+  display: inline-flex;
+  align-items: center;
+  margin: 2mm 0 2.5mm;
   color: #A3005A;
   font-size: 10.5pt;
   font-weight: 600;
 }
 
-.card-alt { margin: 0; font-size: 9.5pt; line-height: 1.45; color: #3b342c; }
+.card-alt { font-size: 9.5pt; line-height: 1.5; color: #3b342c; }
+.card-alt .card-icon { color: #8a7320; }
 .card-password { font-size: 11.5pt; color: #1a1612; letter-spacing: 0.02em; }
 
-.card-thanks { margin: auto 0 0; padding-top: 3mm; font-size: 10pt; color: #8a7320; }
+.card p.card-thanks {
+  display: inline-flex;
+  align-items: center;
+  margin-top: auto;
+  padding-top: 2mm;
+  font-size: 10pt;
+  color: #8a7320;
+}
+
+.card-thanks .card-icon { margin: 0 0 0 0.35em; color: #A3005A; }
 
 /* Dark variant (more ink, but very on-brand) */
 .card-dark .card { background: #0d0b0a; color: #f4efe6; }
 .card-dark .card-title { color: #E6C16E; }
-.card-dark .card-kicker, .card-dark .card-thanks { color: #CCAC39; }
+.card-dark .card-kicker, .card-dark .card-thanks, .card-dark p.card-date { color: #CCAC39; }
 .card-dark .card-alt { color: #d8cfc0; }
+.card-dark .card-alt .card-icon { color: #CCAC39; }
 .card-dark .card-password { color: #FFCC66; }
-.card-dark .card-scan { color: #ff5aa8; }
+.card-dark p.card-scan, .card-dark .card-thanks .card-icon { color: #ff5aa8; }
 .card-dark .card-qr { padding: 2mm; background: #fff; border-radius: 3mm; }
-.card-dark .card-logo { height: 22mm; margin-bottom: 5mm; }
+.card-dark .card-logo { height: 22mm; margin-bottom: 5mm; padding: 0; background: none; border-radius: 0; }
 
-.card-lang { display: inline-flex; gap: 6px; }
-.card-lang a { text-decoration: none; }
-.card-lang a[aria-current] { font-weight: 700; text-decoration: underline; }
+/* A4 sheet: 2 × 2 cards, cut size 94 × 132.5 mm, 2 mm bleed, crop marks outside */
+
+.sheet {
+  --mx: 11mm;
+  --my: 16mm;
+  --cw: 94mm;
+  --ch: 132.5mm;
+  --bleed: 2mm;
+  --gap: 3mm;
+  --len: 5mm;
+  position: relative;
+  width: 210mm;
+  height: 296mm; /* a hair under A4 so no blank second page appears */
+  margin: 0 auto 24px;
+  background: #fff;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+.sheet-bleed {
+  position: absolute;
+  left: calc(var(--mx) - var(--bleed));
+  top: calc(var(--my) - var(--bleed));
+  width: calc(2 * var(--cw) + 2 * var(--bleed));
+  height: calc(2 * var(--ch) + 2 * var(--bleed));
+  background: #fff;
+}
+
+.card-dark .sheet-bleed { background: #0d0b0a; }
+
+.sheet-cell {
+  position: absolute;
+  left: calc(var(--mx) + var(--c) * var(--cw));
+  top: calc(var(--my) + var(--r) * var(--ch));
+  width: var(--cw);
+  height: var(--ch);
+  overflow: hidden;
+}
+
+.sheet-cell .card {
+  margin: 0;
+  box-shadow: none;
+  transform: scale(0.895238); /* 94 / 105 */
+  transform-origin: 0 0;
+}
+
+.mark { position: absolute; display: block; }
+
+.mark-top, .mark-bottom {
+  left: calc(var(--mx) + var(--i) * var(--cw) - 0.1mm);
+  width: 0;
+  height: var(--len);
+  border-left: 0.2mm solid #000;
+}
+
+.mark-top { top: calc(var(--my) - var(--gap) - var(--len)); }
+.mark-bottom { top: calc(var(--my) + 2 * var(--ch) + var(--gap)); }
+
+.mark-left, .mark-right {
+  top: calc(var(--my) + var(--i) * var(--ch) - 0.1mm);
+  width: var(--len);
+  height: 0;
+  border-top: 0.2mm solid #000;
+}
+
+.mark-left { left: calc(var(--mx) - var(--gap) - var(--len)); }
+.mark-right { left: calc(var(--mx) + 2 * var(--cw) + var(--gap)); }
 
 @media print {
   body { background: #fff; }
   .card-tools { display: none; }
   .card { margin: 0; box-shadow: none; page-break-after: always; }
+  .sheet { margin: 0; box-shadow: none; }
+  .sheet-cell .card { page-break-after: auto; }
 }

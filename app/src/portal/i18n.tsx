@@ -112,6 +112,55 @@ const en = {
     shareText: 'That was “{title}” – photo {number} of {total}'
   },
 
+  removal: {
+    button: 'Remove photos',
+    buttonTitle: 'Ask for photos to be removed for privacy reasons',
+    title: 'Request photo removal',
+    intro: 'Can you be recognised in a photo and don’t want it online? Select the photos and tell us why – ' +
+      'we look at every request personally.',
+    policy: 'This is about privacy: photos in which you or your child can clearly be recognised, or which show ' +
+      'personal information. Please understand that we don’t remove photos just because you don’t like how ' +
+      'you look in them.',
+    selectHint: 'Tap the photos that should be removed:',
+    next: 'Continue',
+    back: 'Back',
+    reasonLegend: 'Reason',
+    reasons: {
+      self: 'I can be recognised in the photo and object to it being published',
+      child: 'My child (or a person I am responsible for) can be recognised',
+      sensitive: 'The photo shows personal information (e.g. documents, number plate, screen)',
+      other: 'Another privacy reason'
+    } as Record<'self' | 'child' | 'sensitive' | 'other', string>,
+    detailsLabel: 'Explanation',
+    detailsPlaceholder: 'Who are you in the photo, and why should it be removed? ' +
+      'E.g. “I’m the person in the red jacket on the left …”',
+    nameLabel: 'Your name',
+    emailLabel: 'Your e-mail address',
+    emailHint: 'So we can get back to you. We only use it for this request.',
+    confirm: 'My details are true, and this request is about privacy – not about how I look in the photo.',
+    submit: 'Send request',
+    doneHeading: 'Thank you!',
+    doneText: 'Your request has reached us. We’ll look at it and get back to you by e-mail.',
+    close: 'Close',
+    errorInvalid: 'Please fill in all fields and select at least one photo.',
+    errorTooMany: (max: number) => `Please select no more than ${max} photos per request.`,
+    errorSend: 'Sorry, the request could not be sent. Please try again later.',
+    throttled: (wait: string) => `You have already sent several requests. Please try again in ${wait}.`,
+    // E-mail to the operator
+    mailSubject: 'Please remove my photos',
+    mailIntro: 'A guest asks for photos to be removed from the photo portal.',
+    mailAlbum: 'Album',
+    mailPhotos: 'Photos',
+    mailPhotoOf: (n: number, total: number) => `Photo ${n} of ${total}`,
+    mailReason: 'Reason',
+    mailDetails: 'Explanation',
+    mailName: 'Name',
+    mailEmail: 'E-mail',
+    mailReplyHint: '(replying to this e-mail goes straight to this address)',
+    mailSent: 'Sent',
+    mailGuestLang: 'guest language'
+  },
+
   admin: {
     title: 'Photo admin',
     tabShares: 'Shares',
@@ -280,16 +329,22 @@ const en = {
 
   card: {
     title: 'Card',
-    print: 'Print',
-    light: 'Light version',
+    print: 'Print / save as PDF',
     dark: 'Dark version',
-    hint: 'A6 format (105 × 148 mm). For 4 cards per sheet, choose “4 pages per sheet” on A4 in the print dialog.',
+    titleLabel: 'Title',
+    dateLabel: 'Date',
+    datePlaceholder: 'e.g. 24 Sep 2026',
+    layoutLabel: 'Layout',
+    layoutSheet: '4 per A4 sheet',
+    layoutSingle: 'Single card A6',
+    hintSheet: 'Print on A4 at 100 % (“Actual size”, not “Fit to page”), or choose “Save as PDF” as the printer. ' +
+      'Cut along the crop marks: each card is 94 × 132.5 mm.',
+    hintSingle: 'A6 format (105 × 148 mm), e.g. for a print shop or a photo printer.',
     kicker: 'Your photos from',
     scan: 'Scan with your phone camera',
-    alt: (host: ComponentChildren, password: ComponentChildren) => <>
-      or go to {host}<br/>and enter the password {password}
-    </>,
-    thanks: 'Great to have you with us! 🍷'
+    altSite: (host: ComponentChildren) => <>or go to {host}</>,
+    altPassword: (password: ComponentChildren) => <>and enter the password {password}</>,
+    thanks: 'Great to have you with us!'
   }
 }
 
@@ -387,6 +442,54 @@ const de: Messages = {
     dialogNote: 'Bitte nur an Leute weitergeben, die auch dabei waren. 🙂',
     albumShareText: (title: string) => `Hier sind die Bilder von „${title}“ 📸`,
     shareText: 'Das war „{titel}“ – Bild {nr} von {anzahl}'
+  },
+
+  removal: {
+    button: 'Bilder entfernen',
+    buttonTitle: 'Entfernung von Bildern aus Datenschutzgründen beantragen',
+    title: 'Bilder entfernen lassen',
+    intro: 'Du bist auf einem Bild zu erkennen und möchtest nicht, dass es online ist? Wähl die Bilder aus und ' +
+      'sag uns kurz, warum – wir schauen uns jede Anfrage persönlich an.',
+    policy: 'Es geht um Datenschutz: Bilder, auf denen du oder dein Kind klar zu erkennen seid, oder die ' +
+      'persönliche Informationen zeigen. Bitte hab Verständnis, dass wir Bilder nicht entfernen, nur weil man ' +
+      'darauf nicht so vorteilhaft aussieht.',
+    selectHint: 'Tipp die Bilder an, die entfernt werden sollen:',
+    next: 'Weiter',
+    back: 'Zurück',
+    reasonLegend: 'Grund',
+    reasons: {
+      self: 'Ich bin auf dem Bild zu erkennen und widerspreche der Veröffentlichung',
+      child: 'Mein Kind (oder eine Person, für die ich verantwortlich bin) ist zu erkennen',
+      sensitive: 'Das Bild zeigt persönliche Informationen (z. B. Dokumente, Kennzeichen, Bildschirm)',
+      other: 'Ein anderer Datenschutzgrund'
+    },
+    detailsLabel: 'Erläuterung',
+    detailsPlaceholder: 'Wer bist du auf dem Bild, und warum soll es entfernt werden? ' +
+      'Z. B. „Ich bin die Person mit der roten Jacke links …“',
+    nameLabel: 'Dein Name',
+    emailLabel: 'Deine E-Mail-Adresse',
+    emailHint: 'Damit wir dir antworten können. Wir nutzen sie nur für diese Anfrage.',
+    confirm: 'Meine Angaben stimmen, und es geht mir um Datenschutz – nicht darum, wie ich auf dem Bild aussehe.',
+    submit: 'Anfrage senden',
+    doneHeading: 'Danke!',
+    doneText: 'Deine Anfrage ist bei uns angekommen. Wir schauen sie uns an und melden uns per E-Mail bei dir.',
+    close: 'Schließen',
+    errorInvalid: 'Bitte füll alle Felder aus und wähl mindestens ein Bild aus.',
+    errorTooMany: (max: number) => `Bitte wähl höchstens ${max} Bilder pro Anfrage aus.`,
+    errorSend: 'Die Anfrage konnte leider nicht gesendet werden. Bitte versuch es später noch einmal.',
+    throttled: (wait: string) => `Du hast schon mehrere Anfragen gesendet. Bitte versuch es in ${wait} noch einmal.`,
+    mailSubject: 'Bitte meine Bilder entfernen',
+    mailIntro: 'Ein Gast bittet darum, Bilder aus dem Bilder-Portal zu entfernen.',
+    mailAlbum: 'Album',
+    mailPhotos: 'Bilder',
+    mailPhotoOf: (n: number, total: number) => `Bild ${n} von ${total}`,
+    mailReason: 'Grund',
+    mailDetails: 'Erläuterung',
+    mailName: 'Name',
+    mailEmail: 'E-Mail',
+    mailReplyHint: '(Antworten auf diese Mail gehen direkt an diese Adresse)',
+    mailSent: 'Gesendet',
+    mailGuestLang: 'Sprache des Gastes'
   },
 
   admin: {
@@ -556,16 +659,22 @@ const de: Messages = {
 
   card: {
     title: 'Karte',
-    print: 'Drucken',
-    light: 'Helle Variante',
+    print: 'Drucken / als PDF speichern',
     dark: 'Dunkle Variante',
-    hint: 'Format A6 (105 × 148 mm). Für 4 Karten pro Blatt im Druckdialog „4 Seiten pro Blatt“ auf A4 wählen.',
+    titleLabel: 'Titel',
+    dateLabel: 'Datum',
+    datePlaceholder: 'z. B. 24.09.2026',
+    layoutLabel: 'Format',
+    layoutSheet: '4 pro A4-Blatt',
+    layoutSingle: 'Einzelkarte A6',
+    hintSheet: 'Auf A4 in Originalgröße drucken (100 %, nicht „An Seite anpassen“) oder als Drucker „Als PDF speichern“ ' +
+      'wählen. An den Schnittmarken schneiden: jede Karte ist 94 × 132,5 mm groß.',
+    hintSingle: 'Format A6 (105 × 148 mm), z. B. für die Druckerei oder einen Fotodrucker.',
     kicker: 'Deine Bilder von',
     scan: 'Mit der Handykamera scannen',
-    alt: (host: ComponentChildren, password: ComponentChildren) => <>
-      oder auf {host}<br/>mit dem Passwort {password}
-    </>,
-    thanks: 'Schön, dass du dabei warst! 🍷'
+    altSite: (host: ComponentChildren) => <>oder auf {host}</>,
+    altPassword: (password: ComponentChildren) => <>mit dem Passwort {password}</>,
+    thanks: 'Schön, dass du dabei warst!'
   }
 }
 

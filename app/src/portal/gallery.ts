@@ -8,6 +8,7 @@ import { SharedLink } from '../types'
 import { accessToken } from './tokens'
 import { shareTextTemplate, shareUrl } from './settings'
 import { Lang, t } from './i18n'
+import { removalRequestsEnabled } from './removal'
 
 export interface PortalGalleryData {
   // Link that opens this album without typing the password (QR target)
@@ -21,6 +22,8 @@ export interface PortalGalleryData {
   shareUrl: string
   // Text used when sharing the album link itself
   albumShareText: string
+  // Guests can ask for photos to be removed (SMTP configured)
+  removalEnabled: boolean
 }
 
 // Album description lines that set the share text: "Share: ..." for English
@@ -77,6 +80,7 @@ export async function portalGalleryData (share: SharedLink, title: string, baseU
     qrSvg: await qrSvg(accessUrl),
     shareTemplate: shareTemplateFor(share, title, lang),
     shareUrl: shareUrl(),
-    albumShareText: t(lang).gallery.albumShareText(title)
+    albumShareText: t(lang).gallery.albumShareText(title),
+    removalEnabled: removalRequestsEnabled()
   }
 }

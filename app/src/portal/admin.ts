@@ -14,7 +14,7 @@ import { log } from '../utils/log'
 import { ASSET_VERSION } from '../version'
 import { renderPage } from '../view/render'
 import { AdminLinkView, AdminPage, PrintCard } from './admin-views'
-import { duplicatePasswords, isExpired, isWeakPassword, linkTitle, listSharedLinks, PortalLink } from './links'
+import { albumAssetCount, duplicatePasswords, isExpired, isWeakPassword, linkTitle, listSharedLinks, PortalLink } from './links'
 import { suggestPassword } from './passwords'
 import { BRAND, brandAsset, sendBrandFile } from './branding'
 import { adminPassword, adminPort, publicBaseUrl, publicHostLabel, trustProxy } from './settings'
@@ -26,6 +26,7 @@ import { qrSvg } from './gallery'
 import { adminFormToken, validFormPost } from './admin-forms'
 import { registerLoginRoutes, requireAdmin } from './admin-auth'
 import { registerBrandingRoutes } from './admin-branding'
+import { cardOptions, splitTitleDate } from './card'
 
 export { adminFormToken }
 
@@ -42,8 +43,13 @@ function expiresText (link: PortalLink, lang: Lang): string {
   return (date.isBefore(dayjs()) ? m.admin.expiredOn : m.admin.onlineUntil) + ' ' + date.format(m.dateFormat)
 }
 
-function linkCount (link: PortalLink): number | undefined {
-  if (typeof link.album?.assetCount === 'number') return link.album.assetCount
+async function linkCount (link: PortalLink): Promise<number | undefined> {
+  if (link.type === 'ALBUM') {
+    const counted = await albumAssetCount(link)
+    if (counted !== undefined) return counted
+    // Immich 3.0 always lists 0 here, so only trust a positive value
+    return link.album?.assetCount || undefined
+  }
   return Array.isArray(link.assets) && link.assets.length ? link.assets.length : undefined
 }
 
@@ -55,7 +61,7 @@ async function toView (link: PortalLink, baseUrl: string, duplicates: Set<string
     title: linkTitle(link),
     albumName: link.album?.albumName,
     kind: link.type === 'ALBUM' ? t(lang).admin.kindAlbum : t(lang).admin.kindAssets,
-    count: linkCount(link),
+    count: await linkCount(link),
     createdAt: link.createdAt,
     expiresText: expiresText(link, lang),
     password: link.password,
@@ -169,13 +175,16 @@ export function createAdminApp () {
       return
     }
     const { baseUrl } = adminBaseUrl()
+    const query = new URL(req.originalUrl, 'http://localhost').searchParams
+    query.delete('lang')
     res.send(renderPage(h(PrintCard, {
       lang: langOf(res),
-      title: linkTitle(link),
+      options: cardOptions(req.query, linkTitle(link)),
+      defaultTitle: splitTitleDate(linkTitle(link)).title,
+      query: query.toString(),
       password: link.password,
       hostLabel: publicHostLabel(baseUrl),
-      qrSvg: await qrSvg(linkAccessUrl(link, baseUrl)),
-      dark: 'dunkel' in req.query
+      qrSvg: await qrSvg(linkAccessUrl(link, baseUrl))
     })))
   }))
 

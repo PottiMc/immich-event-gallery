@@ -37,7 +37,10 @@ const en = {
   imageReady: 'Image is ready – please tap Share again.',
   linkCopied: 'Link copied ✓',
   copyLinkPrompt: 'Link to copy:',
-  fileBaseName: 'photo'
+  fileBaseName: 'photo',
+  photoNumber: (n: number) => `Photo ${n}`,
+  removalMax: (max: number) => `You can select up to ${max} photos per request.`,
+  removalFailed: 'Sorry, that didn’t work. Please try again.'
 }
 
 export type ClientMessages = typeof en
@@ -67,7 +70,10 @@ const de: ClientMessages = {
   imageReady: 'Bild ist bereit – bitte nochmal auf Teilen tippen.',
   linkCopied: 'Link kopiert ✓',
   copyLinkPrompt: 'Link zum Kopieren:',
-  fileBaseName: 'bild'
+  fileBaseName: 'bild',
+  photoNumber: (n: number) => `Bild ${n}`,
+  removalMax: (max: number) => `Du kannst bis zu ${max} Bilder pro Anfrage auswählen.`,
+  removalFailed: 'Das hat leider nicht geklappt. Bitte versuch es noch einmal.'
 }
 
 export const CLIENT_MESSAGES: Record<Lang, ClientMessages> = { en, de }

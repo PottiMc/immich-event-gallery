@@ -227,3 +227,141 @@ body {
 /* Language switcher next to the logo */
 .eg-brandbar { position: relative; }
 .eg-brandbar .eg-lang-corner { position: absolute; top: 18px; right: var(--gutter); }
+
+/* "Remove photos": quieter than share/download, so it doesn't invite clicks */
+.eg-pill.eg-pill-quiet {
+  color: var(--eg-muted);
+  border-color: rgba(184, 173, 156, 0.3);
+  background: transparent;
+}
+
+.eg-pill.eg-pill-quiet:hover, .eg-pill.eg-pill-quiet:focus-visible {
+  color: var(--eg-text);
+  border-color: var(--eg-muted);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+@media (max-width: 640px) {
+  .eg-header-actions { flex-wrap: wrap; }
+  .eg-header-actions .eg-pill.eg-pill-quiet { flex: 1 0 100%; height: 36px; font-size: 14px; }
+}
+
+/* Removal dialog */
+.eg-dialog.eg-removal {
+  width: min(640px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  overflow-y: auto;
+  text-align: left;
+}
+
+.eg-removal h2 { padding-right: 36px; }
+.eg-removal-policy {
+  padding: 10px 12px;
+  border-left: 3px solid var(--eg-gold);
+  background: rgba(204, 172, 57, 0.08);
+  border-radius: 6px;
+  font-size: 14px !important;
+}
+
+.eg-removal-hint { color: var(--eg-muted); font-size: 14px !important; margin-bottom: 8px !important; }
+
+.eg-removal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 6px;
+  max-height: 46dvh;
+  overflow-y: auto;
+  padding: 2px;
+}
+
+.eg-removal-tile {
+  position: relative;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--eg-surface-2);
+  cursor: pointer;
+  outline: 3px solid transparent;
+  outline-offset: -3px;
+}
+
+.eg-removal-tile img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.eg-removal-tile:focus-visible { outline-color: var(--eg-gold-light); }
+
+.eg-removal-number {
+  position: absolute;
+  left: 4px;
+  bottom: 4px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.65);
+  color: #fff;
+  font-size: 12px;
+}
+
+.eg-removal-tile[aria-pressed="true"] { outline-color: var(--eg-berry); }
+.eg-removal-tile[aria-pressed="true"] img { opacity: 0.55; }
+.eg-removal-tile[aria-pressed="true"]::after {
+  content: '✓';
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--eg-berry);
+  color: #fff;
+  font-size: 15px;
+  line-height: 24px;
+  text-align: center;
+}
+
+.eg-removal-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.eg-removal-bar #eg-removal-count { color: var(--eg-muted); font-size: 14px; }
+.eg-removal-bar .eg-button { width: auto; margin: 0; }
+
+.eg-removal-form fieldset { margin: 0 0 14px; padding: 0; border: 0; }
+.eg-removal-form legend,
+.eg-removal-field > span { display: block; margin-bottom: 6px; color: var(--eg-gold-light); font-weight: 600; font-size: 15px; }
+
+.eg-removal-choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 8px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.eg-removal-choice input { flex: 0 0 auto; width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--eg-berry); }
+.eg-removal-confirm { margin: 16px 0 6px; font-size: 14px; }
+
+.eg-removal-field { display: block; margin-bottom: 14px; }
+.eg-removal-field input,
+.eg-removal-field textarea {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 10px 12px;
+  border: 1.5px solid var(--eg-line);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.35);
+  color: var(--eg-text);
+  font: inherit;
+  font-size: 16px;
+}
+
+.eg-removal-field textarea { resize: vertical; min-height: 96px; }
+.eg-removal-field input:focus, .eg-removal-field textarea:focus { border-color: var(--eg-gold); outline: none; }
+.eg-removal-field small { display: block; margin-top: 4px; color: var(--eg-muted); font-size: 13px; }
+.eg-removal-done-heading { color: var(--eg-gold); font-size: 20px !important; font-weight: 600; }

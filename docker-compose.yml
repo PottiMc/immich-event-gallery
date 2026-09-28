@@ -131,6 +131,16 @@ services:
       PORTAL_ADMIN_PASSWORD: ${PORTAL_ADMIN_PASSWORD}
       # Which proxies may set X-Forwarded-For; empty = private networks
       TRUST_PROXY: ${TRUST_PROXY:-}
+      # Optional removal requests by e-mail (docs/configuration.md)
+      REMOVAL_REQUEST_TO: ${REMOVAL_REQUEST_TO:-}
+      REMOVAL_REQUEST_LANG: ${REMOVAL_REQUEST_LANG:-}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:-}
+      IMMICH_ADMIN_URL: ${IMMICH_ADMIN_URL:-}
       TZ: ${TZ:-Europe/Berlin}
     volumes:
       # Optional branding: logos, icons and branding.json (see

@@ -165,8 +165,9 @@ If the domain is proxied by Cloudflare (orange cloud), the portal sees Cloudflar
 Putting a new event online takes three steps: create the album, upload the photos, and create a share link with a
 password and an expiry date. Then hand out the access in one of these ways:
 
-- **Printed card:** A6, light or dark, created on the admin page. Print four per A4 sheet with the "4 pages per sheet"
-  option in the print dialog.
+- **Printed card:** light or dark, created on the admin page, with an editable title and date. By default four cards
+  come on one A4 sheet with crop marks (print at 100 % or save as PDF, cut size 94 × 132.5 mm); a single A6 card is
+  available too.
 - **QR code** as PNG or SVG for emails and invoices.
 - **The password itself**, sent by message.
 
@@ -188,6 +189,8 @@ If only one of the lines is there, it is used for both languages. Guests do not 
 - Switch between English and German at the top of every page.
 - Download single photos, a selection (long press) or everything as a ZIP, if the share allows downloads.
 - Stay logged in for 14 days (`portal.sessionDays`).
+- Ask for photos to be removed for privacy reasons ("Remove photos"), if [removal requests](configuration.md#removal-requests-optional)
+  are set up. You get an e-mail and remove the photos in Immich yourself.
 
 **Good practice:**
 
@@ -221,7 +224,8 @@ If only one of the lines is there, it is used for both languages. Guests do not 
 This section is written for operators in the EU and is not legal advice.
 
 - Tell guests at booking or at the event that photos will be taken and shared in a password-protected online album,
-  and let them object. Removing a photo in Immich removes it from the portal.
+  and let them object. Removing a photo in Immich removes it from the portal. With
+  [removal requests](configuration.md#removal-requests-optional) set up, guests can object right from the album.
 - Mention the portal in your privacy policy: its purpose, the retention period (the share's expiry date), self-hosting
   and the session cookie.
 - The portal sets a single, technically necessary session cookie. It loads no external fonts, scripts or trackers, and

@@ -13,6 +13,7 @@ import { setupToolbar } from './selection.js'
 import { initLightbox, openLightbox } from './lightbox.js'
 import { computeLayoutAndRender, onScroll } from './virtualisation.js'
 import { initAlbumShare } from './portal.js'
+import { initRemovalRequest } from './removal.js'
 
 function readInitParams (): InitParams {
   const el = document.getElementById('ipp-init')
@@ -29,6 +30,7 @@ function init () {
   state.metaBase = params.metaBase || ''
   state.portal = params.portal || null
   initAlbumShare()
+  initRemovalRequest()
   state.container = document.getElementById('gallery')
   if (!state.container) return
 

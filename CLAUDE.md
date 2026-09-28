@@ -21,10 +21,15 @@ Immich is automatically online.
   the cookie.
 - The admin server runs on port 3001 behind a login form (`PORTAL_ADMIN_PASSWORD`, `portal/admin-auth.ts`: signed
   7-day session cookie; a Basic Auth header is still accepted for scripts; both share one lockout). It provides the
-  share overview, QR codes as PNG/SVG, printable A6 cards, password suggestions and a branding page. Every admin POST
+  share overview, QR codes as PNG/SVG, printable cards (`portal/card.ts`: four per A4 sheet with crop marks or single A6, title and date editable via
+  `?titel=&datum=`), password suggestions and a branding page. Every admin POST
   goes through `validFormPost` in `portal/admin-forms.ts` (CSRF token as form field or `X-CSRF-Token` header, plus
   Sec-Fetch-Site).
 - Slug links (`/s/…`) are refused everywhere because they are guessable.
+- Removal requests (`portal/removal.ts`, `client/removal.ts`): with `SMTP_HOST` + `REMOVAL_REQUEST_TO` set, guests
+  select photos and send a privacy reason, explanation, name and e-mail to `POST /share/:key/removal-request` (JSON,
+  same-origin, unlocked share only). The operator gets an e-mail via nodemailer; nothing is written to Immich.
+  3 requests per IP and hour, 30 in total, max 50 photos.
 
 ## Layout
 

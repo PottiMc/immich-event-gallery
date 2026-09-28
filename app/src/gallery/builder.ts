@@ -204,7 +204,7 @@ export function dateSortComparator (order?: string): (a: Asset, b: Asset) => num
  * mode. Accepts `false` (off), `true` / `'month'` (legacy = month buckets) or
  * `'day'` (day buckets); anything else is treated as off.
  */
-function groupByDateMode (): GroupByDateMode | false {
+export function groupByDateMode (): GroupByDateMode | false {
   const v = getConfigOption('ipp.gallery.groupByDate', false)
   if (v === 'day') return 'day'
   if (v === true || v === 'month') return 'month'

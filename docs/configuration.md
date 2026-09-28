@@ -30,6 +30,27 @@ A few settings can also be changed on the admin page, see [Admin settings](#admi
 | `DATA_DIR` | no | `/app/data` | Writable folder for the settings saved on the admin page, see [Admin settings](#admin-settings). |
 | `TZ` | no | `Europe/Berlin` | Time zone for logs and dates. |
 
+#### Removal requests (optional)
+
+With `SMTP_HOST` and `REMOVAL_REQUEST_TO` set, the gallery shows a *Remove photos* button. Guests select photos, pick
+a privacy reason (they can be recognised, their child can be recognised, the photo shows personal information, or
+another privacy reason), explain it, enter their name and e-mail address and confirm that the request is about
+privacy and not about how they look. The portal then sends a plain-text e-mail listing the photos (number in the
+album, file name, time taken and a link or ID), the reason and the guest's details. Replying to it goes straight to
+the guest. Each IP can send 3 requests per hour, all guests together 30; at most 50 photos per request. Nothing is
+changed in Immich: you decide and remove the photos yourself.
+
+| Variable | Required | Default | Purpose |
+|---|---|---|---|
+| `REMOVAL_REQUEST_TO` | yes | – | Address that receives the requests |
+| `SMTP_HOST` | yes | – | SMTP server |
+| `SMTP_PORT` | no | `587` | SMTP port |
+| `SMTP_SECURE` | no | `true` on port 465 | `true` for implicit TLS, `false` for STARTTLS/plain |
+| `SMTP_USER`, `SMTP_PASS` | no | – | SMTP login |
+| `SMTP_FROM` | no | `SMTP_USER` | Sender address |
+| `REMOVAL_REQUEST_LANG` | no | `portal.defaultLanguage` | Language of the e-mail (`en` or `de`) |
+| `IMMICH_ADMIN_URL` | no | – | Address of your Immich web UI, e.g. `https://immich.example.com`. The e-mail then links every photo to `…/photos/<id>` instead of only listing its ID. |
+
 ### Compose only (`.env`)
 
 These are used by `docker-compose.yml` itself and are not passed to the portal:
