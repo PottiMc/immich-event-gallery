@@ -1,0 +1,225 @@
+/*
+  Portal – gallery overrides, layered on top of IPP's style.css.
+  Always dark, gold accents, berry-magenta for actions.
+*/
+
+@import url('./portal.css');
+
+html.dark {
+  --color-bg: #0d0b0a;
+  --color-fg: #f4efe6;
+  --color-primary: #CCAC39;
+  --color-gray: #211d1a;
+  --font-sans: 'Outfit', 'Neulis Alt', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse 70% 320px at 50% 0, rgba(204, 172, 57, 0.12), transparent 70%),
+    var(--color-bg);
+  background-repeat: no-repeat;
+}
+
+#gallery { flex: 0 0 auto; }
+.eg-footer { margin-top: auto; }
+
+/* Brand bar with logo */
+.eg-brandbar {
+  display: flex;
+  justify-content: center;
+  padding: 18px var(--gutter) 0;
+}
+
+.eg-brandbar-logo img {
+  display: block;
+  width: 183px;
+  height: auto;
+}
+
+/* Title block */
+#header {
+  align-items: flex-end;
+  padding-top: 18px;
+}
+
+#header h1 {
+  color: var(--eg-gold);
+  font-weight: 700;
+  font-size: 32px;
+  letter-spacing: 0.005em;
+}
+
+#header .subtitle {
+  color: var(--eg-muted);
+  opacity: 1;
+  font-size: 15px;
+}
+
+#album-description {
+  opacity: 1;
+  color: var(--eg-text);
+  max-width: 70ch;
+}
+
+.eg-tip {
+  margin: 0;
+  padding: 0 var(--gutter) 14px;
+  color: var(--eg-muted);
+  font-size: 13px;
+}
+
+.eg-tip svg {
+  width: 15px;
+  height: 15px;
+  vertical-align: -3px;
+  color: var(--eg-gold-light);
+}
+
+/* Header actions as pills */
+.eg-header-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 8px;
+}
+
+.eg-pill,
+#download-all.eg-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: auto;
+  height: 42px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1.5px solid var(--eg-line);
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--eg-gold-light);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.eg-pill:hover, .eg-pill:focus-visible,
+#download-all.eg-pill:hover, #download-all.eg-pill:focus-visible {
+  background: rgba(204, 172, 57, 0.12);
+  border-color: var(--eg-gold);
+  outline: none;
+}
+
+#eg-album-share {
+  color: #fff;
+  background: var(--eg-berry);
+  border-color: var(--eg-berry);
+}
+
+#eg-album-share:hover, #eg-album-share:focus-visible {
+  background: var(--eg-berry-hover);
+  border-color: var(--eg-berry-hover);
+}
+
+.eg-pill svg, #download-all.eg-pill svg { width: 20px; height: 20px; }
+.eg-pill span:first-child { display: inline-flex; }
+
+@media (max-width: 640px) {
+  .eg-brandbar-logo img { width: 150px; }
+  #header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  #header h1 { font-size: 24px; }
+  .eg-header-actions .eg-pill { flex: 1 1 0; justify-content: center; }
+}
+
+/* Selected tiles + selection toolbar in brand colours */
+#gallery a.selected { outline-color: var(--eg-gold); }
+.tile-check { --tw-ring-color: var(--eg-gold); }
+#select-toolbar { background: var(--eg-surface); border-bottom: 1px solid var(--eg-line); }
+
+/* Share dialog */
+.eg-dialog {
+  width: min(380px, calc(100vw - 32px));
+  padding: 26px 22px 20px;
+  color: var(--eg-text);
+  background: linear-gradient(180deg, var(--eg-surface-2), var(--eg-surface));
+  border: 1px solid var(--eg-line);
+  border-radius: 18px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.6);
+  font-family: var(--eg-font);
+  text-align: center;
+}
+
+.eg-dialog::backdrop { background: rgba(0, 0, 0, 0.72); }
+
+.eg-dialog h2 {
+  margin: 0 0 8px;
+  color: var(--eg-gold);
+  font-size: 22px;
+}
+
+.eg-dialog p { margin: 0 0 14px; font-size: 15px; }
+
+.eg-dialog-qr {
+  width: 220px;
+  max-width: 100%;
+  margin: 6px auto 16px;
+  padding: 10px;
+  background: #fff;
+  border-radius: 14px;
+}
+
+.eg-dialog-qr svg { display: block; width: 100%; height: auto; }
+
+.eg-dialog-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.eg-dialog-note { color: var(--eg-muted); font-size: 13px !important; margin-bottom: 0 !important; }
+
+.eg-dialog-close-form { position: absolute; top: 8px; right: 8px; margin: 0; }
+
+.eg-dialog-close {
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--eg-muted);
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.eg-dialog-close:hover, .eg-dialog-close:focus-visible { color: var(--eg-text); background: rgba(255, 255, 255, 0.08); outline: none; }
+
+/* Toast */
+#eg-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  z-index: 100001;
+  transform: translateX(-50%);
+  max-width: calc(100vw - 32px);
+  padding: 12px 18px;
+  color: #1a1400;
+  background: var(--eg-gold-light);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  font-family: var(--eg-font);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+#eg-toast[hidden] { display: none; }
+
+/* Lightbox: share button stands out a little */
+.pswp__button--share-button { --pswp-icon-color: #FFCC66; color: #FFCC66; }

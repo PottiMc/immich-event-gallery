@@ -22,7 +22,7 @@ import { gallery } from './gallery/builder'
 import { Response } from 'express-serve-static-core'
 import { h } from 'preact'
 import { renderPage } from './view/render'
-import { Password } from './view/password'
+import { BrandedPassword } from './portal/views'
 import { respondToInvalidRequest } from './invalidRequestHandler'
 import { encrypt } from './encrypt'
 import { TtlLruCache } from './utils/ttlLruCache'
@@ -172,7 +172,7 @@ export async function handleShareRequest (req: IncomingShareRequest, res: Respon
   if (sharedLinkRes.passwordRequired) {
     // `req.key` is already sanitised at this point, but it never hurts to be explicit
     const shareKey = req.key.replace(/[^\w-]/g, '')
-    res.send(renderPage(h(Password, {
+    res.send(renderPage(h(BrandedPassword, {
       shareKey,
       notifyInvalidPassword: !!req.password
     })))

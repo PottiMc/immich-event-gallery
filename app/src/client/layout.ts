@@ -92,7 +92,7 @@ function groupItemsByDate (mode: GroupByDateMode): GroupSpec[] {
 }
 
 function dateLabel (key: string, mode: GroupByDateMode): string {
-  if (key === 'undated') return 'Undated'
+  if (key === 'undated') return 'Ohne Datum'
   const parts = key.split('-')
   const y = Number(parts[0])
   const m = Number(parts[1])

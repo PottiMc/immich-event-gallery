@@ -1,67 +1,129 @@
-# Immich Public Proxy
+# Immich Event Gallery
 
-<p align="center" width="100%">
-<img src="docs/public/ipp.svg" width="180" height="180">
-</p>
+A password-protected photo portal for event guests, built on [Immich](https://immich.app) and forked from
+[Immich Public Proxy](https://github.com/alangrainger/immich-public-proxy).
 
-<p align="center" width="100%">
-<a href="https://hub.docker.com/r/alangrainger/immich-public-proxy/tags">
-    <img alt="Docker pulls" src="https://badgen.net/docker/pulls/alangrainger/immich-public-proxy?icon=docker&label=docker%20pulls&color=green&scale=1.1"></a>
-<a href="https://github.com/alangrainger/immich-public-proxy/releases/latest">
-    <img alt="Latest release" src="https://badgen.net/github/tag/alangrainger/immich-public-proxy?scale=1.1&label=release"></a>
-<a href="https://demo.ipp.nz/s/demo-gallery"><img alt="Open demo gallery" src="https://badgen.net/static/↗🖼️/live%20demo/green?scale=1.1"></a>
-</p>
+It was built for small businesses that run events such as wine tastings or guided hikes. After an event, guests
+enter the password they were given (or scan a QR code) and land directly in *their* album. The source is published
+under the AGPL-3.0, and you are welcome to adapt it for your own events.
 
-Share your Immich photos and albums in a safe way without exposing your Immich instance to the public.
+> The guest-facing interface is **German only**. Code, comments and documentation are in English. The repository
+> contains no brand logos or company details: out of the box the portal is neutral, and your own branding comes from
+> a folder on your server (see [Adapting it](#adapting-it)).
 
-👉 See a [Live demo gallery](https://demo.ipp.nz/s/demo-gallery)
-serving straight out of my own Immich instance.
+> [!NOTE]
+> **Vibe-coded.** Everything this fork adds to Immich Public Proxy was written entirely by
+> [Claude](https://claude.ai), Anthropic's AI assistant, under the direction of the repository owner. That includes the
+> portal code, tests, Docker setup and documentation. The code has unit tests and went through an AI-led security
+> review, but it has not been audited by an independent human. Read the code before you trust it with private photos,
+> and please [report](SECURITY.md) anything you find.
 
-Setup takes less than a minute, and you never need to touch it again as all of your sharing stays managed within Immich.
+## How it works
 
-<p align="center" width="100%">
-<img src="docs/public/screenshot.webp" width="602" height="414" border="1px solid white">
-</p>
+```
+Guest ── password or QR code ──▶ Portal ── API key (sharedLink.read) ──▶ Immich
+                                   │        lists all password-protected shares,
+                                   │        finds the one that matches
+                                   └──────▶ serves that album (read-only)
+```
 
-## About this project
+The operator manages everything in Immich: create an album, then create a shared link with a password and an expiry
+date. There is no second configuration step. As soon as the link exists, the album can be reached through the portal.
+When the link expires or is deleted, the album goes offline.
 
-[Immich](https://github.com/immich-app/immich) is a wonderful bit of software, but since it holds all your private photos it's
-best to keep it fully locked down. This presents a problem when you want to share a photo or a gallery with someone.
+## Features
 
-**Immich Public Proxy** provides a barrier of security between the public and Immich, and _only_ allows through requests
-which you have publicly shared. It is stateless, needs no API key, and knows nothing about your Immich instance beyond
-what you have shared.
+- **Landing page with a single password field.** The password decides which album opens. Case, spaces, `-`, `_` and
+  `.` are ignored when comparing.
+- **QR codes and direct links** per album. Guests can pass them on to each other ("Album teilen" dialog).
+- **Share to WhatsApp & co.** The photo itself goes out through the phone's native share sheet (Web Share API), with a
+  text like *"Das war die Weinwanderung – Bild 12 von 48"*. On desktop it falls back to
+  WhatsApp Web.
+- **Brute-force protection.** Per-IP lockout with growing duration, a global cap, and an artificial delay on every
+  wrong attempt.
+- **Admin pages** on a separate port: all shares with their passwords and warnings (weak, duplicate, missing password,
+  no expiry), QR codes as PNG/SVG, printable A6 cards and password suggestions.
+- **No third parties.** Fonts are self-hosted, and there are no trackers, no external requests and no Google Fonts.
+  The pages are hidden from search engines.
+- Everything the upstream gallery offers: justified-rows layout, PhotoSwipe lightbox, videos and motion photos,
+  single and ZIP downloads.
 
-Read more in the [Introduction](https://docs.ipp.nz/introduction), including
-[why not just expose Immich's `/share/` path](https://docs.ipp.nz/introduction#why-not-expose-immich-directly).
+## Getting started
 
-## Quick start
+The repository ships a complete Docker Compose stack: a dedicated Immich instance (server, machine learning, Postgres,
+Valkey) plus the portal.
 
-1. Download the [docker-compose.yml](https://github.com/alangrainger/immich-public-proxy/blob/main/docker-compose.yml) file.
-2. Set `IMMICH_URL` to the local (not public) URL of your Immich server, and `PUBLIC_BASE_URL` to the public URL of IPP.
-3. Run `docker-compose up -d` and check that `https://your-proxy-url.com/share/healthcheck` responds.
-4. In Immich's **Server Settings**, set the "External domain" to your IPP URL. Every link Immich generates from now on
-   points at the proxy.
+```bash
+cp .env.example .env        # fill in the values
+docker compose up -d
+```
 
-If you use Cloudflare, set your `/share/video/*` path to Bypass Cache or videos may not play.
+The full walkthrough covers the reverse proxy, Immich setup, the API key and the first album:
+**[docs/deployment.md](docs/deployment.md)**.
 
-Full instructions, including Kubernetes: **[Installation](https://docs.ipp.nz/installation)**.
+All settings are listed in **[docs/configuration.md](docs/configuration.md)**.
 
-## Documentation
+The image is built by GitHub Actions and published as `ghcr.io/pottimc/immich-event-gallery` (`latest`, short commit
+SHA, and semver tags) for `linux/amd64` and `linux/arm64`.
 
-Everything is at **[docs.ipp.nz](https://docs.ipp.nz)**:
+## Security
 
-- [Installation](https://docs.ipp.nz/installation) and [Sharing from Immich](https://docs.ipp.nz/how-to-use)
-- [Configuration](https://docs.ipp.nz/config/): downloads, gallery layout, lightbox, metadata privacy, error responses
-- Guides: [single domain with Immich](https://docs.ipp.nz/running-on-single-domain),
-  [redirect your root domain to a share](https://docs.ipp.nz/redirect-root-to-share),
-  [securing Immich with mTLS](https://docs.ipp.nz/securing-immich-with-mtls)
-- [Troubleshooting](https://docs.ipp.nz/troubleshooting)
+The portal is the only public component. Immich and the admin pages must stay behind authentication.
 
-## Feature requests
+- **Least privilege towards Immich:** the API key only needs `sharedLink.read`. The portal never writes to Immich.
+- **Lockout:** 5 wrong passwords per IP within 15 minutes block that IP for 15 minutes. Each further block doubles the
+  duration, up to 24 hours. IPv6 clients are counted per /64. More than 100 failures from anywhere within 15 minutes
+  pause password entry for everyone for 5 minutes. QR links keep working because their tokens are not guessable.
+- **Every password entry point is throttled**, including the unlock form of a direct album link.
+- **QR tokens** are an HMAC of the share key and its password. Changing the password in Immich invalidates old QR
+  codes immediately and ends existing guest sessions within about two minutes.
+- **Strict headers:** a Content Security Policy without inline scripts, `X-Frame-Options`, `nosniff`,
+  `Referrer-Policy: same-origin` (share keys are part of the URL), and HSTS over HTTPS.
+- **Hardened container:** read-only filesystem, all capabilities dropped, `no-new-privileges`, memory and PID limits.
+  The portal sits on its own network and can only reach the Immich server.
+- Invalid, expired or failed requests return a plain 404 and reveal nothing about Immich.
 
-You can [add feature requests here](https://github.com/alangrainger/immich-public-proxy/discussions/categories/feature-requests?discussions_q=is%3Aopen+category%3A%22Feature+Requests%22+sort%3Atop),
-however my goal with this project is to keep it as lean as possible.
+Rate-limit state is held in memory, so it resets when the container restarts. To report a vulnerability, see
+[SECURITY.md](SECURITY.md).
 
-IPP has **read-only** access to Immich and stores nothing: anything that needs an API key, modifies Immich, or would
-require storing a share key won't be considered. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full list.
+## Adapting it
+
+The fork keeps its additions separate from the upstream code so that upstream updates can still be merged:
+
+| Path | Contents |
+|---|---|
+| `app/src/portal/` | Portal logic: password matching, QR tokens, lockout, security headers, admin server, pages |
+| `app/src/client/portal.ts` | Share button in the lightbox and the "share album" dialog |
+| `app/src/portal/branding.ts` | Loads the operator's branding folder |
+| `app/public/portal/` | Stylesheets and the small scripts required by the CSP |
+| `app/public/brand/` | Neutral default logos and icons |
+
+To run it for your own events, put your logos, icons and a `branding.json` (name, website, imprint, privacy, share
+text) into the branding folder on your server. The [branding section](docs/configuration.md#branding) lists the
+files; no code changes or image rebuilds are needed. The German interface texts live in
+`app/src/portal/views.tsx`, `admin-views.tsx` and `app/src/view/gallery.tsx`, and the colours in
+`app/public/portal/*.css`. If you change the code, point `sourceUrl` at your own public repository, because the
+AGPL requires you to offer the source of the version you run.
+
+## Development
+
+```bash
+cd app
+npm ci
+npm run dev        # server + client watchers, reads app/.env
+npm run build
+npm test           # vitest
+npx eslint src/
+```
+
+`app/.env` needs at least `IMMICH_URL`, `IMMICH_API_KEY`, `PORTAL_SECRET` and `PUBLIC_BASE_URL`, and optionally
+`PORTAL_ADMIN_PASSWORD` to enable the admin server on port 3001. See [CONTRIBUTING.md](CONTRIBUTING.md) for
+conventions and for how upstream changes are merged.
+
+## Credits and license
+
+Based on [Immich Public Proxy](https://github.com/alangrainger/immich-public-proxy) by Alan Grainger, whose
+[documentation](https://docs.ipp.nz) still applies to every inherited option. Fonts:
+[Outfit](app/public/fonts/Outfit-LICENSE.txt) and [Inter](app/public/fonts/Inter-LICENSE.txt) (SIL Open Font License).
+
+Licensed under the [GNU Affero General Public License v3.0](LICENSE), like the original.

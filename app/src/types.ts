@@ -108,6 +108,7 @@ export interface TimelineBucketAssets {
 }
 
 export interface SharedLink {
+  id?: string;
   key: string;
   keyType: KeyType;
   type: string;

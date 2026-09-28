@@ -49,12 +49,12 @@ export function toggleSelection (id: string) {
 
 function updateSelectionUI () {
   if (state.countEl) {
-    state.countEl.textContent = state.selected.size + ' selected'
+    state.countEl.textContent = state.selected.size + ' ausgewählt'
   }
   if (state.downloadBtn) state.downloadBtn.disabled = state.selected.size === 0
   if (state.selectAllBtn) {
     state.selectAllBtn.textContent =
-      state.selected.size === state.items.length ? 'Deselect all' : 'Select all'
+      state.selected.size === state.items.length ? 'Keine auswählen' : 'Alle auswählen'
   }
 }
 

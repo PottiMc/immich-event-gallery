@@ -3,7 +3,7 @@
 // top-level `let`s. Layout / scroll-tuning constants live here too because
 // they are read by multiple modules. SVG icon strings live in `icons.ts`.
 
-import type { GalleryItem, LightboxConfig, MetadataConfig, GroupByDateMode } from '../shared/types.js'
+import type { GalleryItem, LightboxConfig, MetadataConfig, GroupByDateMode, PortalClientConfig } from '../shared/types.js'
 
 // ----- layout / scroll tuning ----------------------------------------------
 
@@ -95,6 +95,8 @@ export const state = {
   sidebarOpen: false,
   // Base URL (`/share/meta/<key>`) for the on-demand per-asset metadata route.
   metaBase: '',
+  // Portal share settings (absent on non-portal pages)
+  portal: null as PortalClientConfig | null,
   // Re-render callbacks registered by lightbox UI elements (sidebar, caption,
   // download button). Each re-renders for the current slide. Invoked after a
   // lazy item's detail arrives so the just-opened slide reflects it.

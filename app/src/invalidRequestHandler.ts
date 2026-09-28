@@ -7,6 +7,22 @@ through a Docker volume mount.
 import { Response } from 'express-serve-static-core'
 import { getConfigOption } from './config/access'
 import { log } from './utils/log'
+import { h } from 'preact'
+import { renderPage } from './view/render'
+import { NotFound } from './portal/views'
+
+/**
+ * Send a 404. Browsers navigating to a page get the branded "not found" page
+ * instead of a blank screen; image/API requests still get an empty body.
+ */
+function sendNotFound (res: Response) {
+  const accept = String(res.req?.headers?.accept || '')
+  if (res.req?.method === 'GET' && accept.includes('text/html')) {
+    res.status(404).send(renderPage(h(NotFound, {})))
+  } else {
+    res.status(404).send()
+  }
+}
 
 /**
  * Respond to any request that IPP would otherwise serve content for but cannot
@@ -34,7 +50,8 @@ export function respondToInvalidRequest (res: Response, defaultResponse: number 
   if (typeof method === 'number') {
     // Respond with an HTTP status code
     log('Return status ' + method + logMessage)
-    res.status(method).send()
+    if (method === 404) sendNotFound(res)
+    else res.status(method).send()
   } else if (method === null) {
     // Drop the connection without responding
     log('Dropping connection' + logMessage)
@@ -45,6 +62,6 @@ export function respondToInvalidRequest (res: Response, defaultResponse: number 
   } else {
     // Fallback to 404
     log('Return status 404' + logMessage)
-    res.status(404).send()
+    sendNotFound(res)
   }
 }

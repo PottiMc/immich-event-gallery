@@ -37,7 +37,7 @@ export function registerSidebar (lightbox: LightboxInstance) {
       appendTo: 'root',
       onInit: (el: HTMLElement, pswp: PswpInstance) => {
         el.classList.add('ipp-sidebar')
-        el.setAttribute('aria-label', 'Photo information')
+        el.setAttribute('aria-label', 'Bildinformationen')
         const renderSidebar = () => renderContents(el, state.items[pswp.currIndex])
         renderSidebar()
         pswp.on('change', renderSidebar)
@@ -154,7 +154,7 @@ function renderContents (root: HTMLElement, item: GalleryItem | undefined) {
   if (!showDescription && noExifShown) {
     const empty = document.createElement('p')
     empty.className = 'ipp-sidebar-empty'
-    empty.textContent = 'No metadata available'
+    empty.textContent = 'Keine Informationen verfügbar'
     root.appendChild(empty)
   }
 }
@@ -165,7 +165,7 @@ function renderHeader (): HTMLElement {
   const close = document.createElement('button')
   close.type = 'button'
   close.className = 'ipp-sidebar-close'
-  close.setAttribute('aria-label', 'Close info')
+  close.setAttribute('aria-label', 'Info schließen')
   close.innerHTML = ICON_CLOSE
   close.addEventListener('click', () => {
     if (state.lightbox && state.lightbox.pswp) setSidebarOpen(state.lightbox.pswp, false)
@@ -345,7 +345,7 @@ function renderLocation (exif: GalleryExif): HTMLElement {
       link.target = '_blank'
       // noreferrer suppresses the Referer header so the share URL doesn't end up in the map provider's webserver logs
       link.rel = 'noopener noreferrer'
-      link.textContent = 'Open in OpenStreetMap'
+      link.textContent = 'In OpenStreetMap öffnen'
       body.appendChild(link)
     }
   }

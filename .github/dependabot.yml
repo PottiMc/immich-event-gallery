@@ -1,0 +1,23 @@
+# Monthly update pull requests for npm dependencies, the Docker base image and
+# GitHub Actions. Security updates arrive immediately regardless, once
+# "Dependabot security updates" is enabled in the repository settings.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /app
+    schedule:
+      interval: monthly
+    groups:
+      npm:
+        patterns: ["*"]
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: monthly
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns: ["*"]

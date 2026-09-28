@@ -6,3 +6,9 @@ app/public/js/
 .directory
 /app/config.dev.json
 .npm-cache/
+
+# Local, personal files (secrets live in .env, see .env.example)
+*.local.md
+
+# Operator branding (logos, icons, texts) - lives on the server, not in the repo
+/app/branding/

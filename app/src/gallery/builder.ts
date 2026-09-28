@@ -15,6 +15,7 @@ import type { GroupByDateMode } from '../shared/types'
 import { downloadFilename } from './filename'
 import { requiresOriginal } from './sizing'
 import { displayDimensions, metadataGroupActive, pickExif } from './exif'
+import { portalGalleryData, visibleDescription } from '../portal/gallery'
 
 /**
  * Render a gallery page for a given SharedLink.
@@ -131,9 +132,10 @@ export async function gallery (res: Response, share: SharedLink, openItem?: numb
   const lightboxOptions: Record<string, unknown> = (rawLightboxOptions && typeof rawLightboxOptions === 'object' && !Array.isArray(rawLightboxOptions))
     ? rawLightboxOptions as Record<string, unknown>
     : {}
+  const galleryTitle = title(share)
   const props: GalleryProps = {
     items,
-    title: title(share),
+    title: galleryTitle,
     description: getConfigOption('ipp.gallery.showDescription', false) ? description(share) : '',
     publicBaseUrl: toString(publicBaseUrl),
     path: '/share/' + share.key,
@@ -157,12 +159,14 @@ export async function gallery (res: Response, share: SharedLink, openItem?: numb
       locationWebLink: !!getConfigOption('ipp.showMetadata.location.webLink', true)
     },
     groupByDate,
-    metaBase
+    metaBase,
+    portal: await portalGalleryData(share, galleryTitle, toString(publicBaseUrl).replace(/\/+$/, ''))
   }
 
-  // HTML gallery page cache time
+  // HTML gallery page cache time. Password-protected galleries (and their
+  // embedded access link) must never land in a shared cache.
   const cacheTime = Math.max(0, getNumericConfigOption('ipp.gallery.cacheTime', 300))
-  res.header('Cache-Control', 'public, max-age=' + cacheTime)
+  res.header('Cache-Control', (share.password ? 'private' : 'public') + ', max-age=' + cacheTime)
   res.send(renderPage(h(Gallery, props)))
 }
 
@@ -170,7 +174,8 @@ export async function gallery (res: Response, share: SharedLink, openItem?: numb
  * Get the Immich shared link description (album-level, not per-asset).
  */
 function description (share: SharedLink) {
-  return share?.album?.description || ''
+  // Hide the "Teilen: ..." line that configures the WhatsApp text
+  return visibleDescription(share?.album?.description || '')
 }
 
 /**

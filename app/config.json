@@ -1,16 +1,15 @@
 {
   "ipp": {
     "responseHeaders": {
-      "Cache-Control": "public, max-age=2592000",
-      "Access-Control-Allow-Origin":  "*"
+      "Cache-Control": "private, max-age=2592000"
     },
     "maxDownloadQuality": "original",
     "maxZoomQuality": "preview",
     "motionPhotos": true,
     "downloadedFilename": 0,
-    "allowDownload": 0,
-    "allowSlugLinks": true,
-    "showHomePage": true,
+    "allowDownload": 1,
+    "allowSlugLinks": false,
+    "showHomePage": false,
     "showMetadata": {
       "description": {
         "caption": false,
@@ -43,10 +42,10 @@
       "singleVideo": true,
       "singleItemAutoOpen": true,
       "showTitle": true,
-      "showDescription": false,
-      "showExpiryDate": false,
-      "expiryDateFormat": "YYYY-MM-DD",
-      "expiryDateLocale": "",
+      "showDescription": true,
+      "showExpiryDate": true,
+      "expiryDateFormat": "DD.MM.YYYY",
+      "expiryDateLocale": "de",
       "groupByDate": false,
       "showDownloadZip": true,
       "cacheTime": 300
@@ -57,5 +56,9 @@
       "mobileArrows": false,
       "autoPlayVideos": false
     }
+  },
+  "portal": {
+    "sessionDays": 14,
+    "sourceUrl": "https://github.com/PottiMc/immich-event-gallery"
   }
 }

@@ -103,6 +103,18 @@ export interface MetadataConfig {
  * `client/init.ts`. The server writes it via `jsonForInlineScript`; the
  * client reads it via `readInitParams()`.
  */
+/**
+ * Portal extras forwarded to the gallery client: share text for
+ * the per-image share button and the album access link / QR code.
+ */
+export interface PortalClientConfig {
+  accessUrl: string
+  shareTemplate: string
+  shareUrl: string
+  albumShareText: string
+  title: string
+}
+
 export interface InitParams {
   items?: GalleryItem[]
   openItem?: number
@@ -110,4 +122,5 @@ export interface InitParams {
   metadataConfig?: MetadataConfig
   groupByDate?: GroupByDateMode | false
   metaBase?: string
+  portal?: PortalClientConfig
 }

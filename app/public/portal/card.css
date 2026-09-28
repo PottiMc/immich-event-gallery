@@ -1,0 +1,109 @@
+/* Portal – printable A6 guest card */
+
+@font-face {
+  font-family: 'Outfit';
+  src: url('/share/static/fonts/outfit-latin-wght-normal.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+@page { size: A6 portrait; margin: 0; }
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: #e9e5de;
+  font-family: 'Outfit', 'Neulis Alt', Arial, sans-serif;
+  color: #1a1612;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.card-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  max-width: 105mm;
+  margin: 16px auto;
+  font-size: 13px;
+  color: #555;
+}
+
+.card-tools button {
+  padding: 8px 18px;
+  color: #fff;
+  background: #A3005A;
+  border: 0;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.card-tools a { color: #A3005A; }
+
+.card {
+  width: 105mm;
+  height: 148mm;
+  margin: 0 auto 24px;
+  padding: 9mm 9mm 7mm;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background: #fff;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+.card-logo { height: 30mm; width: auto; margin-bottom: 3mm; }
+
+.card-kicker {
+  margin: 0;
+  color: #8a7320;
+  font-size: 10pt;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.card-title {
+  margin: 1mm 0 4mm;
+  color: #1a1612;
+  font-size: 17pt;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.card-qr { width: 46mm; height: 46mm; }
+.card-qr svg { display: block; width: 100%; height: 100%; }
+
+.card-scan {
+  margin: 2mm 0 3mm;
+  color: #A3005A;
+  font-size: 10.5pt;
+  font-weight: 600;
+}
+
+.card-alt { margin: 0; font-size: 9.5pt; line-height: 1.45; color: #3b342c; }
+.card-password { font-size: 11.5pt; color: #1a1612; letter-spacing: 0.02em; }
+
+.card-thanks { margin: auto 0 0; padding-top: 3mm; font-size: 10pt; color: #8a7320; }
+
+/* Dark variant (more ink, but very on-brand) */
+.card-dark .card { background: #0d0b0a; color: #f4efe6; }
+.card-dark .card-title { color: #E6C16E; }
+.card-dark .card-kicker, .card-dark .card-thanks { color: #CCAC39; }
+.card-dark .card-alt { color: #d8cfc0; }
+.card-dark .card-password { color: #FFCC66; }
+.card-dark .card-scan { color: #ff5aa8; }
+.card-dark .card-qr { padding: 2mm; background: #fff; border-radius: 3mm; }
+.card-dark .card-logo { height: 22mm; margin-bottom: 5mm; }
+
+@media print {
+  body { background: #fff; }
+  .card-tools { display: none; }
+  .card { margin: 0; box-shadow: none; page-break-after: always; }
+}

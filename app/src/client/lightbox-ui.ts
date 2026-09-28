@@ -55,7 +55,7 @@ export function registerBackButton (lightbox: LightboxInstance) {
       name: 'back-button',
       order: 1,
       isButton: true,
-      ariaLabel: 'Back to gallery',
+      ariaLabel: 'Zurück zur Galerie',
       html: ICON_BACK,
       onInit: (el: HTMLElement, pswp: PswpInstance) => {
         el.addEventListener('click', () => pswp.close())
@@ -107,7 +107,7 @@ export function registerDownloadButton (lightbox: LightboxInstance) {
       order: 8,
       isButton: true,
       tagName: 'a',
-      ariaLabel: 'Download',
+      ariaLabel: 'Herunterladen',
       html: ICON_DOWNLOAD,
       onInit: (el: HTMLElement, pswp: PswpInstance) => {
         const link = el as HTMLAnchorElement
@@ -148,8 +148,8 @@ export function registerFullscreenButton (lightbox: LightboxInstance) {
         const update = () => {
           const active = document.fullscreenElement === pswp.element
           el.innerHTML = active ? ICON_FULLSCREEN_EXIT : ICON_FULLSCREEN
-          el.setAttribute('aria-label', active ? 'Exit fullscreen' : 'Fullscreen')
-          el.setAttribute('title', active ? 'Exit fullscreen' : 'Fullscreen')
+          el.setAttribute('aria-label', active ? 'Vollbild beenden' : 'Vollbild')
+          el.setAttribute('title', active ? 'Vollbild beenden' : 'Vollbild')
         }
         update()
         el.addEventListener('click', () => {
@@ -215,7 +215,7 @@ export function registerMotionButton (lightbox: LightboxInstance) {
 
         const update = () => {
           el.hidden = !state.items[pswp.currIndex]?.motionUrl
-          const label = motionEnabled ? 'Stop playing motion photos' : 'Play motion photos'
+          const label = motionEnabled ? 'Live-Fotos anhalten' : 'Live-Fotos abspielen'
           el.innerHTML = motionEnabled ? ICON_MOTION_PAUSE : ICON_MOTION_PLAY
           el.setAttribute('aria-label', label)
           el.setAttribute('title', label)

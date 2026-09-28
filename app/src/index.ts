@@ -14,7 +14,6 @@ import {
   isKey
 } from './immich'
 import { buildAssetMetadata } from './gallery/metadata'
-import crypto from 'crypto'
 import { assetBuffer } from './stream/asset'
 import { downloadAssets } from './stream/download'
 import dayjs from 'dayjs'
@@ -25,12 +24,14 @@ import { loadConfig } from './config/loader'
 import { addResponseHeaders, asyncHandler, errorHandler } from './http'
 import { canDownload, findMotionPhotoStill } from './share'
 import { toString } from './utils/text'
-import { decrypt, encrypt } from './encrypt'
+import { decrypt } from './encrypt'
 import { respondToInvalidRequest } from './invalidRequestHandler'
 import { ASSET_VERSION } from './version'
-import { h } from 'preact'
-import { renderPage } from './view/render'
-import { Home } from './view/home'
+import { registerPortalRoutes, unlockShare } from './portal/routes'
+import { startAdminServer } from './portal/admin'
+import { securityHeaders } from './portal/security'
+import { BRAND, brandAsset, sendBrandFile } from './portal/branding'
+import { deriveKey, trustProxy } from './portal/settings'
 
 // Extend the Request type with a `password` property
 declare module 'express-serve-static-core' {
@@ -44,16 +45,33 @@ declare module 'express-serve-static-core' {
 loadConfig()
 
 const app = express()
+// Behind a reverse proxy: take the visitor IP from X-Forwarded-For
+// (needed for the login rate limit) and the protocol from X-Forwarded-Proto
+app.set('trust proxy', trustProxy())
+// Flat query strings only - nothing here needs qs's nested objects/arrays
+app.set('query parser', 'simple')
+app.use(securityHeaders)
 app.use(cookieSession({
   name: 'session',
   httpOnly: true,
   sameSite: 'lax',
-  secret: crypto.randomBytes(32).toString('base64url')
+  // Derived from PORTAL_SECRET so guests stay logged in across restarts
+  secret: deriveKey('cookie-session').toString('base64url')
 }))
+// Mark the cookie Secure whenever the visitor came in over HTTPS (as reported
+// by the trusted proxy). Setting `secure: true` statically would make
+// cookie-session throw on plain-HTTP requests, e.g. local tests.
+app.use((req, _res, next) => {
+  if (req.sessionOptions) req.sessionOptions.secure = req.secure
+  next()
+})
 // For parsing the password unlock form and POSTed JSON payloads
 app.use(express.json())
 // For parsing the selective-download form POST (form-encoded body)
 app.use(express.urlencoded({ extended: false, limit: '1mb' }))
+// Brand assets: the operator's files from BRANDING_DIR, else neutral defaults
+app.get(BRAND + '/:file', brandAsset)
+app.get('/favicon.ico', (_req, res) => sendBrandFile(res, 'favicon.ico'))
 // Cache-busted, immutable static assets under a per-release version segment.
 const inProduction = process.env.NODE_ENV === 'production'
 app.use('/share/static/' + ASSET_VERSION, express.static('public', {
@@ -148,6 +166,18 @@ async function resolveSharedAsset (req: Request, keyType: KeyType, allowMotion =
 }
 
 /*
+ * Slug links (/s/...) are guessable. When disabled, refuse them on every
+ * route - not just the gallery page - so no route can be probed with a slug.
+ */
+app.all(/^\/s\//, (req, res, next) => {
+  if (getConfigOption('ipp.allowSlugLinks', true)) {
+    next()
+  } else {
+    respondToInvalidRequest(res, 404, 'Slug links are disabled in config.json')
+  }
+})
+
+/*
  * [ROUTE] Healthcheck
  * The path matches for /share/healthcheck, and also the legacy /healthcheck
  */
@@ -180,23 +210,15 @@ app.get('/:shareType(share|s)/:key/:mode(download)?', decodeCookie, asyncHandler
 }))
 
 /*
- * [ROUTE] Receive an unlock request from the password page
- * Stores a cookie with an encrypted payload which expires in 1 hour.
- * After that time, the visitor will need to provide the password again.
+ * [ROUTE] Receive an unlock request from the password page.
+ * The password is verified (and rate-limited) before it is stored in the
+ * encrypted session cookie - see unlockShare.
  *
  * The data is encrypted/decrypted on the server as a db-less way of
  * managing user session data. The data is provided to the server by the
  * user's browser in its encrypted state.
  */
-app.post('/share/unlock', asyncHandler(async (req, res) => {
-  if (req.session && req.body.key) {
-    req.session[req.body.key] = encrypt(JSON.stringify({
-      password: req.body.password,
-      expires: dayjs().add(1, 'hour').format()
-    }))
-  }
-  res.send()
-}))
+app.post('/share/unlock', asyncHandler(unlockShare))
 
 /*
  * [ROUTE] Selective download - POST a list of asset IDs, get a zip of just those.
@@ -316,20 +338,11 @@ app.get('/:shareType(share|s)/meta/:key/:id', decodeCookie, asyncHandler(async (
 }))
 
 /*
- * [ROUTE] Home page
- *
- * It was requested here to have *something* on the home page:
- * https://github.com/alangrainger/immich-public-proxy/discussions/19
- *
- * If you don't want to see this, set showHomePage as false in your config.json:
- * https://github.com/alangrainger/immich-public-proxy?tab=readme-ov-file#immich-public-proxy-options
+ * [ROUTE] Password portal: landing page with password field,
+ * password login and QR access links. Replaces IPP's home page.
  */
-if (getConfigOption('ipp.showHomePage', true)) {
-  app.get(/^\/(|share)\/*$/, (_req, res) => {
-    addResponseHeaders(res)
-    res.send(renderPage(h(Home, {})))
-  })
-}
+registerPortalRoutes(app)
+app.get(/^\/share\/*$/, (_req, res) => res.redirect('/'))
 
 /*
  * Send a 404 for all other routes
@@ -373,3 +386,4 @@ const server = app.listen(port, () => {
   // tolerated (logs a warning and continues) - see enforceMinimumImmichVersion.
   enforceMinimumImmichVersion().catch(e => console.error('Immich version check failed:', e))
 })
+startAdminServer()

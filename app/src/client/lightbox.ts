@@ -18,6 +18,7 @@ import {
 } from './lightbox-ui.js'
 import { registerSidebar } from './sidebar.js'
 import { registerLazyDetail } from './metadata.js'
+import { registerShareButton } from './portal.js'
 
 /**
  * Replace the current history entry with the same URL minus any hash.
@@ -239,6 +240,7 @@ export function initLightbox () {
   registerBackButton(state.lightbox)
   if (state.lightboxConfig.showDownload) registerDownloadButton(state.lightbox)
   registerFullscreenButton(state.lightbox)
+  registerShareButton(state.lightbox)
   // No config gate: the server omits `motionUrl` when motion photos are off.
   registerMotionButton(state.lightbox)
   if (state.metadataConfig.descriptionInCaption) registerCaption(state.lightbox)

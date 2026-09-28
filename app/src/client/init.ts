@@ -12,6 +12,7 @@ import { state } from './state.js'
 import { setupToolbar } from './selection.js'
 import { initLightbox, openLightbox } from './lightbox.js'
 import { computeLayoutAndRender, onScroll } from './virtualisation.js'
+import { initAlbumShare } from './portal.js'
 
 function readInitParams (): InitParams {
   const el = document.getElementById('ipp-init')
@@ -26,6 +27,8 @@ function init () {
   if (params.metadataConfig) state.metadataConfig = params.metadataConfig
   state.groupByDate = params.groupByDate || false
   state.metaBase = params.metaBase || ''
+  state.portal = params.portal || null
+  initAlbumShare()
   state.container = document.getElementById('gallery')
   if (!state.container) return
 

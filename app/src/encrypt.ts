@@ -1,12 +1,13 @@
 import crypto from 'crypto'
+import { deriveKey } from './portal/settings'
 
 interface EncryptedPayload {
   iv: string; // Initialization Vector (IV)
   cr: string; // Encrypted data
 }
 
-// Generate a random 256-bit key on startup
-const key = crypto.randomBytes(32)
+// 256-bit key derived from PORTAL_SECRET (random per start if unset)
+const key = deriveKey('session-encrypt')
 const algorithm = 'aes-256-cbc'
 
 /**
