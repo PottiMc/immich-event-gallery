@@ -46,7 +46,9 @@ async function renderItems (assets: Asset[]) {
   let html = ''
   const res = {
     req: { protocol: 'https', headers: { host: 'example.com' } },
+    locals: {},
     header: () => {},
+    vary: () => {},
     send: (body: string) => { html = body }
   } as unknown as Response
   await gallery(res, share(assets))

@@ -15,6 +15,7 @@ import {
   type GroupSpec
 } from './state.js'
 import type { GroupByDateMode } from '../shared/types.js'
+import { msg } from './i18n.js'
 
 export interface LayoutResult {
   layout: LayoutEntry[]
@@ -92,16 +93,16 @@ function groupItemsByDate (mode: GroupByDateMode): GroupSpec[] {
 }
 
 function dateLabel (key: string, mode: GroupByDateMode): string {
-  if (key === 'undated') return 'Ohne Datum'
+  if (key === 'undated') return msg.undated
   const parts = key.split('-')
   const y = Number(parts[0])
   const m = Number(parts[1])
   const d = Number(parts[2])
   if (!y || !m) return key
-  // Intl.DateTimeFormat picks up the browser's locale; UTC timeZone keeps the
+  // Formatted in the page language; UTC timeZone keeps the
   // displayed date consistent with the bucket key (which is already local).
   // Day headers use Immich's timeline format ("Sat, 18 Oct 2025").
-  return new Intl.DateTimeFormat(undefined, mode === 'day'
+  return new Intl.DateTimeFormat(msg.locale, mode === 'day'
     ? { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }
     : { month: 'long', year: 'numeric', timeZone: 'UTC' }
   ).format(new Date(Date.UTC(y, m - 1, mode === 'day' ? (d || 1) : 1)))

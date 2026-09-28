@@ -3,6 +3,7 @@
 // zip, or downloaded directly for a single selection.
 
 import { state } from './state.js'
+import { msg } from './i18n.js'
 
 /**
  * Activate selection mode. Tiles show their checkmark control, the bottom
@@ -49,12 +50,12 @@ export function toggleSelection (id: string) {
 
 function updateSelectionUI () {
   if (state.countEl) {
-    state.countEl.textContent = state.selected.size + ' ausgewählt'
+    state.countEl.textContent = msg.selected(state.selected.size)
   }
   if (state.downloadBtn) state.downloadBtn.disabled = state.selected.size === 0
   if (state.selectAllBtn) {
     state.selectAllBtn.textContent =
-      state.selected.size === state.items.length ? 'Keine auswählen' : 'Alle auswählen'
+      state.selected.size === state.items.length ? msg.selectNone : msg.selectAll
   }
 }
 

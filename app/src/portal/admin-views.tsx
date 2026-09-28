@@ -4,9 +4,10 @@
  */
 
 import { BRAND } from './branding'
+import { Lang, Messages, t } from './i18n'
 import { DownloadQuality } from './runtime-settings'
 import { brandName } from './settings'
-import { BrandHead, STATIC } from './views'
+import { BrandHead, LangSwitch, STATIC } from './views'
 
 export interface AdminLinkView {
   id: string
@@ -36,64 +37,70 @@ export interface AdminSettingsView {
 }
 
 export interface AdminPageProps {
+  lang: Lang
   links: AdminLinkView[]
   error?: string
   baseUrl: string
   baseUrlMissing: boolean
   suggestions: string[]
-  /** Unfold the help section (after "Neue Vorschläge") */
+  /** Unfold the help section (after "New suggestions") */
   helpOpen: boolean
   settings: AdminSettingsView
 }
 
-function countText (link: AdminLinkView): string {
+function countText (link: AdminLinkView, m: Messages): string {
   if (link.count === undefined) return link.kind
-  return `${link.count} ${link.count === 1 ? 'Element' : 'Elemente'}`
+  return m.admin.items(link.count)
 }
 
 /** Warnings only; the status itself is the coloured dot. */
-function Badges ({ link }: { link: AdminLinkView }) {
+function Badges ({ link, m }: { link: AdminLinkView, m: Messages }) {
   const live = link.status !== 'expired'
   return (
     <>
       {link.duplicate && live && (
-        <span class="adm-badge adm-warn" title="Ein anderes aktives Album hat (fast) dasselbe Passwort. Gäste landen dann im neuesten.">Passwort doppelt</span>
+        <span class="adm-badge adm-warn" title={m.admin.duplicateTitle}>{m.admin.duplicate}</span>
       )}
-      {link.weak && link.status === 'active' && <span class="adm-badge adm-warn">Passwort schwach</span>}
-      {link.neverExpires && live && <span class="adm-badge adm-muted">läuft nie ab</span>}
+      {link.weak && link.status === 'active' && <span class="adm-badge adm-warn">{m.admin.weak}</span>}
+      {link.neverExpires && live && <span class="adm-badge adm-muted">{m.admin.neverExpires}</span>}
     </>
   )
 }
 
-const STATUS_LABEL = { active: 'online', 'no-password': 'ohne Passwort – nur per Link/QR erreichbar', expired: 'abgelaufen' }
+function statusLabel (status: AdminLinkView['status'], m: Messages): string {
+  if (status === 'active') return m.admin.statusActive
+  if (status === 'no-password') return m.admin.statusNoPassword
+  return m.admin.statusExpired
+}
 
 /** One compact row per share; QR code and the rarer actions fold out. */
-function LinkRow ({ link }: { link: AdminLinkView }) {
+function LinkRow ({ link, m }: { link: AdminLinkView, m: Messages }) {
   const usable = link.status !== 'expired'
   const panelId = 'details-' + link.id
+  const label = statusLabel(link.status, m)
   return (
     <li class={'adm-row adm-row-' + link.status}>
-      <span class="adm-dot" title={STATUS_LABEL[link.status]} aria-label={STATUS_LABEL[link.status]}/>
+      <span class="adm-dot" title={label} aria-label={label}/>
       <div class="adm-row-title">
         <h2>{link.title}</h2>
         <p class="adm-meta">
-          {countText(link)}
-          {link.albumName && link.albumName !== link.title ? ` · Album „${link.albumName}“` : ''}
+          {countText(link, m)}
+          {link.albumName && link.albumName !== link.title ? m.admin.albumName(link.albumName) : ''}
           {' · '}{link.expiresText}
-          {' '}<Badges link={link}/>
+          {' '}<Badges link={link} m={m}/>
         </p>
       </div>
       <div class="adm-row-pass">
         {link.password
-          ? <><code>{link.password}</code><button type="button" class="adm-mini" data-copy={link.password} title="Passwort kopieren">kopieren</button></>
-          : <span class="adm-badge adm-warn">kein Passwort</span>}
+          ? <><code>{link.password}</code><button type="button" class="adm-mini" data-copy={link.password} title={m.admin.copyPasswordTitle}>{m.admin.copy}</button></>
+          : <span class="adm-badge adm-warn">{m.admin.noPassword}</span>}
       </div>
       {usable && (
         <div class="adm-row-actions">
-          <button type="button" class="adm-btn" data-copy={link.accessUrl} title="Direktlink (wie im QR-Code) kopieren">Link kopieren</button>
-          <a class="adm-btn adm-btn-primary" href={`/karte/${link.id}`} target="_blank" rel="noopener">Karte</a>
-          <button type="button" class="adm-toggle" aria-expanded="false" aria-controls={panelId} title="QR-Code und mehr">
-            <span aria-hidden="true">▾</span><span class="eg-sr-only">Details</span>
+          <button type="button" class="adm-btn" data-copy={link.accessUrl} title={m.admin.copyLinkTitle}>{m.admin.copyLink}</button>
+          <a class="adm-btn adm-btn-primary" href={`/karte/${link.id}`} target="_blank" rel="noopener">{m.admin.card}</a>
+          <button type="button" class="adm-toggle" aria-expanded="false" aria-controls={panelId} title={m.admin.moreTitle}>
+            <span aria-hidden="true">▾</span><span class="eg-sr-only">{m.admin.details}</span>
           </button>
         </div>
       )}
@@ -101,21 +108,13 @@ function LinkRow ({ link }: { link: AdminLinkView }) {
         <div class="adm-row-panel" id={panelId} hidden>
           <div class="adm-qr" dangerouslySetInnerHTML={{ __html: link.qrSvg }}/>
           <div class="adm-panel-body">
-            {link.status === 'no-password' && (
-              <p class="adm-note">
-                Ohne Passwort ist dieses Album nicht über die Startseite erreichbar – nur über den Link bzw. QR-Code.
-              </p>
-            )}
-            {link.duplicate && (
-              <p class="adm-note">
-                Ein anderes aktives Album hat (fast) dasselbe Passwort. Gäste landen dann im neuesten – bitte ändern.
-              </p>
-            )}
+            {link.status === 'no-password' && <p class="adm-note">{m.admin.noteNoPassword}</p>}
+            {link.duplicate && <p class="adm-note">{m.admin.noteDuplicate}</p>}
             <div class="adm-actions">
-              <a class="adm-btn" href={`/qr/${link.id}.png`} download>QR als PNG</a>
-              <a class="adm-btn" href={`/qr/${link.id}.svg`} download>QR als SVG</a>
-              <a class="adm-btn" href={`/karte/${link.id}?dunkel`} target="_blank" rel="noopener">Karte dunkel</a>
-              <a class="adm-btn" href={link.accessUrl} target="_blank" rel="noopener">Galerie öffnen</a>
+              <a class="adm-btn" href={`/qr/${link.id}.png`} download>{m.admin.qrPng}</a>
+              <a class="adm-btn" href={`/qr/${link.id}.svg`} download>{m.admin.qrSvg}</a>
+              <a class="adm-btn" href={`/karte/${link.id}?dunkel`} target="_blank" rel="noopener">{m.admin.cardDark}</a>
+              <a class="adm-btn" href={link.accessUrl} target="_blank" rel="noopener">{m.admin.openGallery}</a>
             </div>
           </div>
         </div>
@@ -124,130 +123,112 @@ function LinkRow ({ link }: { link: AdminLinkView }) {
   )
 }
 
-function SettingsSection ({ settings }: { settings: AdminSettingsView }) {
+function SettingsSection ({ settings, m }: { settings: AdminSettingsView, m: Messages }) {
   const q = settings.downloadQuality
   return (
     <details class="adm-help adm-fold adm-settings" id="einstellungen" open={settings.saved || settings.notPersisted || !settings.persistent}>
       <summary>
-        <h2>Download für Gäste</h2>
-        <span class="adm-summary-value">{q === 'preview' ? 'verkleinert' : 'Original'}</span>
+        <h2>{m.admin.settingsHeading}</h2>
+        <span class="adm-summary-value">{q === 'preview' ? m.admin.valuePreview : m.admin.valueOriginal}</span>
       </summary>
-      {settings.saved && <p class="adm-saved">Gespeichert ✓ – gilt ab sofort für alle Alben.</p>}
+      {settings.saved && <p class="adm-saved">{m.admin.saved}</p>}
       {(settings.notPersisted || !settings.persistent) && (
         <div class="adm-alert">
-          <strong>Einstellungen werden nicht dauerhaft gespeichert.</strong> Der Datenordner des Portals
-          (<code>/app/data</code>) ist nicht beschreibbar. Die Auswahl gilt nur bis zum nächsten Neustart –
-          siehe Abschnitt „Admin settings“ in <code>docs/configuration.md</code>.
+          {m.admin.notPersisted(<code>/app/data</code>, <code>docs/configuration.md</code>)}
         </div>
       )}
       <form method="post" action="/einstellungen" class="adm-form">
         <input type="hidden" name="csrf" value={settings.csrf}/>
         <label class="adm-choice">
           <input type="radio" name="downloadQuality" value="preview" checked={q === 'preview'}/>
-          <span>
-            <strong>Verkleinert</strong> – die Vorschau-Version aus Immich (Standard 1440 px an der langen Seite,
-            meist unter 1 MB). Lädt schnell auch unterwegs und reicht für Handy, WhatsApp und Abzüge bis 10 × 15.
-          </span>
+          <span>{m.admin.choicePreview()}</span>
         </label>
         <label class="adm-choice">
           <input type="radio" name="downloadQuality" value="original" checked={q === 'original'}/>
-          <span>
-            <strong>Original</strong> – die hochgeladene Datei in voller Auflösung (oft 3–15 MB pro Bild,
-            iPhone-Fotos ggf. als HEIC).
-          </span>
+          <span>{m.admin.choiceOriginal()}</span>
         </label>
-        <button type="submit" class="adm-btn adm-btn-primary">Speichern</button>
+        <button type="submit" class="adm-btn adm-btn-primary">{m.admin.save}</button>
       </form>
-      <p class="adm-note">
-        Gilt für den Download einzelner Bilder und für „Alle herunterladen“ (ZIP). In der Galerie sehen Gäste immer die
-        Vorschau-Version. Videos werden stets im Original geladen. Ob Gäste überhaupt herunterladen dürfen, legst du pro
-        Album in Immich fest (<em>Download erlauben</em>).
-      </p>
-      <p class="adm-note">
-        Größe und Qualität der verkleinerten Version stellst du in Immich ein: <em>Administration → Einstellungen →
-        Bildeinstellungen → Vorschau</em> (z.B. 2160 px, Qualität 85). Danach unter <em>Aufträge</em> die
-        Miniaturansichten für <em>alle</em> Bilder neu erzeugen lassen.
-      </p>
+      <p class="adm-note">{m.admin.settingsNote1()}</p>
+      <p class="adm-note">{m.admin.settingsNote2()}</p>
     </details>
   )
 }
 
 export function AdminPage (props: AdminPageProps) {
+  const m = t(props.lang)
+  const brand = brandName(props.lang)
   const active = props.links.filter(l => l.status === 'active').length
   const current = props.links.filter(l => l.status !== 'expired')
   const expired = props.links.filter(l => l.status === 'expired')
   return (
-    <html lang="de">
+    <html lang={m.htmlLang}>
       <head>
-        <BrandHead title={'Bilder-Admin – ' + brandName()}/>
+        <BrandHead lang={props.lang} title={m.admin.title + ' – ' + brand}/>
         <link rel="stylesheet" href={`${STATIC}/portal/admin.css`}/>
       </head>
-      <body class="eg-page adm">
+      <body class="eg-page adm" data-copied={m.admin.copied} data-copy-prompt={m.admin.copyPrompt}>
         <header class="adm-header">
-          <img src={`${BRAND}/logo-banner.png`} alt={brandName()} height="56"/>
+          <img src={`${BRAND}/logo-banner.png`} alt={brand} height="56"/>
           <div>
-            <h1>Bilder-Admin</h1>
-            <p>{active} {active === 1 ? 'Album' : 'Alben'} über <a href={props.baseUrl} target="_blank" rel="noopener">{props.baseUrl.replace(/^https?:\/\//, '')}</a> erreichbar</p>
+            <h1>{m.admin.title}</h1>
+            <p>{m.admin.reachable(active, <a href={props.baseUrl} target="_blank" rel="noopener">{props.baseUrl.replace(/^https?:\/\//, '')}</a>)}</p>
           </div>
+          <LangSwitch lang={props.lang} class="adm-lang"/>
         </header>
 
         <main class="adm-main">
           {props.baseUrlMissing && (
             <div class="adm-alert">
-              <strong>PUBLIC_BASE_URL fehlt.</strong> Setze im Stack z.B. <code>PUBLIC_BASE_URL=https://bilder.example.com</code>,
-              sonst zeigen QR-Codes auf die falsche Adresse.
+              {m.admin.baseUrlMissing(<code>PUBLIC_BASE_URL=https://bilder.example.com</code>)}
             </div>
           )}
           {props.error && (
             <div class="adm-alert">
-              <strong>Keine Verbindung zu Immich:</strong> {props.error}
+              <strong>{m.admin.immichError}</strong> {props.error}
             </div>
           )}
 
           {props.links.length === 0 && !props.error && (
             <div class="adm-empty">
-              <h2>Noch keine Freigaben</h2>
-              <p>Lege in Immich eine Freigabe mit Passwort an (siehe unten) – sie erscheint dann automatisch hier.</p>
+              <h2>{m.admin.emptyHeading}</h2>
+              <p>{m.admin.emptyText}</p>
             </div>
           )}
 
           {current.length > 0 && (
             <ul class="adm-list">
-              {current.map(link => <LinkRow key={link.id} link={link}/>)}
+              {current.map(link => <LinkRow key={link.id} link={link} m={m}/>)}
             </ul>
           )}
 
           {expired.length > 0 && (
             <details class="adm-fold adm-expired">
-              <summary><h2>Abgelaufen</h2><span class="adm-summary-value">{expired.length}</span></summary>
+              <summary><h2>{m.admin.expiredHeading}</h2><span class="adm-summary-value">{expired.length}</span></summary>
               <ul class="adm-list">
-                {expired.map(link => <LinkRow key={link.id} link={link}/>)}
+                {expired.map(link => <LinkRow key={link.id} link={link} m={m}/>)}
               </ul>
-              <p class="adm-note">Abgelaufene Freigaben löschst du in Immich, dann verschwinden sie hier.</p>
+              <p class="adm-note">{m.admin.expiredNote}</p>
             </details>
           )}
 
-          <SettingsSection settings={props.settings}/>
+          <SettingsSection settings={props.settings} m={m}/>
 
           <details class="adm-help adm-fold" id="hilfe" open={props.helpOpen || (props.links.length === 0 && !props.error)}>
-            <summary><h2>Neues Album online stellen</h2><span class="adm-summary-value adm-summary-hint">Anleitung und Passwort-Vorschläge</span></summary>
+            <summary><h2>{m.admin.helpHeading}</h2><span class="adm-summary-value adm-summary-hint">{m.admin.helpHint}</span></summary>
             <ol>
-              <li>In Immich ein Album anlegen und die Bilder hochladen. Der Albumname ist der Titel, den Gäste sehen.</li>
-              <li>Im Album auf <em>Teilen → Link erstellen</em>. Dort ein <strong>Passwort</strong> setzen,
-                ein <strong>Ablaufdatum</strong> wählen (z.B. 60 Tage) und <em>Download erlauben</em> nach Wunsch.</li>
-              <li>Fertig – diese Seite neu laden, QR-Code oder Karte drucken bzw. das Passwort an die Gäste schicken.</li>
+              {m.admin.helpSteps().map((step, i) => <li key={i}>{step}</li>)}
             </ol>
             <p class="adm-note">
-              Eigener WhatsApp-Text für ein Album? In Immich in die Albumbeschreibung eine Zeile
-              <code>Teilen: Das war die Weinwanderung an der Saar mit {brandName()} 🍷 – Bild {'{nr}'} von {'{anzahl}'}</code> schreiben.
+              {m.admin.shareTextNote(<code>{m.admin.shareTextExample(brand)}</code>)}
             </p>
-            <h3>Passwort-Vorschläge</h3>
+            <h3>{m.admin.suggestionsHeading}</h3>
             <ul class="adm-suggestions">
               {props.suggestions.map(s => (
-                <li key={s}><code>{s}</code> <button type="button" class="adm-mini" data-copy={s}>kopieren</button></li>
+                <li key={s}><code>{s}</code> <button type="button" class="adm-mini" data-copy={s}>{m.admin.copy}</button></li>
               ))}
             </ul>
-            <p><a href="/?vorschlaege#hilfe">Neue Vorschläge</a></p>
+            <p><a href="/?vorschlaege#hilfe">{m.admin.newSuggestions}</a></p>
           </details>
         </main>
         <script src={`${STATIC}/portal/admin.js`}/>
@@ -257,6 +238,7 @@ export function AdminPage (props: AdminPageProps) {
 }
 
 export interface CardProps {
+  lang: Lang
   title: string
   password: string | null
   hostLabel: string
@@ -266,34 +248,35 @@ export interface CardProps {
 
 /** Printable A6 card for guests: QR code plus password as a fallback. */
 export function PrintCard (props: CardProps) {
+  const m = t(props.lang)
   return (
-    <html lang="de">
+    <html lang={m.htmlLang}>
       <head>
         <meta charSet="utf-8"/>
         <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
         <meta name="robots" content="noindex, nofollow"/>
-        <title>{'Karte – ' + props.title}</title>
+        <title>{m.card.title + ' – ' + props.title}</title>
         <link rel="stylesheet" href={`${STATIC}/portal/card.css`}/>
       </head>
       <body class={props.dark ? 'card-dark' : ''}>
         <div class="card-tools">
-          <button type="button" id="card-print">Drucken</button>
-          <a href={props.dark ? '?' : '?dunkel'}>{props.dark ? 'Helle Variante' : 'Dunkle Variante'}</a>
-          <span>Format A6 (105 × 148 mm). Für 4 Karten pro Blatt im Druckdialog „4 Seiten pro Blatt“ auf A4 wählen.</span>
+          <button type="button" id="card-print">{m.card.print}</button>
+          <a href={props.dark ? '?' : '?dunkel'}>{props.dark ? m.card.light : m.card.dark}</a>
+          <LangSwitch lang={props.lang} class="card-lang" keep={props.dark ? 'dunkel' : undefined}/>
+          <span>{m.card.hint}</span>
         </div>
         <section class="card">
-          <img class="card-logo" src={`${BRAND}/${props.dark ? 'logo-banner.png' : 'logo-light.png'}`} alt={brandName()}/>
-          <p class="card-kicker">Deine Bilder von</p>
+          <img class="card-logo" src={`${BRAND}/${props.dark ? 'logo-banner.png' : 'logo-light.png'}`} alt={brandName(props.lang)}/>
+          <p class="card-kicker">{m.card.kicker}</p>
           <h1 class="card-title">{props.title}</h1>
           <div class="card-qr" dangerouslySetInnerHTML={{ __html: props.qrSvg }}/>
-          <p class="card-scan">Mit der Handykamera scannen</p>
+          <p class="card-scan">{m.card.scan}</p>
           {props.password && (
             <p class="card-alt">
-              oder auf <strong>{props.hostLabel}</strong><br/>
-              mit dem Passwort <strong class="card-password">{props.password}</strong>
+              {m.card.alt(<strong>{props.hostLabel}</strong>, <strong class="card-password">{props.password}</strong>)}
             </p>
           )}
-          <p class="card-thanks">Schön, dass du dabei warst! 🍷</p>
+          <p class="card-thanks">{m.card.thanks}</p>
         </section>
         <script src={`${STATIC}/portal/card.js`}/>
       </body>

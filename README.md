@@ -7,7 +7,8 @@ It was built for small businesses that run events such as wine tastings or guide
 enter the password they were given (or scan a QR code) and land directly in *their* album. The source is published
 under the AGPL-3.0, and you are welcome to adapt it for your own events.
 
-> The guest-facing interface is **German only**. Code, comments and documentation are in English. The repository
+> The interface is available in **English** (default) and **German**, with a language switcher on every page. Code,
+> comments and documentation are in English. The repository
 > contains no brand logos or company details: out of the box the portal is neutral, and your own branding comes from
 > a folder on your server (see [Adapting it](#adapting-it)).
 
@@ -35,9 +36,11 @@ When the link expires or is deleted, the album goes offline.
 
 - **Landing page with a single password field.** The password decides which album opens. Case, spaces, `-`, `_` and
   `.` are ignored when comparing.
-- **QR codes and direct links** per album. Guests can pass them on to each other ("Album teilen" dialog).
+- **English and German.** The language follows the browser, can be switched on every page (EN | DE) and is
+  remembered in a cookie.
+- **QR codes and direct links** per album. Guests can pass them on to each other ("Share album" dialog).
 - **Share to WhatsApp & co.** The photo itself goes out through the phone's native share sheet (Web Share API), with a
-  text like *"Das war die Weinwanderung – Bild 12 von 48"*. On desktop it falls back to
+  text like *"That was the wine hike – photo 12 of 48"*. On desktop it falls back to
   WhatsApp Web.
 - **Brute-force protection.** Per-IP lockout with growing duration, a global cap, and an artificial delay on every
   wrong attempt.
@@ -101,8 +104,8 @@ The fork keeps its additions separate from the upstream code so that upstream up
 
 To run it for your own events, put your logos, icons and a `branding.json` (name, website, imprint, privacy, share
 text) into the branding folder on your server. The [branding section](docs/configuration.md#branding) lists the
-files; no code changes or image rebuilds are needed. The German interface texts live in
-`app/src/portal/views.tsx`, `admin-views.tsx` and `app/src/view/gallery.tsx`, and the colours in
+files; no code changes or image rebuilds are needed. The interface texts in both languages live in
+`app/src/portal/i18n.tsx` (pages) and `app/src/shared/i18n.ts` (gallery scripts), and the colours in
 `app/public/portal/*.css`. If you change the code, point `sourceUrl` at your own public repository, because the
 AGPL requires you to offer the source of the version you run.
 

@@ -1,8 +1,9 @@
 // Portal: share button in the lightbox (sends the photo itself
-// to WhatsApp & co. via the Web Share API) and the "Album teilen" dialog with
+// to WhatsApp & co. via the Web Share API) and the "Share album" dialog with
 // QR code on the gallery page.
 
 import { state } from './state.js'
+import { msg } from './i18n.js'
 
 const ICON_SHARE = '<svg class="pswp__icn" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M18,16.08C17.24,16.08 16.56,16.38 16.04,16.85L8.91,12.7C8.96,12.47 9,12.24 9,12C9,11.76 8.96,11.53 8.91,11.3L15.96,7.19C16.5,7.69 17.21,8 18,8A3,3 0 0,0 21,5A3,3 0 0,0 18,2A3,3 0 0,0 15,5C15,5.24 15.04,5.47 15.09,5.7L8.04,9.81C7.5,9.31 6.79,9 6,9A3,3 0 0,0 3,12A3,3 0 0,0 6,15C6.79,15 7.5,14.69 8.04,14.19L15.16,18.34C15.11,18.55 15.08,18.77 15.08,19C15.08,20.61 16.39,21.91 18,21.91C19.61,21.91 20.92,20.61 20.92,19A2.92,2.92 0 0,0 18,16.08Z"/></svg>'
 
@@ -33,7 +34,7 @@ function isAbort (e: unknown): boolean {
 function canShareFiles (): boolean {
   try {
     return typeof navigator.canShare === 'function' &&
-      navigator.canShare({ files: [new File([''], 'bild.jpg', { type: 'image/jpeg' })] })
+      navigator.canShare({ files: [new File([''], 'photo.jpg', { type: 'image/jpeg' })] })
   } catch (e) {
     return false
   }
@@ -41,15 +42,17 @@ function canShareFiles (): boolean {
 
 function slug (text: string): string {
   return text.normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60) || 'bild'
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60) || msg.fileBaseName
 }
 
 function shareText (index: number): string {
   const portal = state.portal
   if (!portal) return ''
+  const number = String(index + 1)
+  const total = String(state.items.length)
   return portal.shareTemplate
-    .split('{nr}').join(String(index + 1))
-    .split('{anzahl}').join(String(state.items.length))
+    .split('{number}').join(number).split('{nr}').join(number)
+    .split('{total}').join(total).split('{anzahl}').join(total)
 }
 
 function whatsappFallback (text: string) {
@@ -73,7 +76,7 @@ function prepareFile (index: number): Promise<File | null> {
       if (!blob) return null
       const type = blob.type || 'image/jpeg'
       const ext = type.includes('webp') ? 'webp' : type.includes('png') ? 'png' : 'jpg'
-      const title = state.portal?.title || 'bild'
+      const title = state.portal?.title || msg.fileBaseName
       const file = new File([blob], `${slug(title)}-${index + 1}.${ext}`, { type })
       readyFiles.set(index, file)
       // Keep memory in check on long galleries
@@ -105,11 +108,11 @@ async function shareImage (index: number) {
       try {
         await navigator.share({ files: [ready], text: textWithLink })
       } catch (e) {
-        if (!isAbort(e)) toast('Teilen hat nicht geklappt – versuch es nochmal.')
+        if (!isAbort(e)) toast(msg.shareFailed)
       }
       return
     }
-    toast('Bild wird vorbereitet …')
+    toast(msg.preparingImage)
     const file = await prepareFile(index)
     if (file) {
       try {
@@ -117,7 +120,7 @@ async function shareImage (index: number) {
       } catch (e) {
         if (isAbort(e)) return
         // The gesture expired while loading - the file is ready now
-        toast('Bild ist bereit – bitte nochmal auf Teilen tippen.')
+        toast(msg.imageReady)
       }
       return
     }
@@ -135,7 +138,7 @@ async function shareImage (index: number) {
 }
 
 /**
- * Lightbox button "Bild teilen". Prepares the current image in the background
+ * Lightbox button "Share image". Prepares the current image in the background
  * as soon as a slide is shown.
  */
 export function registerShareButton (lightbox: LightboxInstance) {
@@ -146,11 +149,11 @@ export function registerShareButton (lightbox: LightboxInstance) {
       name: 'share-button',
       order: 7,
       isButton: true,
-      ariaLabel: 'Bild teilen',
-      title: 'Bild teilen (z.B. per WhatsApp)',
+      ariaLabel: msg.shareImage,
+      title: msg.shareImageTitle,
       html: ICON_SHARE,
       onInit: (el: HTMLElement, pswp: PswpLike) => {
-        el.setAttribute('title', 'Bild teilen (z.B. per WhatsApp)')
+        el.setAttribute('title', msg.shareImageTitle)
         el.addEventListener('click', () => { shareImage(pswp.currIndex) })
         if (filesSupported) {
           const prefetch = () => { prepareFile(pswp.currIndex) }
@@ -162,7 +165,7 @@ export function registerShareButton (lightbox: LightboxInstance) {
   })
 }
 
-/** Gallery header button "Album teilen" with QR code dialog. */
+/** Gallery header button "Share album" with QR code dialog. */
 export function initAlbumShare () {
   const portal = state.portal
   const openBtn = document.getElementById('eg-album-share')
@@ -194,9 +197,9 @@ export function initAlbumShare () {
   document.getElementById('eg-album-copy-link')?.addEventListener('click', async () => {
     try {
       await navigator.clipboard.writeText(portal.accessUrl)
-      toast('Link kopiert ✓')
+      toast(msg.linkCopied)
     } catch (e) {
-      window.prompt('Link zum Kopieren:', portal.accessUrl)
+      window.prompt(msg.copyLinkPrompt, portal.accessUrl)
     }
   })
 }

@@ -31,6 +31,7 @@ import { registerPortalRoutes, unlockShare } from './portal/routes'
 import { startAdminServer } from './portal/admin'
 import { securityHeaders } from './portal/security'
 import { BRAND, brandAsset, sendBrandFile } from './portal/branding'
+import { languageMiddleware } from './portal/i18n'
 import { deriveKey, trustProxy } from './portal/settings'
 import { loadRuntimeSettings } from './portal/runtime-settings'
 
@@ -88,6 +89,8 @@ app.use('/share/static', express.static('public', { setHeaders: addResponseHeade
 app.use(express.static('public', { setHeaders: addResponseHeaders }))
 // Remove the X-Powered-By ExpressJS header
 app.disable('x-powered-by')
+// Page language (switcher cookie, then Accept-Language, then the default)
+app.use(languageMiddleware)
 
 /**
  * Middleware to decode the encrypted data stored in the session cookie

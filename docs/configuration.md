@@ -75,24 +75,31 @@ Every file is optional. Whatever is missing falls back to the neutral default in
   "websiteUrl": "https://weingut.example",
   "imprintUrl": "https://weingut.example/impressum",
   "privacyUrl": "https://weingut.example/datenschutz",
-  "shareText": "Das war „{titel}“ mit dem Weingut Beispiel 🍷 – Bild {nr} von {anzahl}",
+  "shareText": {
+    "en": "That was “{title}” with Weingut Beispiel 🍷 – photo {number} of {total}",
+    "de": "Das war „{titel}“ mit dem Weingut Beispiel 🍷 – Bild {nr} von {anzahl}"
+  },
   "shareUrl": "https://weingut.example"
 }
 ```
 
 | Key | Default | Purpose |
 |---|---|---|
-| `brandName` | `Bilder-Portal` | Name in page titles, image alt texts and link previews |
+| `brandName` | `Photo Portal` / `Bilder-Portal` | Name in page titles, image alt texts and link previews |
 | `websiteUrl` | empty (hidden) | Website link in the footer |
 | `imprintUrl` | empty (hidden) | Imprint link in the footer. In Germany an imprint is mandatory. |
 | `privacyUrl` | empty (hidden) | Privacy policy link in the footer |
-| `shareText` | `Das war „{titel}“ – Bild {nr} von {anzahl}` | Default text when a guest shares a photo |
+| `shareText` | `That was “{title}” – photo {number} of {total}` / German equivalent | Default text when a guest shares a photo |
 | `shareUrl` | `websiteUrl` | Link appended to shared photos (your website, not the album). Empty = no link. |
-| `sourceUrl` | this repository | Source code link on the licence page (`/lizenz`, linked as "Lizenz" in the footer). The AGPL requires it to point to the source of the version you run. |
+| `sourceUrl` | this repository | Source code link on the licence page (`/license`, also `/lizenz`, linked as "License" in the footer). The AGPL requires it to point to the source of the version you run. |
 
-The share text placeholders are `{titel}` (album title), `{nr}` (photo number) and `{anzahl}` (total number of
-photos). A single album can override the text with a line `Teilen: …` in its Immich album description. The portal
-hides that line from guests.
+Every text value can be a plain string, used for all languages, or one string per language such as
+`{ "en": "…", "de": "…" }`. A missing language falls back to `portal.defaultLanguage`, then to any other.
+
+The share text placeholders are `{title}` (album title), `{number}` (photo number) and `{total}` (total number of
+photos); the German `{titel}`, `{nr}` and `{anzahl}` work as well. A single album can override the text with a line
+`Share: …` (English guests) or `Teilen: …` (German guests) in its Immich album description. If only one of them is
+there, it is used for both languages. The portal hides these lines from guests.
 
 The same keys are also read from the `portal` block of `config.json`, with `branding.json` taking precedence.
 Texts are read once at startup, so restart the container after changing `branding.json`. Images are picked up
@@ -128,8 +135,20 @@ a warning and a change only lasts until the next restart.
 
 | Key | Default | Purpose |
 |---|---|---|
+| `portal.defaultLanguage` | `en` | Language when the browser asks for neither English nor German (`en` or `de`) |
 | `portal.sessionDays` | `14` | How long a guest stays logged in after entering the password |
 | `portal.sourceUrl` | this repository | See [Branding](#branding) |
+
+### Languages
+
+The guest pages, the gallery and the admin page are available in English and German. The language is chosen in this
+order:
+
+1. The language switcher (EN | DE) at the top of every page. The choice is stored in the cookie `lang` for a year.
+2. The browser's preferred language (`Accept-Language`).
+3. `portal.defaultLanguage`.
+
+Album titles and descriptions come from Immich and are shown as they are.
 
 ### Gallery settings (inherited)
 
@@ -142,7 +161,7 @@ The `ipp` block is the configuration of the upstream project. Every option is do
 | `showHomePage` | `false` | The portal's landing page replaces the upstream home page |
 | `showMetadata.*` | all `false` | Guests see no EXIF, location or file details |
 | `responseHeaders.Cache-Control` | `private, …` | Albums are private, so shared caches must not store them |
-| `gallery.expiryDateFormat` / `expiryDateLocale` | `DD.MM.YYYY` / `de` | German date format |
+| `gallery.expiryDateFormat` | not set | The date follows the page language (`21 Nov 2026` / `21.11.2026`); setting it forces one format for both |
 
 ### Overriding the config
 

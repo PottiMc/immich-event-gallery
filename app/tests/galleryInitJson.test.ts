@@ -12,6 +12,7 @@ import { renderPage } from '../src/view/render'
 
 function galleryProps (item: Partial<GalleryItem>): GalleryProps {
   return {
+    lang: 'en',
     items: [{
       id: 'a',
       type: 'IMAGE',

@@ -8,6 +8,7 @@ import { LoginThrottle } from '../src/portal/throttle'
 import { passwordEquals } from '../src/portal/links'
 import { guestThrottle, unlockShare } from '../src/portal/routes'
 import { asyncHandler } from '../src/http'
+import { languageMiddleware } from '../src/portal/i18n'
 
 describe('throttleKey', () => {
   it('keeps IPv4 addresses as they are', () => {
@@ -98,6 +99,7 @@ describe('POST /share/unlock', () => {
     e.use(cookieSession({ name: 'session', secret: 'x' }))
     e.use(express.json())
     e.use(express.urlencoded({ extended: false }))
+    e.use(languageMiddleware)
     e.post('/share/unlock', asyncHandler(unlockShare))
     app = e.listen(0, '127.0.0.1')
     await new Promise(resolve => app.once('listening', resolve))
@@ -109,9 +111,9 @@ describe('POST /share/unlock', () => {
     app.close()
   })
 
-  const post = (body: unknown, type = 'application/json') => fetch(base + '/share/unlock', {
+  const post = (body: unknown, type = 'application/json', lang = 'en') => fetch(base + '/share/unlock', {
     method: 'POST',
-    headers: { 'Content-Type': type },
+    headers: { 'Content-Type': type, 'Accept-Language': lang },
     body: type === 'application/json' ? JSON.stringify(body) : new URLSearchParams(body as Record<string, string>).toString()
   })
 
@@ -126,6 +128,12 @@ describe('POST /share/unlock', () => {
     const res = await post({ key: KEY, password: 'falsch-falsch-0000' })
     expect(res.status).toBe(401)
     expect(res.headers.get('set-cookie')).toBeNull()
+    expect((await res.json()).error).toContain('password')
+  })
+
+  it('answers in the visitor language', async () => {
+    const res = await post({ key: KEY, password: 'falsch-falsch-0000' }, 'application/json', 'de-DE,de;q=0.9,en;q=0.8')
+    expect(res.status).toBe(401)
     expect((await res.json()).error).toContain('Passwort')
   })
 

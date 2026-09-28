@@ -130,12 +130,3 @@ export class LoginThrottle {
     }
   }
 }
-
-/** Human-readable wait time in German, e.g. "3 Minuten" or "2 Stunden". */
-export function formatWait (seconds: number): string {
-  if (seconds < 90) return 'einer Minute'
-  const minutes = Math.ceil(seconds / 60)
-  if (minutes < 90) return minutes + ' Minuten'
-  const hours = Math.ceil(minutes / 60)
-  return hours + ' Stunden'
-}

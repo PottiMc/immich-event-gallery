@@ -7,14 +7,15 @@ import QRCode from 'qrcode'
 import { SharedLink } from '../types'
 import { accessToken } from './tokens'
 import { shareTextTemplate, shareUrl } from './settings'
+import { Lang, t } from './i18n'
 
 export interface PortalGalleryData {
   // Link that opens this album without typing the password (QR target)
   accessUrl: string
   // Inline SVG of the QR code for accessUrl
   qrSvg: string
-  // Share text with {titel} already filled in; {nr} and {anzahl} are filled
-  // in by the client per image
+  // Share text with the title already filled in; {number}/{nr} and
+  // {total}/{anzahl} are filled in by the client per image
   shareTemplate: string
   // Link appended to shared images
   shareUrl: string
@@ -22,23 +23,35 @@ export interface PortalGalleryData {
   albumShareText: string
 }
 
-const SHARE_LINE = /^\s*teilen\s*:\s*(.+)$/im
+// Album description lines that set the share text: "Share: ..." for English
+// guests, "Teilen: ..." for German ones
+const SHARE_LINE = /^\s*(share|teilen)\s*:\s*(.+)$/im
+const SHARE_KEYWORD: Record<Lang, string> = { en: 'share', de: 'teilen' }
 
 /**
- * Album description without the "Teilen: ..." line (that line only configures
- * the share text and should not be shown to guests).
+ * Album description without the "Share: ..." / "Teilen: ..." lines (they only
+ * configure the share text and should not be shown to guests).
  */
 export function visibleDescription (description: string): string {
   return description.split(/\r?\n/).filter(line => !SHARE_LINE.test(line)).join('\n').trim()
 }
 
+/** The custom share text from the album description: this language's line first, else any. */
+function customShareText (description: string, lang: Lang): string | undefined {
+  const lines = description.split(/\r?\n/)
+    .map(line => line.match(SHARE_LINE))
+    .filter((m): m is RegExpMatchArray => !!m)
+  const own = lines.find(m => m[1].toLowerCase() === SHARE_KEYWORD[lang])
+  return (own || lines[0])?.[2]?.trim() || undefined
+}
+
 /**
- * Share text for this album: a "Teilen: ..." line in the Immich album
- * description wins over the default from config.json.
+ * Share text for this album: a "Share: ..." / "Teilen: ..." line in the Immich
+ * album description wins over the default from branding.json / config.json.
  */
-export function shareTemplateFor (share: SharedLink, title: string): string {
-  const custom = (share.album?.description || '').match(SHARE_LINE)?.[1]?.trim()
-  return (custom || shareTextTemplate()).split('{titel}').join(title)
+export function shareTemplateFor (share: SharedLink, title: string, lang: Lang): string {
+  const custom = customShareText(share.album?.description || '', lang)
+  return (custom || shareTextTemplate(lang)).split('{title}').join(title).split('{titel}').join(title)
 }
 
 export function accessUrlFor (share: SharedLink, baseUrl: string): string {
@@ -57,13 +70,13 @@ export function qrSvg (url: string): Promise<string> {
   })
 }
 
-export async function portalGalleryData (share: SharedLink, title: string, baseUrl: string): Promise<PortalGalleryData> {
+export async function portalGalleryData (share: SharedLink, title: string, baseUrl: string, lang: Lang): Promise<PortalGalleryData> {
   const accessUrl = accessUrlFor(share, baseUrl)
   return {
     accessUrl,
     qrSvg: await qrSvg(accessUrl),
-    shareTemplate: shareTemplateFor(share, title),
+    shareTemplate: shareTemplateFor(share, title, lang),
     shareUrl: shareUrl(),
-    albumShareText: `Hier sind die Bilder von „${title}“ 📸`
+    albumShareText: t(lang).gallery.albumShareText(title)
   }
 }

@@ -1,25 +1,27 @@
 /*
  * Branded guest-facing pages: landing page with the password field, the
  * per-link password page, and the "not found" page. Plus small building
- * blocks (header / footer / share dialog) reused by the gallery.
+ * blocks (header / footer / language switcher) reused by the gallery.
  */
 
 import { ComponentChildren } from 'preact'
 import { ASSET_VERSION } from '../version'
 import { BRAND } from './branding'
+import { Lang, LANGS, t } from './i18n'
 import { brandName, imprintUrl, privacyUrl, sourceUrl, websiteUrl } from './settings'
 
 export const STATIC = `/share/static/${ASSET_VERSION}`
 
 interface HeadProps {
   title: string
+  lang: Lang
   description?: string
   ogImage?: string
   ogUrl?: string
 }
 
 /** Shared <head> content: fonts, icons, brand CSS, no indexing. */
-export function BrandHead ({ title, description, ogImage, ogUrl }: HeadProps) {
+export function BrandHead ({ title, lang, description, ogImage, ogUrl }: HeadProps) {
   return (
     <>
       <meta charSet="utf-8"/>
@@ -29,7 +31,7 @@ export function BrandHead ({ title, description, ogImage, ogUrl }: HeadProps) {
       <title>{title}</title>
       {description && <meta name="description" content={description}/>}
       <meta property="og:title" content={title}/>
-      <meta property="og:site_name" content={brandName()}/>
+      <meta property="og:site_name" content={brandName(lang)}/>
       {description && <meta property="og:description" content={description}/>}
       {ogImage && <>
         <meta property="og:image" content={ogImage}/>
@@ -46,13 +48,35 @@ export function BrandHead ({ title, description, ogImage, ogUrl }: HeadProps) {
   )
 }
 
-export function BrandFooter () {
+/**
+ * Language switcher: plain links, so it works without JavaScript. The server
+ * remembers the choice in a cookie and redirects back without `?lang=`.
+ */
+export function LangSwitch ({ lang, class: className, keep }: { lang: Lang, class?: string, keep?: string }) {
+  return (
+    <nav class={'eg-lang' + (className ? ' ' + className : '')} aria-label={t(lang).languageSwitch}>
+      {LANGS.map(code => (
+        <a
+          key={code}
+          href={'?' + (keep ? keep + '&' : '') + 'lang=' + code}
+          hreflang={code}
+          lang={code}
+          title={t(code).languageName}
+          aria-current={code === lang ? 'true' : undefined}
+        >{code.toUpperCase()}</a>
+      ))}
+    </nav>
+  )
+}
+
+export function BrandFooter ({ lang }: { lang: Lang }) {
+  const m = t(lang)
   const links = [
     websiteUrl() && <a href={websiteUrl()} target="_blank" rel="noopener">{websiteUrl().replace(/^https?:\/\//, '')}</a>,
-    imprintUrl() && <a href={imprintUrl()} target="_blank" rel="noopener">Impressum</a>,
-    privacyUrl() && <a href={privacyUrl()} target="_blank" rel="noopener">Datenschutz</a>,
-    // AGPL-3.0: every guest page must lead to the source code; /lizenz links it
-    <a href="/lizenz">Lizenz</a>
+    imprintUrl() && <a href={imprintUrl()} target="_blank" rel="noopener">{m.imprint}</a>,
+    privacyUrl() && <a href={privacyUrl()} target="_blank" rel="noopener">{m.privacy}</a>,
+    // AGPL-3.0: every guest page must lead to the source code; the licence page links it
+    <a href={m.licensePath}>{m.license}</a>
   ].filter(Boolean)
   return (
     <footer class="eg-footer">
@@ -61,16 +85,17 @@ export function BrandFooter () {
   )
 }
 
-function CenteredPage ({ children, script }: { children: ComponentChildren, script?: string }) {
+function CenteredPage ({ children, script, lang }: { children: ComponentChildren, script?: string, lang: Lang }) {
   return (
     <body class="eg-page">
+      <LangSwitch lang={lang} class="eg-lang-corner"/>
       <main class="eg-center">
-        <a href="/" class="eg-logo-link" aria-label={brandName() + ' – Startseite'}>
-          <img class="eg-logo" src={`${BRAND}/logo-banner.png`} alt={brandName()} width="366" height="142"/>
+        <a href="/" class="eg-logo-link" aria-label={brandName(lang) + ' – ' + t(lang).home}>
+          <img class="eg-logo" src={`${BRAND}/logo-banner.png`} alt={brandName(lang)} width="366" height="142"/>
         </a>
         {children}
       </main>
-      <BrandFooter/>
+      <BrandFooter lang={lang}/>
       {script && <script src={`${STATIC}/portal/${script}`}/>}
     </body>
   )
@@ -80,53 +105,55 @@ export type LandingError = 'wrong' | 'throttled' | 'qr-invalid' | 'unavailable' 
 
 export interface LandingProps {
   baseUrl: string
+  lang: Lang
   error?: LandingError
-  retryText?: string
+  retryAfterSec?: number
   remaining?: number
 }
 
 function errorText (props: LandingProps): string | undefined {
+  const m = t(props.lang)
   switch (props.error) {
     case 'wrong':
-      return 'Zu diesem Passwort wurde kein Album gefunden. Schau nochmal genau hin – ' +
-        'Groß- und Kleinschreibung, Leerzeichen und Bindestriche sind übrigens egal.' +
+      return m.landing.wrong +
         (props.remaining !== undefined && props.remaining <= 2 && props.remaining > 0
-          ? ` (Noch ${props.remaining} ${props.remaining === 1 ? 'Versuch' : 'Versuche'}, dann gibt's eine kurze Pause.)`
+          ? m.landing.attemptsLeft(props.remaining)
           : '')
     case 'throttled':
-      return `Das waren ein paar Versuche zu viel. Bitte probier es in ${props.retryText || 'ein paar Minuten'} noch einmal.`
+      return m.throttled(m.wait(props.retryAfterSec || 0))
     case 'qr-invalid':
-      return 'Dieser QR-Code bzw. Link ist nicht mehr gültig – vielleicht ist das Album schon offline. ' +
-        'Wenn du das Passwort hast, kannst du es hier eingeben.'
+      return m.landing.qrInvalid
     case 'expired':
-      return 'Dieses Album ist leider nicht mehr online. Falls du noch Bilder brauchst, wende dich gerne an den Veranstalter.'
+      return m.landing.expired
     case 'unavailable':
-      return 'Die Bilder sind gerade nicht erreichbar. Bitte versuch es in ein paar Minuten noch einmal.'
+      return m.landing.unavailable
   }
   return undefined
 }
 
 export function Landing (props: LandingProps) {
+  const m = t(props.lang)
   const message = errorText(props)
   return (
-    <html lang="de">
+    <html lang={m.htmlLang}>
       <head>
         <BrandHead
-          title={'Deine Event-Bilder – ' + brandName()}
-          description="Schön, dass du dabei warst! Hier findest du die Bilder von deinem Event."
+          lang={props.lang}
+          title={m.landing.title + ' – ' + brandName(props.lang)}
+          description={m.landing.description}
           ogImage={props.baseUrl + `${BRAND}/og-image.jpg`}
           ogUrl={props.baseUrl + '/'}
         />
       </head>
-      <CenteredPage>
+      <CenteredPage lang={props.lang}>
         <section class="eg-card">
-          <h1>Deine Bilder vom Event</h1>
+          <h1>{m.landing.heading}</h1>
           <p class="eg-lead">
-            Schön, dass du dabei warst! 🍷<br/>
-            Gib hier das Passwort ein, das du bekommen hast – dann geht's direkt zu deinen Bildern.
+            {m.landing.lead1}<br/>
+            {m.landing.lead2}
           </p>
           <form method="post" action="/" class="eg-form" autoComplete="off">
-            <label for="passwort" class="eg-sr-only">Passwort</label>
+            <label for="passwort" class="eg-sr-only">{m.landing.passwordLabel}</label>
             <input
               id="passwort"
               name="passwort"
@@ -135,7 +162,7 @@ export function Landing (props: LandingProps) {
               autoCapitalize="none"
               autoCorrect="off"
               spellcheck={false}
-              placeholder="Passwort, z.B. riesling-karaffe-4827"
+              placeholder={m.landing.placeholder}
               required
               autoFocus
               maxLength={200}
@@ -144,13 +171,11 @@ export function Landing (props: LandingProps) {
               disabled={props.error === 'throttled'}
             />
             <button type="submit" class="eg-button" disabled={props.error === 'throttled'}>
-              Bilder ansehen
+              {m.landing.submit}
             </button>
           </form>
           {message && <p id="eg-error" class="eg-error" role="alert">{message}</p>}
-          <p class="eg-hint">
-            Du hast einen QR-Code bekommen? Einfach mit der Handykamera scannen – dann brauchst du kein Passwort.
-          </p>
+          <p class="eg-hint">{m.landing.qrHint}</p>
         </section>
       </CenteredPage>
     </html>
@@ -160,38 +185,40 @@ export function Landing (props: LandingProps) {
 interface BrandedPasswordProps {
   shareKey: string
   notifyInvalidPassword: boolean
+  lang: Lang
 }
 
 /**
  * Replacement for IPP's password page, shown when someone opens a
  * password-protected /share/<key> link directly without a session.
  */
-export function BrandedPassword ({ shareKey, notifyInvalidPassword }: BrandedPasswordProps) {
+export function BrandedPassword ({ shareKey, notifyInvalidPassword, lang }: BrandedPasswordProps) {
+  const m = t(lang)
   return (
-    <html lang="de">
+    <html lang={m.htmlLang}>
       <head>
-        <BrandHead title={'Passwort benötigt – ' + brandName()}/>
+        <BrandHead lang={lang} title={m.unlock.title + ' – ' + brandName(lang)}/>
       </head>
-      <CenteredPage script="unlock.js">
+      <CenteredPage lang={lang} script="unlock.js">
         <section class="eg-card">
-          <h1>Fast geschafft!</h1>
-          <p class="eg-lead">Dieses Album ist mit einem Passwort geschützt. Gib es hier ein, um die Bilder zu sehen.</p>
-          <form id="unlock" method="post" class="eg-form">
-            <label for="password" class="eg-sr-only">Passwort</label>
+          <h1>{m.unlock.heading}</h1>
+          <p class="eg-lead">{m.unlock.lead}</p>
+          <form id="unlock" method="post" class="eg-form" data-msg-failed={m.unlock.failed} data-msg-offline={m.unlock.offline}>
+            <label for="password" class="eg-sr-only">{m.unlock.passwordLabel}</label>
             <input
               id="password"
               type="password"
               name="password"
-              placeholder="Passwort"
+              placeholder={m.unlock.placeholder}
               required
               autoFocus
               aria-invalid={notifyInvalidPassword ? 'true' : undefined}
             />
             <input type="hidden" name="key" value={shareKey}/>
-            <button type="submit" class="eg-button">Entsperren</button>
+            <button type="submit" class="eg-button">{m.unlock.submit}</button>
           </form>
           <p id="unlock-error" class="eg-error" role="alert" hidden={!notifyInvalidPassword}>
-            {notifyInvalidPassword && 'Das Passwort stimmt leider nicht mehr. Bitte gib es noch einmal ein.'}
+            {notifyInvalidPassword && m.unlock.invalidAgain}
           </p>
         </section>
       </CenteredPage>
@@ -200,26 +227,27 @@ export function BrandedPassword ({ shareKey, notifyInvalidPassword }: BrandedPas
 }
 
 /** Licence notice with the link to the source code (AGPL-3.0, section 13). */
-export function LicensePage () {
+export function LicensePage ({ lang }: { lang: Lang }) {
+  const m = t(lang)
   return (
-    <html lang="de">
+    <html lang={m.htmlLang}>
       <head>
-        <BrandHead title={'Lizenz – ' + brandName()}/>
+        <BrandHead lang={lang} title={m.licensePage.title + ' – ' + brandName(lang)}/>
       </head>
-      <CenteredPage>
+      <CenteredPage lang={lang}>
         <section class="eg-card eg-prose">
-          <h1>Lizenz &amp; Quellcode</h1>
+          <h1>{m.licensePage.heading}</h1>
           <p>
-            Dieses Bilder-Portal ist freie Software. Es basiert auf{' '}
-            <a href="https://github.com/alangrainger/immich-public-proxy" target="_blank" rel="noopener">Immich Public Proxy</a>{' '}
-            von Alan Grainger und steht wie das Original unter der{' '}
-            <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener">GNU Affero General Public License v3.0</a>.
+            {m.licensePage.intro(
+              <a href="https://github.com/alangrainger/immich-public-proxy" target="_blank" rel="noopener">Immich Public Proxy</a>,
+              <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener">GNU Affero General Public License v3.0</a>
+            )}
           </p>
           <p>
-            Den vollständigen Quellcode dieser Version findest du hier:<br/>
+            {m.licensePage.source}<br/>
             <a href={sourceUrl()} target="_blank" rel="noopener">{sourceUrl().replace(/^https?:\/\//, '')}</a>
           </p>
-          <h2>Verwendete Schriften</h2>
+          <h2>{m.licensePage.fonts}</h2>
           <ul>
             <li>
               Outfit – <a href={`${STATIC}/fonts/Outfit-LICENSE.txt`} target="_blank" rel="noopener">SIL Open Font License 1.1</a>
@@ -228,29 +256,26 @@ export function LicensePage () {
               Inter – <a href={`${STATIC}/fonts/Inter-LICENSE.txt`} target="_blank" rel="noopener">SIL Open Font License 1.1</a>
             </li>
           </ul>
-          <p class="eg-hint">
-            Diese Lizenz gilt für die Software, nicht für die Bilder in den Alben.
-          </p>
-          <a class="eg-button eg-button-ghost eg-button-block" href="/">Zur Startseite</a>
+          <p class="eg-hint">{m.licensePage.note}</p>
+          <a class="eg-button eg-button-ghost eg-button-block" href="/">{m.toHome}</a>
         </section>
       </CenteredPage>
     </html>
   )
 }
 
-export function NotFound () {
+export function NotFound ({ lang }: { lang: Lang }) {
+  const m = t(lang)
   return (
-    <html lang="de">
+    <html lang={m.htmlLang}>
       <head>
-        <BrandHead title={'Nicht gefunden – ' + brandName()}/>
+        <BrandHead lang={lang} title={m.notFound.title + ' – ' + brandName(lang)}/>
       </head>
-      <CenteredPage>
+      <CenteredPage lang={lang}>
         <section class="eg-card">
-          <h1>Hier ist nichts (mehr)</h1>
-          <p class="eg-lead">
-            Diese Seite gibt es nicht – oder das Album ist nicht mehr online.
-          </p>
-          <a class="eg-button eg-button-block" href="/">Zur Startseite</a>
+          <h1>{m.notFound.heading}</h1>
+          <p class="eg-lead">{m.notFound.lead}</p>
+          <a class="eg-button eg-button-block" href="/">{m.toHome}</a>
         </section>
       </CenteredPage>
     </html>

@@ -18,8 +18,9 @@ deliberately in the following ways:
 - **API key:** the portal uses an Immich API key to find the share that matches a password. The key must never need
   more than `sharedLink.read`, and the portal must never write to Immich.
 - **In-memory state:** the lockout keeps failed attempts in memory. It must stay bounded, and nothing is persisted.
-- **German UI, English code:** texts that guests and the operator see are German. Code, comments, commit messages and
-  documentation are English.
+- **English and German UI, English code:** every text that guests and the operator see exists in both languages, in
+  `app/src/portal/i18n.tsx` (pages) and `app/src/shared/i18n.ts` (gallery scripts). Never hard-code UI text in a
+  view or script. Code, comments, commit messages and documentation are English.
 
 Also:
 

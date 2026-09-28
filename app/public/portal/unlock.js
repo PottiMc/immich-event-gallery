@@ -1,4 +1,5 @@
-// Password page of a /share/<key> link: verify via /share/unlock, then reload
+// Password page of a /share/<key> link: verify via /share/unlock, then reload.
+// Texts come from data attributes, in the page language.
 document.getElementById('unlock').addEventListener('submit', async function (e) {
   e.preventDefault()
   const form = this
@@ -17,9 +18,9 @@ document.getElementById('unlock').addEventListener('submit', async function (e) 
       return
     }
     const body = await res.json().catch(function () { return {} })
-    error.textContent = body.error || 'Das hat leider nicht geklappt. Bitte versuch es noch einmal.'
+    error.textContent = body.error || form.dataset.msgFailed
   } catch (err) {
-    error.textContent = 'Keine Verbindung. Bitte versuch es noch einmal.'
+    error.textContent = form.dataset.msgOffline
   }
   error.hidden = false
   button.disabled = false

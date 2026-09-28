@@ -170,19 +170,22 @@ password and an expiry date. Then hand out the access in one of these ways:
 - **QR code** as PNG or SVG for emails and invoices.
 - **The password itself**, sent by message.
 
-**Custom share text per album.** Add a line starting with `Teilen:` to the Immich album description:
+**Custom share text per album.** Add a line starting with `Share:` (English guests) and/or `Teilen:` (German
+guests) to the Immich album description:
 
 ```
+Share: That was the wine hike on the Saar with Weingut Beispiel 🍷 – photo {number} of {total}
 Teilen: Das war die Weinwanderung an der Saar mit dem Weingut Beispiel 🍷 – Bild {nr} von {anzahl}
 ```
 
-Guests do not see this line. The rest of the description is shown above the photos. Without it, the default text from
+If only one of the lines is there, it is used for both languages. Guests do not see these lines. The rest of the description is shown above the photos. Without it, the default text from
 [`portal.shareText`](configuration.md#portal-settings) is used.
 
 **What guests can do:**
 
 - Open a photo, tap the share icon, and send the photo itself to WhatsApp or other apps, together with the text.
-- "Album teilen" shows a QR code for other guests to scan, or shares or copies the link.
+- "Share album" shows a QR code for other guests to scan, or shares or copies the link.
+- Switch between English and German at the top of every page.
 - Download single photos, a selection (long press) or everything as a ZIP, if the share allows downloads.
 - Stay logged in for 14 days (`portal.sessionDays`).
 

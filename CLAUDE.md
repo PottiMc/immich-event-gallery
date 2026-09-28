@@ -31,12 +31,15 @@ Immich is automatically online.
   fallback) and the "share album" dialog
 - `app/src/portal/runtime-settings.ts`: settings saved on the admin page (`DATA_DIR/settings.json`, a writable
   volume), laid over the loaded config at startup and on save. Currently only the guest download quality
+- `app/src/portal/i18n.tsx`: all page texts in English and German, and the language choice per request
+  (`?lang=` switcher → cookie `lang` → `Accept-Language` → `portal.defaultLanguage`)
 - `app/src/portal/branding.ts`: operator branding from `BRANDING_DIR` (logos, icons, `branding.json`), falling
   back to the neutral assets in `app/public/brand/`. Real brand assets must **never** be committed; locally they live in
   the gitignored `app/branding/`
 - `app/public/portal/`: CSS and the external scripts required by the CSP (`unlock.js`, `admin.js`, `card.js`)
 - Small, deliberate edits to upstream files: `index.ts`, `encrypt.ts`, `immich.ts`, `invalidRequestHandler.ts`,
-  `gallery/builder.ts`, `view/gallery.tsx`, and the German client texts
+  `gallery/builder.ts`, `view/gallery.tsx`, `share.ts` (per-language expiry date format), and the client texts
+  (now read from `client/i18n.ts`)
 - `docker-compose.yml` + `.env.example`: the full stack (Immich incl. machine learning, Postgres, Valkey, portal)
 - `docs/deployment.md`, `docs/configuration.md`: user documentation
 
@@ -49,7 +52,10 @@ npm run dev    # needs app/.env: IMMICH_URL, IMMICH_API_KEY, PORTAL_SECRET, PUBL
 
 ## Rules
 
-- Guest- and operator-facing UI text is **German**. Code, comments, docs and commit messages are **English**.
+- Guest- and operator-facing UI text exists in **English (default) and German**. Add every new text to both
+  catalogues: `portal/i18n.tsx` for server-rendered pages, `shared/i18n.ts` for the gallery client; static scripts in
+  `public/portal/` get their texts through `data-` attributes. Code, comments, docs and commit messages are
+  **English**.
 - Keep changes inside the `portal` paths where possible, so that `git merge upstream/main` stays easy.
 - Never require more than `sharedLink.read` from Immich, and never write to Immich.
 - The CSP is `script-src 'self'`: no inline scripts or event handlers.

@@ -223,3 +223,7 @@ body {
 
 /* Lightbox: share button stands out a little */
 .pswp__button--share-button { --pswp-icon-color: #FFCC66; color: #FFCC66; }
+
+/* Language switcher next to the logo */
+.eg-brandbar { position: relative; }
+.eg-brandbar .eg-lang-corner { position: absolute; top: 18px; right: var(--gutter); }

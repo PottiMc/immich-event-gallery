@@ -20,11 +20,13 @@ afterEach(() => {
 
 describe('branding', () => {
   it('falls back to neutral defaults without a branding folder', () => {
-    expect(brandName()).toBe('Bilder-Portal')
+    expect(brandName()).toBe('Photo Portal')
+    expect(brandName('de')).toBe('Bilder-Portal')
     expect(websiteUrl()).toBe('')
     expect(imprintUrl()).toBe('')
     expect(shareUrl()).toBe('')
-    expect(shareTextTemplate()).toBe('Das war „{titel}“ – Bild {nr} von {anzahl}')
+    expect(shareTextTemplate()).toBe('That was “{title}” – photo {number} of {total}')
+    expect(shareTextTemplate('de')).toBe('Das war „{titel}“ – Bild {nr} von {anzahl}')
   })
 
   it('reads texts from branding.json', () => {
@@ -36,13 +38,29 @@ describe('branding', () => {
     expect(brandName()).toBe('Weingut Beispiel')
     expect(shareUrl()).toBe('https://weingut.example')
     expect(shareTextTemplate()).toBe('Mit uns: {titel}')
+    expect(shareTextTemplate('de')).toBe('Mit uns: {titel}')
     expect(imprintUrl()).toBe('')
+  })
+
+  it('reads texts per language from branding.json', () => {
+    writeFileSync(join(dir, 'branding.json'), JSON.stringify({
+      brandName: 'Weingut Beispiel',
+      shareText: { en: 'With us: {title}', de: 'Mit uns: {titel}' }
+    }))
+    expect(shareTextTemplate('en')).toBe('With us: {title}')
+    expect(shareTextTemplate('de')).toBe('Mit uns: {titel}')
+    expect(brandName('de')).toBe('Weingut Beispiel')
+  })
+
+  it('falls back to another language when one is missing', () => {
+    writeFileSync(join(dir, 'branding.json'), JSON.stringify({ shareText: { de: 'Mit uns: {titel}' } }))
+    expect(shareTextTemplate('en')).toBe('Mit uns: {titel}')
   })
 
   it('ignores an invalid branding.json', () => {
     writeFileSync(join(dir, 'branding.json'), '{ not json')
     expect(brandingTexts()).toEqual({})
-    expect(brandName()).toBe('Bilder-Portal')
+    expect(brandName()).toBe('Photo Portal')
   })
 
   it('serves only known brand files', () => {

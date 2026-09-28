@@ -249,3 +249,7 @@ code {
   .adm-row-panel { grid-template-columns: 1fr; }
   .adm-qr { width: 150px; }
 }
+
+.adm-header .adm-lang { margin-left: auto; align-self: flex-start; }
+.adm-header .adm-lang a { color: var(--eg-muted); }
+.adm-header .adm-lang a[aria-current] { color: var(--eg-bg); }

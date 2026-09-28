@@ -10,6 +10,7 @@ import { log } from './utils/log'
 import { h } from 'preact'
 import { renderPage } from './view/render'
 import { NotFound } from './portal/views'
+import { langOf } from './portal/i18n'
 
 /**
  * Send a 404. Browsers navigating to a page get the branded "not found" page
@@ -18,7 +19,7 @@ import { NotFound } from './portal/views'
 function sendNotFound (res: Response) {
   const accept = String(res.req?.headers?.accept || '')
   if (res.req?.method === 'GET' && accept.includes('text/html')) {
-    res.status(404).send(renderPage(h(NotFound, {})))
+    res.status(404).send(renderPage(h(NotFound, { lang: langOf(res) })))
   } else {
     res.status(404).send()
   }

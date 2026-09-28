@@ -7,6 +7,7 @@
 import { state, SIDEBAR_STORAGE_KEY } from './state.js'
 import { ICON_INFO, ICON_CLOSE, ICON_IMAGE, ICON_CALENDAR, ICON_CAMERA, ICON_IRIS, ICON_MAP } from './icons.js'
 import type { GalleryItem, GalleryExif } from '../shared/types.js'
+import { msg } from './i18n.js'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type LightboxInstance = any
@@ -37,7 +38,7 @@ export function registerSidebar (lightbox: LightboxInstance) {
       appendTo: 'root',
       onInit: (el: HTMLElement, pswp: PswpInstance) => {
         el.classList.add('ipp-sidebar')
-        el.setAttribute('aria-label', 'Bildinformationen')
+        el.setAttribute('aria-label', msg.imageInfo)
         const renderSidebar = () => renderContents(el, state.items[pswp.currIndex])
         renderSidebar()
         pswp.on('change', renderSidebar)
@@ -54,7 +55,7 @@ export function registerSidebar (lightbox: LightboxInstance) {
       name: 'sidebar-toggle',
       order: 7,
       isButton: true,
-      ariaLabel: 'Info',
+      ariaLabel: msg.info,
       html: ICON_INFO,
       onInit: (el: HTMLElement, pswp: PswpInstance) => {
         el.addEventListener('click', () => toggleSidebar(pswp))
@@ -154,7 +155,7 @@ function renderContents (root: HTMLElement, item: GalleryItem | undefined) {
   if (!showDescription && noExifShown) {
     const empty = document.createElement('p')
     empty.className = 'ipp-sidebar-empty'
-    empty.textContent = 'Keine Informationen verfügbar'
+    empty.textContent = msg.noInfo
     root.appendChild(empty)
   }
 }
@@ -165,7 +166,7 @@ function renderHeader (): HTMLElement {
   const close = document.createElement('button')
   close.type = 'button'
   close.className = 'ipp-sidebar-close'
-  close.setAttribute('aria-label', 'Info schließen')
+  close.setAttribute('aria-label', msg.closeInfo)
   close.innerHTML = ICON_CLOSE
   close.addEventListener('click', () => {
     if (state.lightbox && state.lightbox.pswp) setSidebarOpen(state.lightbox.pswp, false)
@@ -173,7 +174,7 @@ function renderHeader (): HTMLElement {
   header.appendChild(close)
   const title = document.createElement('span')
   title.className = 'ipp-sidebar-title'
-  title.textContent = 'Info'
+  title.textContent = msg.info
   header.appendChild(title)
   return header
 }
@@ -195,7 +196,7 @@ function renderDescription (description: string): HTMLElement {
 function renderDetailRows (exif: GalleryExif, item: GalleryItem): HTMLElement[] {
   const heading = document.createElement('h3')
   heading.className = 'ipp-sidebar-heading'
-  heading.textContent = 'Details'
+  heading.textContent = msg.details
 
   const rows: HTMLElement[] = [heading]
 
@@ -345,7 +346,7 @@ function renderLocation (exif: GalleryExif): HTMLElement {
       link.target = '_blank'
       // noreferrer suppresses the Referer header so the share URL doesn't end up in the map provider's webserver logs
       link.rel = 'noopener noreferrer'
-      link.textContent = 'In OpenStreetMap öffnen'
+      link.textContent = msg.openInOsm
       body.appendChild(link)
     }
   }

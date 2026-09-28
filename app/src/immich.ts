@@ -23,6 +23,7 @@ import { Response } from 'express-serve-static-core'
 import { h } from 'preact'
 import { renderPage } from './view/render'
 import { BrandedPassword } from './portal/views'
+import { langOf } from './portal/i18n'
 import { respondToInvalidRequest } from './invalidRequestHandler'
 import { encrypt } from './encrypt'
 import { TtlLruCache } from './utils/ttlLruCache'
@@ -174,7 +175,8 @@ export async function handleShareRequest (req: IncomingShareRequest, res: Respon
     const shareKey = req.key.replace(/[^\w-]/g, '')
     res.send(renderPage(h(BrandedPassword, {
       shareKey,
-      notifyInvalidPassword: !!req.password
+      notifyInvalidPassword: !!req.password,
+      lang: langOf(res)
     })))
     return
   }

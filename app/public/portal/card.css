@@ -102,6 +102,10 @@ body {
 .card-dark .card-qr { padding: 2mm; background: #fff; border-radius: 3mm; }
 .card-dark .card-logo { height: 22mm; margin-bottom: 5mm; }
 
+.card-lang { display: inline-flex; gap: 6px; }
+.card-lang a { text-decoration: none; }
+.card-lang a[aria-current] { font-weight: 700; text-decoration: underline; }
+
 @media print {
   body { background: #fff; }
   .card-tools { display: none; }

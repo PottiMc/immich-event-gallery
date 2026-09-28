@@ -16,6 +16,7 @@ import { downloadFilename } from './filename'
 import { requiresOriginal } from './sizing'
 import { displayDimensions, metadataGroupActive, pickExif } from './exif'
 import { portalGalleryData, visibleDescription } from '../portal/gallery'
+import { langOf, t, varyLang } from '../portal/i18n'
 
 /**
  * Render a gallery page for a given SharedLink.
@@ -132,8 +133,10 @@ export async function gallery (res: Response, share: SharedLink, openItem?: numb
   const lightboxOptions: Record<string, unknown> = (rawLightboxOptions && typeof rawLightboxOptions === 'object' && !Array.isArray(rawLightboxOptions))
     ? rawLightboxOptions as Record<string, unknown>
     : {}
+  const lang = langOf(res)
   const galleryTitle = title(share)
   const props: GalleryProps = {
+    lang,
     items,
     title: galleryTitle,
     description: getConfigOption('ipp.gallery.showDescription', false) ? description(share) : '',
@@ -141,7 +144,7 @@ export async function gallery (res: Response, share: SharedLink, openItem?: numb
     path: '/share/' + share.key,
     showDownloadZip: downloadAllowed && !!getConfigOption('ipp.gallery.showDownloadZip', true),
     showTitle: !!getConfigOption('ipp.gallery.showTitle', true),
-    expiryDate: expiryDate(share),
+    expiryDate: expiryDate(share, t(lang).dateFormat),
     openItem,
     ogImageItem,
     lightboxConfig: {
@@ -160,13 +163,14 @@ export async function gallery (res: Response, share: SharedLink, openItem?: numb
     },
     groupByDate,
     metaBase,
-    portal: await portalGalleryData(share, galleryTitle, toString(publicBaseUrl).replace(/\/+$/, ''))
+    portal: await portalGalleryData(share, galleryTitle, toString(publicBaseUrl).replace(/\/+$/, ''), lang)
   }
 
   // HTML gallery page cache time. Password-protected galleries (and their
   // embedded access link) must never land in a shared cache.
   const cacheTime = Math.max(0, getNumericConfigOption('ipp.gallery.cacheTime', 300))
   res.header('Cache-Control', (share.password ? 'private' : 'public') + ', max-age=' + cacheTime)
+  varyLang(res)
   res.send(renderPage(h(Gallery, props)))
 }
 
@@ -174,7 +178,7 @@ export async function gallery (res: Response, share: SharedLink, openItem?: numb
  * Get the Immich shared link description (album-level, not per-asset).
  */
 function description (share: SharedLink) {
-  // Hide the "Teilen: ..." line that configures the WhatsApp text
+  // Hide the "Share: ..." / "Teilen: ..." lines that configure the WhatsApp text
   return visibleDescription(share?.album?.description || '')
 }
 

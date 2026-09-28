@@ -43,15 +43,16 @@ const DEFAULT_EXPIRY_FORMAT = 'YYYY-MM-DD'
  * dayjs format string `ipp.gallery.expiryDateFormat` (default ISO 8601 date
  * `YYYY-MM-DD`, e.g. `2026-07-10`). Name-based tokens (e.g. `MMMM` -> "July")
  * render in the operator's `ipp.gallery.expiryDateLocale` when set, otherwise
- * dayjs's default English.
+ * dayjs's default English. Without a configured format, `defaultFormat` is used
+ * (the portal passes one per page language).
  */
-export function expiryDate (share: SharedLink): string | undefined {
+export function expiryDate (share: SharedLink, defaultFormat = DEFAULT_EXPIRY_FORMAT): string | undefined {
   if (!getConfigOption('ipp.gallery.showExpiryDate', false)) return undefined
   if (!share.expiresAt) return undefined
   const parsed = dayjs(share.expiresAt)
   if (!parsed.isValid()) return undefined
-  const configured = getConfigOption('ipp.gallery.expiryDateFormat', DEFAULT_EXPIRY_FORMAT)
-  const format = typeof configured === 'string' && configured ? configured : DEFAULT_EXPIRY_FORMAT
+  const configured = getConfigOption('ipp.gallery.expiryDateFormat', defaultFormat)
+  const format = typeof configured === 'string' && configured ? configured : defaultFormat
   const locale = expiryDateLocale()
   return (locale ? parsed.locale(locale) : parsed).format(format)
 }

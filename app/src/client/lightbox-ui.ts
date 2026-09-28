@@ -11,6 +11,7 @@ import {
   ICON_MOTION_PAUSE,
   ICON_MOTION_PLAY
 } from './icons.js'
+import { msg } from './i18n.js'
 
 // PhotoSwipe types are not bundled with the project. These two interfaces
 // describe just enough of the surface we touch to keep the rest of the file
@@ -55,7 +56,7 @@ export function registerBackButton (lightbox: LightboxInstance) {
       name: 'back-button',
       order: 1,
       isButton: true,
-      ariaLabel: 'Zurück zur Galerie',
+      ariaLabel: msg.backToGallery,
       html: ICON_BACK,
       onInit: (el: HTMLElement, pswp: PswpInstance) => {
         el.addEventListener('click', () => pswp.close())
@@ -107,7 +108,7 @@ export function registerDownloadButton (lightbox: LightboxInstance) {
       order: 8,
       isButton: true,
       tagName: 'a',
-      ariaLabel: 'Herunterladen',
+      ariaLabel: msg.download,
       html: ICON_DOWNLOAD,
       onInit: (el: HTMLElement, pswp: PswpInstance) => {
         const link = el as HTMLAnchorElement
@@ -148,8 +149,8 @@ export function registerFullscreenButton (lightbox: LightboxInstance) {
         const update = () => {
           const active = document.fullscreenElement === pswp.element
           el.innerHTML = active ? ICON_FULLSCREEN_EXIT : ICON_FULLSCREEN
-          el.setAttribute('aria-label', active ? 'Vollbild beenden' : 'Vollbild')
-          el.setAttribute('title', active ? 'Vollbild beenden' : 'Vollbild')
+          el.setAttribute('aria-label', active ? msg.exitFullscreen : msg.fullscreen)
+          el.setAttribute('title', active ? msg.exitFullscreen : msg.fullscreen)
         }
         update()
         el.addEventListener('click', () => {
@@ -215,7 +216,7 @@ export function registerMotionButton (lightbox: LightboxInstance) {
 
         const update = () => {
           el.hidden = !state.items[pswp.currIndex]?.motionUrl
-          const label = motionEnabled ? 'Live-Fotos anhalten' : 'Live-Fotos abspielen'
+          const label = motionEnabled ? msg.pauseMotion : msg.playMotion
           el.innerHTML = motionEnabled ? ICON_MOTION_PAUSE : ICON_MOTION_PLAY
           el.setAttribute('aria-label', label)
           el.setAttribute('title', label)

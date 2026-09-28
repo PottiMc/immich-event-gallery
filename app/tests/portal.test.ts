@@ -9,13 +9,14 @@ import {
   portalLinks
 } from '../src/portal/links'
 import { accessToken } from '../src/portal/tokens'
-import { formatWait, LoginThrottle } from '../src/portal/throttle'
+import { LoginThrottle } from '../src/portal/throttle'
+import { acceptedLang, languageMiddleware, negotiateLang, t } from '../src/portal/i18n'
 import { shareTemplateFor, visibleDescription } from '../src/portal/gallery'
 import { suggestPassword, WORDS } from '../src/portal/passwords'
 import { SharedLink } from '../src/types'
 import { resetBrandingCache } from '../src/portal/branding'
 import { sourceUrl } from '../src/portal/settings'
-import { BrandFooter, LicensePage } from '../src/portal/views'
+import { BrandFooter, Landing, LicensePage } from '../src/portal/views'
 import { h } from 'preact'
 import { renderPage } from '../src/view/render'
 
@@ -134,10 +135,13 @@ describe('LoginThrottle', () => {
     expect(t.check('192.168.1.1').allowed).toBe(true)
   })
 
-  it('formats wait times in German', () => {
-    expect(formatWait(30)).toBe('einer Minute')
-    expect(formatWait(15 * 60)).toBe('15 Minuten')
-    expect(formatWait(4 * 3600)).toBe('4 Stunden')
+  it('formats wait times in English and German', () => {
+    expect(t('en').wait(30)).toBe('a minute')
+    expect(t('en').wait(15 * 60)).toBe('15 minutes')
+    expect(t('en').wait(4 * 3600)).toBe('4 hours')
+    expect(t('de').wait(30)).toBe('einer Minute')
+    expect(t('de').wait(15 * 60)).toBe('15 Minuten')
+    expect(t('de').wait(4 * 3600)).toBe('4 Stunden')
   })
 })
 
@@ -152,14 +156,24 @@ describe('share text', () => {
   })
 
   it('uses the default template with the title filled in', () => {
-    expect(shareTemplateFor(share(''), 'Weinwanderung'))
+    expect(shareTemplateFor(share(''), 'Wine hike', 'en'))
+      .toBe('That was “Wine hike” – photo {number} of {total}')
+    expect(shareTemplateFor(share(''), 'Weinwanderung', 'de'))
       .toBe('Das war „Weinwanderung“ – Bild {nr} von {anzahl}')
   })
 
   it('lets the album description override the text and hides that line', () => {
     const description = 'Danke fürs Mitwandern!\nTeilen: Das war die {titel} mit uns – Bild {nr}'
-    expect(shareTemplateFor(share(description), 'Weinwanderung')).toBe('Das war die Weinwanderung mit uns – Bild {nr}')
+    expect(shareTemplateFor(share(description), 'Weinwanderung', 'de')).toBe('Das war die Weinwanderung mit uns – Bild {nr}')
     expect(visibleDescription(description)).toBe('Danke fürs Mitwandern!')
+  })
+
+  it('picks the album line for the page language, else any', () => {
+    const description = 'Thanks!\nShare: The {title} with us – photo {number}\nTeilen: Die {titel} mit uns – Bild {nr}'
+    expect(shareTemplateFor(share(description), 'Tour', 'en')).toBe('The Tour with us – photo {number}')
+    expect(shareTemplateFor(share(description), 'Tour', 'de')).toBe('Die Tour mit uns – Bild {nr}')
+    expect(visibleDescription(description)).toBe('Thanks!')
+    expect(shareTemplateFor(share('Teilen: Nur {titel}'), 'Tour', 'en')).toBe('Nur Tour')
   })
 })
 
@@ -182,10 +196,70 @@ describe('password suggestions', () => {
 
 describe('licence page', () => {
   it('is linked from the footer and links the source code', () => {
-    const footer = renderPage(h(BrandFooter, {}))
-    expect(footer).toContain('href="/lizenz"')
-    const page = renderPage(h(LicensePage, {}))
+    expect(renderPage(h(BrandFooter, { lang: 'en' }))).toContain('href="/license"')
+    expect(renderPage(h(BrandFooter, { lang: 'de' }))).toContain('href="/lizenz"')
+    const page = renderPage(h(LicensePage, { lang: 'en' }))
     expect(page).toContain('href="' + sourceUrl() + '"')
     expect(page).toContain('Affero General Public License')
+  })
+})
+
+describe('language', () => {
+  it('reads the best supported language from Accept-Language', () => {
+    expect(acceptedLang('de-DE,de;q=0.9,en;q=0.8')).toBe('de')
+    expect(acceptedLang('fr-FR,fr;q=0.9,en;q=0.5,de;q=0.4')).toBe('en')
+    expect(acceptedLang('en;q=0.2, de;q=0.8')).toBe('de')
+    expect(acceptedLang('fr, es')).toBeUndefined()
+    expect(acceptedLang(undefined)).toBeUndefined()
+  })
+
+  it('prefers the switcher cookie, then the browser, then English', () => {
+    expect(negotiateLang('session=x; lang=de', 'en-US')).toBe('de')
+    expect(negotiateLang('lang=xx', 'de-AT')).toBe('de')
+    expect(negotiateLang(undefined, 'fr-FR')).toBe('en')
+    expect(negotiateLang(undefined, undefined)).toBe('en')
+  })
+
+  function run (url: string, headers: Record<string, string> = {}) {
+    const out: { redirect?: string, cookie?: [string, string], next: boolean, locals: Record<string, unknown> } = { next: false, locals: {} }
+    const req = { method: 'GET', originalUrl: url, query: Object.fromEntries(new URL(url, 'http://x').searchParams), headers, secure: false }
+    const res = {
+      locals: out.locals,
+      cookie: (name: string, value: string) => { out.cookie = [name, value] },
+      set: () => {},
+      redirect: (_status: number, to: string) => { out.redirect = to }
+    }
+    languageMiddleware(req as never, res as never, () => { out.next = true })
+    return out
+  }
+
+  it('stores the switcher choice and redirects without ?lang', () => {
+    const out = run('/share/abc?openItem=3&lang=de')
+    expect(out.cookie).toEqual(['lang', 'de'])
+    expect(out.redirect).toBe('/share/abc?openItem=3')
+    expect(out.next).toBe(false)
+  })
+
+  it('ignores unknown languages and never redirects off-site', () => {
+    const out = run('//evil.example/?lang=xx')
+    expect(out.cookie).toBeUndefined()
+    expect(out.redirect).toBe('/')
+  })
+
+  it('sets the language for normal requests', () => {
+    const out = run('/', { 'accept-language': 'de' })
+    expect(out.next).toBe(true)
+    expect(out.locals.lang).toBe('de')
+  })
+
+  it('renders the landing page in the chosen language with a switcher', () => {
+    const en = renderPage(h(Landing, { baseUrl: 'https://x', lang: 'en' }))
+    expect(en).toContain('<html lang="en"')
+    expect(en).toContain('View photos')
+    expect(en).toContain('href="?lang=de"')
+    const de = renderPage(h(Landing, { baseUrl: 'https://x', lang: 'de', error: 'throttled', retryAfterSec: 900 }))
+    expect(de).toContain('<html lang="de"')
+    expect(de).toContain('Bilder ansehen')
+    expect(de).toContain('in 15 Minuten')
   })
 })

@@ -1,14 +1,14 @@
-// Admin page: copy buttons
+// Admin page: copy buttons. Texts come from data attributes on <body>.
 document.addEventListener('click', async function (e) {
   const btn = e.target.closest('[data-copy]')
   if (!btn) return
   try {
     await navigator.clipboard.writeText(btn.getAttribute('data-copy'))
     const old = btn.textContent
-    btn.textContent = 'Kopiert ✓'
+    btn.textContent = document.body.dataset.copied
     setTimeout(function () { btn.textContent = old }, 1500)
   } catch (err) {
-    window.prompt('Zum Kopieren:', btn.getAttribute('data-copy'))
+    window.prompt(document.body.dataset.copyPrompt, btn.getAttribute('data-copy'))
   }
 })
 

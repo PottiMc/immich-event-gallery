@@ -212,6 +212,36 @@
 .eg-footer a { color: var(--eg-muted); text-decoration: none; }
 .eg-footer a:hover, .eg-footer a:focus-visible { color: var(--eg-gold-light); text-decoration: underline; }
 
+/* Language switcher (EN | DE) */
+.eg-lang {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--eg-line);
+  border-radius: 999px;
+  background: rgba(23, 20, 18, 0.72);
+  font-family: var(--eg-font);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  line-height: 1;
+}
+
+.eg-lang a {
+  min-width: 36px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  color: var(--eg-muted);
+  text-align: center;
+  text-decoration: none;
+}
+
+.eg-lang a:hover, .eg-lang a:focus-visible { color: var(--eg-text); background: rgba(255, 255, 255, 0.07); outline: none; }
+.eg-lang a[aria-current] { color: var(--eg-bg); background: var(--eg-gold-light); }
+
+/* Guest pages: own row at the top right, so it never covers the logo */
+.eg-page > .eg-lang-corner { align-self: flex-end; margin: 14px 16px 0; }
+
 @media (max-width: 420px) {
   .eg-center { padding-top: 28px; }
   .eg-card { padding: 22px 18px; border-radius: 16px; }

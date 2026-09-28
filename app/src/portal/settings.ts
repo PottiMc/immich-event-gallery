@@ -11,6 +11,7 @@ import crypto from 'crypto'
 import { getConfigOption, getNumericConfigOption } from '../config/access'
 import { log } from '../utils/log'
 import { brandingTexts } from './branding'
+import { defaultLang, Lang, LANGS, t } from './i18n'
 
 let fallbackSecret: Buffer | undefined
 
@@ -69,14 +70,26 @@ export function sessionDays (): number {
   return Math.max(1, getNumericConfigOption('portal.sessionDays', 14))
 }
 
-function brandOption (key: string, fallback: string): string {
-  const value = brandingTexts()[key]
+/**
+ * A brand text from branding.json or config.json. The value may be a plain
+ * string (all languages) or one string per language, e.g.
+ * `{ "en": "...", "de": "..." }`; a missing language falls back to the
+ * default language, then to any other.
+ */
+function brandOption (key: string, fallback: string, lang?: Lang): string {
+  const value = brandingTexts()[key] ?? getConfigOption('portal.' + key, undefined)
   if (typeof value === 'string') return value
-  return String(getConfigOption('portal.' + key, fallback))
+  if (value && typeof value === 'object') {
+    const perLang = value as Record<string, unknown>
+    const order = [lang, defaultLang(), ...LANGS].filter(Boolean) as string[]
+    const found = order.map(l => perLang[l]).find(v => typeof v === 'string')
+    if (typeof found === 'string') return found
+  }
+  return fallback
 }
 
-export function brandName (): string {
-  return brandOption('brandName', 'Bilder-Portal')
+export function brandName (lang: Lang = defaultLang()): string {
+  return brandOption('brandName', t(lang).defaultBrandName, lang)
 }
 
 /** Footer links; an empty value hides the link. */
@@ -101,12 +114,13 @@ export function sourceUrl (): string {
 }
 
 /**
- * Default text for the WhatsApp / share button. Placeholders:
- * {titel} album title, {nr} image number, {anzahl} total images.
- * Can be overridden per album with a line "Teilen: ..." in the album description.
+ * Default text for the WhatsApp / share button. Placeholders: {title} album
+ * title, {number} image number, {total} total images (or the German
+ * {titel}, {nr}, {anzahl}). Can be overridden per album with a line
+ * "Share: ..." / "Teilen: ..." in the album description.
  */
-export function shareTextTemplate (): string {
-  return brandOption('shareText', 'Das war „{titel}“ – Bild {nr} von {anzahl}')
+export function shareTextTemplate (lang: Lang = defaultLang()): string {
+  return brandOption('shareText', t(lang).gallery.shareText, lang)
 }
 
 /** Link appended to shared images (marketing link, not the album); empty = none. */

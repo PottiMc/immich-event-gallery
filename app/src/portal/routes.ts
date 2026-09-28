@@ -3,7 +3,8 @@
  *   GET  /          landing page with the password field
  *   POST /          password login -> redirect into the matching album
  *   GET  /z/:token  QR code / access link -> redirect into the album
- *   GET  /lizenz    licence notice with the source code link (AGPL-3.0)
+ *   GET  /license   licence notice with the source code link (AGPL-3.0),
+ *                   also as /lizenz
  *   POST /share/unlock  password page of a /share/<key> link (see unlockShare)
  */
 
@@ -18,7 +19,8 @@ import { renderPage } from '../view/render'
 import { listSharedLinks, matchAccessToken, matchPassword, passwordEquals } from './links'
 import { clientIp as requestIp, throttleKey } from './security'
 import { publicBaseUrl, sessionDays } from './settings'
-import { formatWait, LoginThrottle } from './throttle'
+import { LoginThrottle } from './throttle'
+import { langOf, t, varyLang } from './i18n'
 import { Landing, LandingProps, LicensePage } from './views'
 
 export const guestThrottle = new LoginThrottle()
@@ -40,9 +42,9 @@ function noStore (res: Response) {
   res.header('Cache-Control', 'no-store')
 }
 
-function renderLanding (req: Request, res: Response, status: number, props: Omit<LandingProps, 'baseUrl'> = {}) {
+function renderLanding (req: Request, res: Response, status: number, props: Omit<LandingProps, 'baseUrl' | 'lang'> = {}) {
   noStore(res)
-  res.status(status).send(renderPage(h(Landing, { baseUrl: baseUrl(req), ...props })))
+  res.status(status).send(renderPage(h(Landing, { baseUrl: baseUrl(req), lang: langOf(res), ...props })))
 }
 
 /**
@@ -66,15 +68,16 @@ export function registerPortalRoutes (app: Express) {
     renderLanding(req, res, 200)
   })
 
-  app.get('/lizenz', (_req, res) => {
-    res.send(renderPage(h(LicensePage, {})))
+  app.get(['/license', '/lizenz'], (_req, res) => {
+    varyLang(res)
+    res.send(renderPage(h(LicensePage, { lang: langOf(res) })))
   })
 
   app.post('/', asyncHandler(async (req, res) => {
     const ip = clientIp(req)
     const gate = guestThrottle.check(ip)
     if (!gate.allowed) {
-      renderLanding(req, res, 429, { error: 'throttled', retryText: formatWait(gate.retryAfterSec) })
+      renderLanding(req, res, 429, { error: 'throttled', retryAfterSec: gate.retryAfterSec })
       return
     }
 
@@ -98,7 +101,7 @@ export function registerPortalRoutes (app: Express) {
       await delay(FAIL_DELAY_MS)
       if (!next.allowed) {
         log.warn('Portal: ' + (next.global ? 'global' : ip) + ' blocked for ' + next.retryAfterSec + 's')
-        renderLanding(req, res, 429, { error: 'throttled', retryText: formatWait(next.retryAfterSec) })
+        renderLanding(req, res, 429, { error: 'throttled', retryAfterSec: next.retryAfterSec })
       } else {
         renderLanding(req, res, 401, { error: 'wrong', remaining: guestThrottle.remaining(ip) })
       }
@@ -115,7 +118,7 @@ export function registerPortalRoutes (app: Express) {
     const ip = clientIp(req)
     const gate = guestThrottle.check(ip, { global: false })
     if (!gate.allowed) {
-      renderLanding(req, res, 429, { error: 'throttled', retryText: formatWait(gate.retryAfterSec) })
+      renderLanding(req, res, 429, { error: 'throttled', retryAfterSec: gate.retryAfterSec })
       return
     }
     const list = await listSharedLinks()
@@ -174,19 +177,19 @@ export async function unlockShare (req: Request, res: Response) {
   // JSON only: the password page posts JSON, and this blocks cross-site
   // HTML form posts (a JSON body from another site needs CORS approval)
   if (!req.is('application/json')) {
-    res.status(415).json({ error: 'Ungültige Anfrage.' })
+    res.status(415).json({ error: t(langOf(res)).unlock.invalidRequest })
     return
   }
   const ip = clientIp(req)
   const gate = guestThrottle.check(ip)
   if (!gate.allowed) {
-    res.status(429).json({ error: throttledText(gate.retryAfterSec) })
+    res.status(429).json({ error: throttledText(res, gate.retryAfterSec) })
     return
   }
   const key = typeof req.body?.key === 'string' ? req.body.key : ''
   const input = typeof req.body?.password === 'string' ? req.body.password.slice(0, 200) : ''
   if (!isKey(key) || key.length > 200) {
-    res.status(400).json({ error: 'Ungültige Anfrage.' })
+    res.status(400).json({ error: t(langOf(res)).unlock.invalidRequest })
     return
   }
 
@@ -197,9 +200,9 @@ export async function unlockShare (req: Request, res: Response) {
     await delay(FAIL_DELAY_MS)
     if (!next.allowed) {
       log.warn('Portal: ' + (next.global ? 'global' : ip) + ' blocked for ' + next.retryAfterSec + 's')
-      res.status(429).json({ error: throttledText(next.retryAfterSec) })
+      res.status(429).json({ error: throttledText(res, next.retryAfterSec) })
     } else {
-      res.status(401).json({ error: 'Das Passwort stimmt leider nicht. Schau nochmal genau hin – Groß-/Kleinschreibung und Leerzeichen sind egal.' })
+      res.status(401).json({ error: t(langOf(res)).unlock.wrong })
     }
     return
   }
@@ -209,6 +212,7 @@ export async function unlockShare (req: Request, res: Response) {
   res.json({ ok: true })
 }
 
-function throttledText (retryAfterSec: number): string {
-  return `Das waren ein paar Versuche zu viel. Bitte probier es in ${formatWait(retryAfterSec)} noch einmal.`
+function throttledText (res: Response, retryAfterSec: number): string {
+  const m = t(langOf(res))
+  return m.throttled(m.wait(retryAfterSec))
 }
