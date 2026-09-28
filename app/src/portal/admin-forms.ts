@@ -1,7 +1,7 @@
 /*
- * Protection for the admin page's forms and uploads. The browser resends Basic
- * Auth credentials on cross-site requests too, so every change must prove it
- * came from our own page.
+ * Protection for the admin page's forms and uploads. The browser may send the
+ * session cookie (or cached Basic Auth credentials) on cross-site requests
+ * too, so every change must prove it came from our own page.
  */
 
 import crypto from 'crypto'

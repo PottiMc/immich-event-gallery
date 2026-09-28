@@ -114,11 +114,17 @@ const en = {
 
   admin: {
     title: 'Photo admin',
-    realm: 'Photo admin',
     tabShares: 'Shares',
     tabBranding: 'Branding',
     tooManyFailures: (wait: string) => `Too many failed attempts. Please try again in ${wait}.`,
     loginRequired: 'Login required',
+    loginTitle: 'Sign in',
+    loginLead: 'Enter the admin password to manage shares, QR codes and branding.',
+    loginPasswordLabel: 'Admin password',
+    loginPlaceholder: 'Admin password',
+    loginSubmit: 'Sign in',
+    loginWrong: 'That password isn’t right.',
+    logout: 'Sign out',
     invalidForm: 'Invalid request. Please reload the admin page and save again.',
     shareNotFound: 'Share not found',
     copied: 'Copied ✓',
@@ -385,11 +391,17 @@ const de: Messages = {
 
   admin: {
     title: 'Bilder-Admin',
-    realm: 'Bilder-Admin',
     tabShares: 'Freigaben',
     tabBranding: 'Branding',
     tooManyFailures: (wait: string) => `Zu viele Fehlversuche. Bitte in ${wait} erneut versuchen.`,
     loginRequired: 'Anmeldung erforderlich',
+    loginTitle: 'Anmelden',
+    loginLead: 'Gib das Admin-Passwort ein, um Freigaben, QR-Codes und Branding zu verwalten.',
+    loginPasswordLabel: 'Admin-Passwort',
+    loginPlaceholder: 'Admin-Passwort',
+    loginSubmit: 'Anmelden',
+    loginWrong: 'Das Passwort stimmt nicht.',
+    logout: 'Abmelden',
     invalidForm: 'Ungültige Anfrage. Bitte die Admin-Seite neu laden und erneut speichern.',
     shareNotFound: 'Freigabe nicht gefunden',
     copied: 'Kopiert ✓',
@@ -569,7 +581,7 @@ export function defaultLang (): Lang {
   return isLang(configured) ? configured : 'en'
 }
 
-function cookieValue (header: string | undefined, name: string): string | undefined {
+export function cookieValue (header: string | undefined, name: string): string | undefined {
   for (const part of (header || '').split(';')) {
     const eq = part.indexOf('=')
     if (eq > 0 && part.slice(0, eq).trim() === name) return part.slice(eq + 1).trim()

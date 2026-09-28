@@ -273,6 +273,16 @@ code {
 }
 .adm-tabs a:hover, .adm-tabs a:focus-visible { color: var(--eg-text); outline: none; }
 .adm-tabs a[aria-current="page"] { color: var(--eg-gold); border-bottom-color: var(--eg-gold); }
+.adm-logout { margin-left: auto; display: flex; }
+.adm-logout button {
+  padding: 10px 0 10px 16px;
+  color: var(--eg-muted);
+  background: none;
+  border: 0;
+  font: inherit;
+  cursor: pointer;
+}
+.adm-logout button:hover, .adm-logout button:focus-visible { color: var(--eg-text); outline: none; }
 
 /* Branding page */
 .adm-intro { margin: 0; max-width: 70ch; }

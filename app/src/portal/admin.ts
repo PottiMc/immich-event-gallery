@@ -1,12 +1,12 @@
 /*
  * Admin server on its own port (default 3001). Not meant to be public:
- * publish it only behind reverse-proxy authentication (e.g. SSO). Basic Auth with
- * PORTAL_ADMIN_PASSWORD is the second lock. Disabled when no password is set.
+ * publish it only behind reverse-proxy authentication (e.g. SSO). The login with
+ * PORTAL_ADMIN_PASSWORD (admin-auth.ts) is the second lock. Disabled when no
+ * password is set.
  */
 
 import dayjs from 'dayjs'
 import express from 'express'
-import { NextFunction, Request, Response } from 'express-serve-static-core'
 import { h } from 'preact'
 import QRCode from 'qrcode'
 import { asyncHandler } from '../http'
@@ -19,41 +19,15 @@ import { suggestPassword } from './passwords'
 import { BRAND, brandAsset, sendBrandFile } from './branding'
 import { adminPassword, adminPort, publicBaseUrl, publicHostLabel, trustProxy } from './settings'
 import { downloadQuality, isDownloadQuality, saveRuntimeSettings, settingsPersistent } from './runtime-settings'
-import { LoginThrottle } from './throttle'
 import { Lang, langOf, languageMiddleware, t } from './i18n'
-import { clientIp, securityHeaders, throttleKey } from './security'
+import { securityHeaders } from './security'
 import { accessToken } from './tokens'
 import { qrSvg } from './gallery'
-import { adminFormToken, safeEquals, validFormPost } from './admin-forms'
+import { adminFormToken, validFormPost } from './admin-forms'
+import { registerLoginRoutes, requireAdmin } from './admin-auth'
 import { registerBrandingRoutes } from './admin-branding'
 
 export { adminFormToken }
-
-const adminThrottle = new LoginThrottle({ maxFailures: 5, globalMaxFailures: 30 })
-
-function basicAuth (req: Request, res: Response, next: NextFunction) {
-  const ip = throttleKey(clientIp(req))
-  const gate = adminThrottle.check(ip)
-  const m = t(langOf(res))
-  if (!gate.allowed) {
-    res.status(429).send(m.admin.tooManyFailures(m.wait(gate.retryAfterSec)))
-    return
-  }
-  const header = req.headers.authorization || ''
-  if (header.startsWith('Basic ')) {
-    const decoded = Buffer.from(header.slice(6), 'base64').toString('utf8')
-    const password = decoded.slice(decoded.indexOf(':') + 1)
-    if (safeEquals(password, adminPassword())) {
-      adminThrottle.succeed(ip)
-      next()
-      return
-    }
-    adminThrottle.fail(ip)
-    log.warn('Admin: wrong password from ' + ip)
-  }
-  res.set('WWW-Authenticate', `Basic realm="${m.admin.realm}", charset="UTF-8"`)
-  res.status(401).send(m.admin.loginRequired)
-}
 
 function linkAccessUrl (link: PortalLink, baseUrl: string): string {
   return link.password
@@ -125,7 +99,8 @@ export function createAdminApp () {
   app.use('/share/static', express.static('public'))
   app.get('/favicon.ico', (_req, res) => sendBrandFile(res, 'favicon.ico'))
   app.use(languageMiddleware)
-  app.use(basicAuth)
+  registerLoginRoutes(app)
+  app.use(requireAdmin)
 
   app.get('/', asyncHandler(async (req, res) => {
     const lang = langOf(res)

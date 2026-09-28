@@ -19,9 +19,11 @@ Immich is automatically online.
   for 5 minutes. Every failure also costs 600 ms. `/z/` is exempt from the global pause.
 - `/share/unlock` validates the password itself and uses the same lockout. Upstream stored any password unchecked in
   the cookie.
-- The admin server runs on port 3001 with Basic Auth (`PORTAL_ADMIN_PASSWORD`). It provides the share overview, QR
-  codes as PNG/SVG, printable A6 cards, password suggestions and a branding page. Every admin POST goes through
-  `validFormPost` in `portal/admin-forms.ts` (CSRF token as form field or `X-CSRF-Token` header, plus Sec-Fetch-Site).
+- The admin server runs on port 3001 behind a login form (`PORTAL_ADMIN_PASSWORD`, `portal/admin-auth.ts`: signed
+  7-day session cookie; a Basic Auth header is still accepted for scripts; both share one lockout). It provides the
+  share overview, QR codes as PNG/SVG, printable A6 cards, password suggestions and a branding page. Every admin POST
+  goes through `validFormPost` in `portal/admin-forms.ts` (CSRF token as form field or `X-CSRF-Token` header, plus
+  Sec-Fetch-Site).
 - Slug links (`/s/…`) are refused everywhere because they are guessable.
 
 ## Layout

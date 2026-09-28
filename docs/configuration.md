@@ -20,7 +20,7 @@ A few settings can also be changed on the admin page, see [Admin settings](#admi
 | `IMMICH_API_KEY` | yes | – | Immich API key with **only** the `sharedLink.read` permission. It is used to list shared links and match passwords. |
 | `PORTAL_SECRET` | yes | random | At least 32 characters. Session cookies and QR tokens are derived from it. If it is missing, a random secret is used, and every restart logs out all guests and invalidates all QR codes. |
 | `PUBLIC_BASE_URL` | recommended | from request | Public address of the guest portal without a trailing slash. It is used for QR codes, printed cards and link previews. |
-| `PORTAL_ADMIN_PASSWORD` | no | – | Enables the admin server (HTTP Basic Auth; any username). Without it, the admin server does not start. |
+| `PORTAL_ADMIN_PASSWORD` | no | – | Enables the admin server. You sign in on its login page (password managers can fill it in) and stay signed in for 7 days; changing the password signs every browser out. Scripts can send it as HTTP Basic Auth (any username). Without it, the admin server does not start. |
 | `PORTAL_ADMIN_PORT` | no | `3001` | Port of the admin server **inside** the container. |
 | `TRUST_PROXY` | no | private networks | Express [`trust proxy`](https://expressjs.com/en/guide/behind-proxies.html) setting: `true`, `false`, a hop count, or a comma-separated list of addresses or subnets. The default is `loopback, linklocal, uniquelocal`. Only trusted proxies may set the client IP that the lockout counts. |
 | `IPP_PORT` | no | `3000` | Port of the guest portal inside the container. |

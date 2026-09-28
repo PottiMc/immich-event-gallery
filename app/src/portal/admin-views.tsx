@@ -1,8 +1,10 @@
 /*
- * Admin pages (separate port, behind reverse-proxy auth + Basic Auth):
- * overview of all shared links with passwords, QR codes and printable cards.
+ * Admin pages (separate port, behind reverse-proxy auth + the admin login):
+ * login form, overview of all shared links with passwords, QR codes and
+ * printable cards.
  */
 
+import { adminFormToken } from './admin-forms'
 import { brandUrl } from './branding'
 import { ComponentChildren } from 'preact'
 import { Lang, Messages, t } from './i18n'
@@ -179,6 +181,10 @@ export function AdminHeader ({ lang, active, title, subtitle }: AdminHeaderProps
       <nav class="adm-tabs" aria-label={m.admin.title}>
         <a href="/" aria-current={active === 'shares' ? 'page' : undefined}>{m.admin.tabShares}</a>
         <a href="/branding" aria-current={active === 'branding' ? 'page' : undefined}>{m.admin.tabBranding}</a>
+        <form method="post" action="/abmelden" class="adm-logout">
+          <input type="hidden" name="csrf" value={adminFormToken()}/>
+          <button type="submit">{m.admin.logout}</button>
+        </form>
       </nav>
     </>
   )
@@ -259,6 +265,71 @@ export function AdminPage (props: AdminPageProps) {
           </details>
         </main>
         <script src={`${STATIC}/portal/admin.js`}/>
+      </body>
+    </html>
+  )
+}
+
+export interface AdminLoginProps {
+  lang: Lang
+  /** Where to go after signing in */
+  next: string
+  error?: 'wrong' | 'throttled'
+  retryAfterSec?: number
+  remaining?: number
+}
+
+function loginError (props: AdminLoginProps, m: Messages): string | undefined {
+  if (props.error === 'throttled') return m.admin.tooManyFailures(m.wait(props.retryAfterSec || 0))
+  if (props.error !== 'wrong') return undefined
+  const left = props.remaining
+  return m.admin.loginWrong + (left !== undefined && left > 0 && left <= 2 ? m.landing.attemptsLeft(left) : '')
+}
+
+/**
+ * Login form in the look of the guest landing page. A real form with
+ * username and current-password fields, so password managers offer to save
+ * and fill it in.
+ */
+export function AdminLogin (props: AdminLoginProps) {
+  const m = t(props.lang)
+  const message = loginError(props, m)
+  const throttled = props.error === 'throttled'
+  return (
+    <html lang={m.htmlLang}>
+      <head>
+        <BrandHead lang={props.lang} title={m.admin.loginTitle + ' – ' + m.admin.title}/>
+      </head>
+      <body class="eg-page">
+        <LangSwitch lang={props.lang} class="eg-lang-corner"/>
+        <main class="eg-center">
+          <img class="eg-logo eg-logo-login" src={brandUrl('logo-banner.png')} alt={brandName(props.lang)} width="366" height="142"/>
+          <section class="eg-card">
+            <h1>{m.admin.title}</h1>
+            <p class="eg-lead">{m.admin.loginLead}</p>
+            <form method="post" action="/anmelden" class="eg-form">
+              <input type="hidden" name="weiter" value={props.next}/>
+              {/* Password managers file the entry under this name; the server ignores it */}
+              <input type="text" name="username" value="admin" autoComplete="username" hidden/>
+              <label for="admin-password" class="eg-sr-only">{m.admin.loginPasswordLabel}</label>
+              <input
+                id="admin-password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                placeholder={m.admin.loginPlaceholder}
+                required
+                autoFocus
+                maxLength={200}
+                aria-invalid={message ? 'true' : undefined}
+                aria-describedby={message ? 'admin-login-error' : undefined}
+                disabled={throttled}
+              />
+              <button type="submit" class="eg-button" disabled={throttled}>{m.admin.loginSubmit}</button>
+            </form>
+            {message && <p id="admin-login-error" class="eg-error" role="alert">{message}</p>}
+          </section>
+        </main>
       </body>
     </html>
   )
