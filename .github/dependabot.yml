@@ -10,6 +10,11 @@ updates:
     groups:
       npm:
         patterns: ["*"]
+    # Major versions (Express 5, ESLint 10, TypeScript 7, ...) need code
+    # changes and are upgraded by hand; only minor/patch updates arrive here.
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: docker
     directory: /
     schedule:
