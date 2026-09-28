@@ -115,6 +115,8 @@ const en = {
   admin: {
     title: 'Photo admin',
     realm: 'Photo admin',
+    tabShares: 'Shares',
+    tabBranding: 'Branding',
     tooManyFailures: (wait: string) => `Too many failed attempts. Please try again in ${wait}.`,
     loginRequired: 'Login required',
     invalidForm: 'Invalid request. Please reload the admin page and save again.',
@@ -206,6 +208,68 @@ const en = {
     shareTextExample: (brand: string) => `Share: That was the wine hike on the Saar with ${brand} 🍷 – photo {number} of {total}`,
     suggestionsHeading: 'Password suggestions',
     newSuggestions: 'New suggestions'
+  },
+
+  branding: {
+    title: 'Branding',
+    intro: 'Name, links, share text and images of your portal. Changes take effect right away and are stored in the ' +
+      'portal’s data folder. They take precedence over the branding folder on the server.',
+    notWritable: (dataDir: ComponentChildren) => <>
+      <strong>Nothing can be saved here.</strong> The portal’s data folder ({dataDir}) is not writable. See the section
+      “Admin settings” in <code>docs/configuration.md</code>.
+    </>,
+    sourceAdmin: 'set here',
+    sourceFolder: 'branding folder',
+    sourceDefault: 'default',
+
+    textsHeading: 'Texts and links',
+    brandName: 'Name',
+    brandNameHint: 'Shown in page titles, image descriptions and link previews. Empty = neutral name.',
+    websiteUrl: 'Website',
+    websiteUrlHint: 'Link in the footer. Empty = hidden.',
+    imprintUrl: 'Legal notice',
+    imprintUrlHint: 'Link in the footer (“Impressum”, mandatory in Germany). Empty = hidden.',
+    privacyUrl: 'Privacy policy',
+    privacyUrlHint: 'Link in the footer. Empty = hidden.',
+    shareUrl: 'Link when sharing photos',
+    shareUrlHint: 'Added below every shared photo – your website, not the album. Empty = no link.',
+    shareTextEn: 'Share text for English guests',
+    shareTextDe: 'Share text for German guests',
+    shareTextHint: (placeholders: ComponentChildren) => <>
+      Sent along when a guest shares a photo. Placeholders: {placeholders}. Empty = default text. A line
+      “Share: …” / “Teilen: …” in an album description overrides it for that album.
+    </>,
+    save: 'Save texts',
+    saved: 'Saved ✓ – the guest pages show the new texts right away.',
+    textsReset: 'Reset ✓ – the texts from the branding folder or the defaults apply again.',
+    resetTexts: 'Reset texts',
+    resetTextsHint: 'Removes the texts saved here. Then the branding folder or the defaults apply again.',
+    invalidUrl: (field: string) => `“${field}” needs a full address starting with https://, or leave it empty.`,
+    tooLong: (field: string) => `“${field}” is too long.`,
+    saveFailed: 'Could not save. Is the data folder writable?',
+
+    imagesHeading: 'Logos and icons',
+    imagesIntro: 'PNG with a transparent background works best for the logos. Maximum 5 MB per file.',
+    recommended: 'Recommended',
+    current: 'Current',
+    ratioWarning: 'Different aspect ratio than recommended – the image may look squashed or have wide margins.',
+    upload: 'Upload new image',
+    uploading: 'Uploading …',
+    resetImage: 'Reset',
+    imageSaved: 'Image saved ✓',
+    imageReset: 'Image reset ✓',
+    wrongType: (format: string) => `Please choose a ${format} file.`,
+    tooLarge: 'The file is larger than 5 MB.',
+    uploadFailed: 'Upload failed. Please reload the page and try again.',
+    slots: {
+      'logo-banner.png': ['Logo for dark backgrounds', 'Top of every page and the dark print card'],
+      'logo-light.png': ['Logo for light backgrounds', 'The light print card'],
+      'icon-192.png': ['App icon', 'Browser and Android home screen'],
+      'apple-touch-icon.png': ['iPhone icon', 'Home screen on iPhone and iPad; no transparency'],
+      'og-image.jpg': ['Link preview', 'Shown when the portal address is shared on WhatsApp, Signal & co.'],
+      'favicon.ico': ['Favicon', 'Browser tab']
+    } as Record<string, [string, string]>,
+    viewSite: 'Open the guest page'
   },
 
   card: {
@@ -322,6 +386,8 @@ const de: Messages = {
   admin: {
     title: 'Bilder-Admin',
     realm: 'Bilder-Admin',
+    tabShares: 'Freigaben',
+    tabBranding: 'Branding',
     tooManyFailures: (wait: string) => `Zu viele Fehlversuche. Bitte in ${wait} erneut versuchen.`,
     loginRequired: 'Anmeldung erforderlich',
     invalidForm: 'Ungültige Anfrage. Bitte die Admin-Seite neu laden und erneut speichern.',
@@ -412,6 +478,68 @@ const de: Messages = {
     shareTextExample: (brand: string) => `Teilen: Das war die Weinwanderung an der Saar mit ${brand} 🍷 – Bild {nr} von {anzahl}`,
     suggestionsHeading: 'Passwort-Vorschläge',
     newSuggestions: 'Neue Vorschläge'
+  },
+
+  branding: {
+    title: 'Branding',
+    intro: 'Name, Links, Teilen-Text und Bilder deines Portals. Änderungen gelten sofort und werden im Datenordner des ' +
+      'Portals gespeichert. Sie haben Vorrang vor dem Branding-Ordner auf dem Server.',
+    notWritable: (dataDir: ComponentChildren) => <>
+      <strong>Hier kann nichts gespeichert werden.</strong> Der Datenordner des Portals ({dataDir}) ist nicht
+      beschreibbar. Siehe Abschnitt „Admin settings“ in <code>docs/configuration.md</code>.
+    </>,
+    sourceAdmin: 'hier gesetzt',
+    sourceFolder: 'Branding-Ordner',
+    sourceDefault: 'Standard',
+
+    textsHeading: 'Texte und Links',
+    brandName: 'Name',
+    brandNameHint: 'Steht in Seitentiteln, Bildbeschreibungen und Link-Vorschauen. Leer = neutraler Name.',
+    websiteUrl: 'Website',
+    websiteUrlHint: 'Link in der Fußzeile. Leer = ausgeblendet.',
+    imprintUrl: 'Impressum',
+    imprintUrlHint: 'Link in der Fußzeile, in Deutschland Pflicht. Leer = ausgeblendet.',
+    privacyUrl: 'Datenschutz',
+    privacyUrlHint: 'Link in der Fußzeile. Leer = ausgeblendet.',
+    shareUrl: 'Link beim Teilen von Bildern',
+    shareUrlHint: 'Steht unter jedem geteilten Bild – deine Website, nicht das Album. Leer = kein Link.',
+    shareTextEn: 'Teilen-Text für englische Gäste',
+    shareTextDe: 'Teilen-Text für deutsche Gäste',
+    shareTextHint: (placeholders: ComponentChildren) => <>
+      Wird mitgeschickt, wenn ein Gast ein Bild teilt. Platzhalter: {placeholders}. Leer = Standardtext. Eine Zeile
+      „Share: …“ / „Teilen: …“ in der Albumbeschreibung ersetzt ihn für dieses Album.
+    </>,
+    save: 'Texte speichern',
+    saved: 'Gespeichert ✓ – die Gästeseiten zeigen die neuen Texte sofort.',
+    textsReset: 'Zurückgesetzt ✓ – es gelten wieder die Texte aus dem Branding-Ordner bzw. die Standards.',
+    resetTexts: 'Texte zurücksetzen',
+    resetTextsHint: 'Entfernt die hier gespeicherten Texte. Dann gelten wieder der Branding-Ordner bzw. die Standards.',
+    invalidUrl: (field: string) => `„${field}“ braucht eine vollständige Adresse mit https:// – oder bleibt leer.`,
+    tooLong: (field: string) => `„${field}“ ist zu lang.`,
+    saveFailed: 'Speichern hat nicht geklappt. Ist der Datenordner beschreibbar?',
+
+    imagesHeading: 'Logos und Icons',
+    imagesIntro: 'Für die Logos am besten PNG mit transparentem Hintergrund. Höchstens 5 MB pro Datei.',
+    recommended: 'Empfohlen',
+    current: 'Aktuell',
+    ratioWarning: 'Anderes Seitenverhältnis als empfohlen – das Bild wirkt evtl. gestaucht oder hat breite Ränder.',
+    upload: 'Neues Bild hochladen',
+    uploading: 'Wird hochgeladen …',
+    resetImage: 'Zurücksetzen',
+    imageSaved: 'Bild gespeichert ✓',
+    imageReset: 'Bild zurückgesetzt ✓',
+    wrongType: (format: string) => `Bitte eine ${format}-Datei wählen.`,
+    tooLarge: 'Die Datei ist größer als 5 MB.',
+    uploadFailed: 'Hochladen hat nicht geklappt. Bitte Seite neu laden und nochmal versuchen.',
+    slots: {
+      'logo-banner.png': ['Logo für dunklen Hintergrund', 'Oben auf allen Seiten und auf der dunklen Druckkarte'],
+      'logo-light.png': ['Logo für hellen Hintergrund', 'Die helle Druckkarte'],
+      'icon-192.png': ['App-Icon', 'Browser und Startbildschirm auf Android'],
+      'apple-touch-icon.png': ['iPhone-Icon', 'Startbildschirm auf iPhone und iPad; ohne Transparenz'],
+      'og-image.jpg': ['Link-Vorschau', 'Erscheint, wenn die Portal-Adresse per WhatsApp, Signal & Co. geteilt wird'],
+      'favicon.ico': ['Favicon', 'Browser-Tab']
+    } as Record<string, [string, string]>,
+    viewSite: 'Gästeseite öffnen'
   },
 
   card: {

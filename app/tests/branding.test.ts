@@ -10,11 +10,14 @@ let dir: string
 beforeEach(() => {
   dir = mkdtempSync(join(tmpdir(), 'eg-branding-'))
   process.env.BRANDING_DIR = dir
+  // No uploads from the admin page: an empty data folder
+  process.env.DATA_DIR = join(dir, 'data')
   resetBrandingCache()
 })
 
 afterEach(() => {
   rmSync(dir, { recursive: true, force: true })
+  delete process.env.DATA_DIR
   resetBrandingCache()
 })
 

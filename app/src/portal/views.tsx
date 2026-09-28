@@ -6,7 +6,7 @@
 
 import { ComponentChildren } from 'preact'
 import { ASSET_VERSION } from '../version'
-import { BRAND } from './branding'
+import { brandUrl } from './branding'
 import { Lang, LANGS, t } from './i18n'
 import { brandName, imprintUrl, privacyUrl, sourceUrl, websiteUrl } from './settings'
 
@@ -40,9 +40,9 @@ export function BrandHead ({ title, lang, description, ogImage, ogUrl }: HeadPro
         <meta name="twitter:card" content="summary_large_image"/>
       </>}
       {ogUrl && <meta property="og:url" content={ogUrl}/>}
-      <link rel="icon" href="/favicon.ico" sizes="any"/>
-      <link rel="icon" href={`${BRAND}/icon-192.png`} type="image/png"/>
-      <link rel="apple-touch-icon" href={`${BRAND}/apple-touch-icon.png`}/>
+      <link rel="icon" href={brandUrl('favicon.ico')} sizes="any"/>
+      <link rel="icon" href={brandUrl('icon-192.png')} type="image/png"/>
+      <link rel="apple-touch-icon" href={brandUrl('apple-touch-icon.png')}/>
       <link rel="stylesheet" href={`${STATIC}/portal/portal.css`}/>
     </>
   )
@@ -91,7 +91,7 @@ function CenteredPage ({ children, script, lang }: { children: ComponentChildren
       <LangSwitch lang={lang} class="eg-lang-corner"/>
       <main class="eg-center">
         <a href="/" class="eg-logo-link" aria-label={brandName(lang) + ' – ' + t(lang).home}>
-          <img class="eg-logo" src={`${BRAND}/logo-banner.png`} alt={brandName(lang)} width="366" height="142"/>
+          <img class="eg-logo" src={brandUrl('logo-banner.png')} alt={brandName(lang)} width="366" height="142"/>
         </a>
         {children}
       </main>
@@ -141,7 +141,7 @@ export function Landing (props: LandingProps) {
           lang={props.lang}
           title={m.landing.title + ' – ' + brandName(props.lang)}
           description={m.landing.description}
-          ogImage={props.baseUrl + `${BRAND}/og-image.jpg`}
+          ogImage={props.baseUrl + brandUrl('og-image.jpg')}
           ogUrl={props.baseUrl + '/'}
         />
       </head>

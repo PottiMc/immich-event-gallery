@@ -20,7 +20,8 @@ Immich is automatically online.
 - `/share/unlock` validates the password itself and uses the same lockout. Upstream stored any password unchecked in
   the cookie.
 - The admin server runs on port 3001 with Basic Auth (`PORTAL_ADMIN_PASSWORD`). It provides the share overview, QR
-  codes as PNG/SVG, printable A6 cards and password suggestions.
+  codes as PNG/SVG, printable A6 cards, password suggestions and a branding page. Every admin POST goes through
+  `validFormPost` in `portal/admin-forms.ts` (CSRF token as form field or `X-CSRF-Token` header, plus Sec-Fetch-Site).
 - Slug links (`/s/…`) are refused everywhere because they are guessable.
 
 ## Layout
@@ -33,10 +34,13 @@ Immich is automatically online.
   volume), laid over the loaded config at startup and on save. Currently only the guest download quality
 - `app/src/portal/i18n.tsx`: all page texts in English and German, and the language choice per request
   (`?lang=` switcher → cookie `lang` → `Accept-Language` → `portal.defaultLanguage`)
-- `app/src/portal/branding.ts`: operator branding from `BRANDING_DIR` (logos, icons, `branding.json`), falling
-  back to the neutral assets in `app/public/brand/`. Real brand assets must **never** be committed; locally they live in
+- `app/src/portal/branding.ts`: operator branding in three layers: set on the admin page (`DATA_DIR/branding/`),
+  the branding folder (`BRANDING_DIR`: logos, icons, `branding.json`), the neutral assets in `app/public/brand/`.
+  Link brand images with `brandUrl()` so a new upload is not hidden by the browser cache. Uploads are checked by their
+  first bytes (PNG/JPEG/ICO only, never SVG). `admin-branding.ts` + `admin-branding-views.tsx` are the admin page for it. Real brand assets must **never** be committed; locally they live in
   the gitignored `app/branding/`
-- `app/public/portal/`: CSS and the external scripts required by the CSP (`unlock.js`, `admin.js`, `card.js`)
+- `app/public/portal/`: CSS and the external scripts required by the CSP (`unlock.js`, `admin.js`, `card.js`,
+  `branding.js`)
 - Small, deliberate edits to upstream files: `index.ts`, `encrypt.ts`, `immich.ts`, `invalidRequestHandler.ts`,
   `gallery/builder.ts`, `view/gallery.tsx`, `share.ts` (per-language expiry date format), and the client texts
   (now read from `client/i18n.ts`)

@@ -3,7 +3,8 @@
  * overview of all shared links with passwords, QR codes and printable cards.
  */
 
-import { BRAND } from './branding'
+import { brandUrl } from './branding'
+import { ComponentChildren } from 'preact'
 import { Lang, Messages, t } from './i18n'
 import { DownloadQuality } from './runtime-settings'
 import { brandName } from './settings'
@@ -155,6 +156,34 @@ function SettingsSection ({ settings, m }: { settings: AdminSettingsView, m: Mes
   )
 }
 
+interface AdminHeaderProps {
+  lang: Lang
+  active: 'shares' | 'branding'
+  title: string
+  subtitle: ComponentChildren
+}
+
+/** Header of every admin page: logo, title, language switcher and the page tabs. */
+export function AdminHeader ({ lang, active, title, subtitle }: AdminHeaderProps) {
+  const m = t(lang)
+  return (
+    <>
+      <header class="adm-header">
+        <img src={brandUrl('logo-banner.png')} alt={brandName(lang)} height="56"/>
+        <div>
+          <h1>{title}</h1>
+          <p>{subtitle}</p>
+        </div>
+        <LangSwitch lang={lang} class="adm-lang"/>
+      </header>
+      <nav class="adm-tabs" aria-label={m.admin.title}>
+        <a href="/" aria-current={active === 'shares' ? 'page' : undefined}>{m.admin.tabShares}</a>
+        <a href="/branding" aria-current={active === 'branding' ? 'page' : undefined}>{m.admin.tabBranding}</a>
+      </nav>
+    </>
+  )
+}
+
 export function AdminPage (props: AdminPageProps) {
   const m = t(props.lang)
   const brand = brandName(props.lang)
@@ -168,14 +197,12 @@ export function AdminPage (props: AdminPageProps) {
         <link rel="stylesheet" href={`${STATIC}/portal/admin.css`}/>
       </head>
       <body class="eg-page adm" data-copied={m.admin.copied} data-copy-prompt={m.admin.copyPrompt}>
-        <header class="adm-header">
-          <img src={`${BRAND}/logo-banner.png`} alt={brand} height="56"/>
-          <div>
-            <h1>{m.admin.title}</h1>
-            <p>{m.admin.reachable(active, <a href={props.baseUrl} target="_blank" rel="noopener">{props.baseUrl.replace(/^https?:\/\//, '')}</a>)}</p>
-          </div>
-          <LangSwitch lang={props.lang} class="adm-lang"/>
-        </header>
+        <AdminHeader
+          lang={props.lang}
+          active="shares"
+          title={m.admin.title}
+          subtitle={m.admin.reachable(active, <a href={props.baseUrl} target="_blank" rel="noopener">{props.baseUrl.replace(/^https?:\/\//, '')}</a>)}
+        />
 
         <main class="adm-main">
           {props.baseUrlMissing && (
@@ -266,7 +293,7 @@ export function PrintCard (props: CardProps) {
           <span>{m.card.hint}</span>
         </div>
         <section class="card">
-          <img class="card-logo" src={`${BRAND}/${props.dark ? 'logo-banner.png' : 'logo-light.png'}`} alt={brandName(props.lang)}/>
+          <img class="card-logo" src={brandUrl(props.dark ? 'logo-banner.png' : 'logo-light.png')} alt={brandName(props.lang)}/>
           <p class="card-kicker">{m.card.kicker}</p>
           <h1 class="card-title">{props.title}</h1>
           <div class="card-qr" dangerouslySetInnerHTML={{ __html: props.qrSvg }}/>

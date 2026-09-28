@@ -49,10 +49,17 @@ These are used by `docker-compose.yml` itself and are not passed to the portal:
 
 ## Branding
 
-Without a branding folder the portal is neutral: it is called "Bilder-Portal", shows a generic picture icon, and hides
-the website, imprint and privacy links. Your own brand lives in a folder on the server (`BRANDING_LOCATION`), which is
-mounted read-only at `/app/branding`. Nothing in it ends up in the repository or the image, so nobody who pulls the
-project gets your logos.
+Without any branding the portal is neutral: it is called "Photo Portal" ("Bilder-Portal" in German), shows a generic
+picture icon, and hides the website, imprint and privacy links. There are two ways to add your own brand, and neither
+ends up in the repository or the image, so nobody who pulls the project gets your logos:
+
+- **On the admin page** (tab *Branding*): edit the name, links and share texts, and upload logos and icons. Changes
+  take effect immediately. They are stored in `DATA_DIR/branding/` (the writable data volume) and take precedence
+  over the branding folder. *Reset* removes a value set there, so the branding folder or the default applies again.
+  Uploads must be PNG (logos and icons), JPEG (`og-image.jpg`) or ICO/PNG (`favicon.ico`), at most 5 MB each; SVG is
+  not accepted. The page shows the recommended and the actual size of every image.
+- **In a branding folder** on the server (`BRANDING_LOCATION`), mounted read-only at `/app/branding`. This suits
+  operators who prefer files, and it is the fallback for everything not set on the admin page.
 
 Every file is optional. Whatever is missing falls back to the neutral default in
 [`app/public/brand/`](../app/public/brand/).
@@ -102,17 +109,18 @@ photos); the German `{titel}`, `{nr}` and `{anzahl}` work as well. A single albu
 there, it is used for both languages. The portal hides these lines from guests.
 
 The same keys are also read from the `portal` block of `config.json`, with `branding.json` taking precedence.
-Texts are read once at startup, so restart the container after changing `branding.json`. Images are picked up
-immediately; browsers cache them for a day.
+Texts in the branding folder are read once at startup, so restart the container after changing its `branding.json`
+(changes on the admin page need no restart). Images are picked up immediately: pages link them with a version taken
+from the file, so browsers load a new logo right away.
 
 For local development, put the folder at `app/branding/`, which is gitignored.
 
 ## Admin settings
 
-The admin page has a section **Download für Gäste** that sets what guests get when they download a photo, either
+Besides [branding](#branding), the admin page has a section **Guest downloads** that sets what guests get when they download a photo, either
 singly or as a ZIP:
 
-- **Verkleinert** (`preview`): the preview image Immich generates, by default a JPEG of 1440 px on the long side and
+- **Reduced** (`preview`): the preview image Immich generates, by default a JPEG of 1440 px on the long side and
   usually well under 1 MB. Size and quality are set in Immich under *Administration → Settings → Image Settings →
   Preview*. After changing them, rerun the thumbnail job for all assets under *Jobs*.
 - **Original** (`original`): the uploaded file in full resolution.
@@ -124,10 +132,13 @@ The choice is stored in `settings.json` in `DATA_DIR`. It takes effect immediate
 `ipp.maxDownloadQuality` from `config.json`. As long as nothing has been saved on the admin page, `config.json`
 applies.
 
+Branding set on the admin page is stored in `DATA_DIR/branding/` (texts in `branding.json`, plus the uploaded
+images).
+
 The compose file mounts the named volume `eg-portal-data` at `/app/data`. It is writable although the container's
 filesystem is read-only, and it inherits its ownership from the image, so no `chown` is needed. If you use a bind
 mount instead, the folder must be writable for UID 1000 (`node`). If the folder is not writable, the admin page shows
-a warning and a change only lasts until the next restart.
+a warning: the download setting then only lasts until the next restart, and branding cannot be saved at all.
 
 ## `config.json`
 

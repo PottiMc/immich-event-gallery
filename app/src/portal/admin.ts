@@ -4,7 +4,6 @@
  * PORTAL_ADMIN_PASSWORD is the second lock. Disabled when no password is set.
  */
 
-import crypto from 'crypto'
 import dayjs from 'dayjs'
 import express from 'express'
 import { NextFunction, Request, Response } from 'express-serve-static-core'
@@ -18,19 +17,19 @@ import { AdminLinkView, AdminPage, PrintCard } from './admin-views'
 import { duplicatePasswords, isExpired, isWeakPassword, linkTitle, listSharedLinks, PortalLink } from './links'
 import { suggestPassword } from './passwords'
 import { BRAND, brandAsset, sendBrandFile } from './branding'
-import { adminPassword, adminPort, deriveKey, publicBaseUrl, publicHostLabel, trustProxy } from './settings'
+import { adminPassword, adminPort, publicBaseUrl, publicHostLabel, trustProxy } from './settings'
 import { downloadQuality, isDownloadQuality, saveRuntimeSettings, settingsPersistent } from './runtime-settings'
 import { LoginThrottle } from './throttle'
 import { Lang, langOf, languageMiddleware, t } from './i18n'
 import { clientIp, securityHeaders, throttleKey } from './security'
 import { accessToken } from './tokens'
 import { qrSvg } from './gallery'
+import { adminFormToken, safeEquals, validFormPost } from './admin-forms'
+import { registerBrandingRoutes } from './admin-branding'
+
+export { adminFormToken }
 
 const adminThrottle = new LoginThrottle({ maxFailures: 5, globalMaxFailures: 30 })
-
-function sha256 (value: string): Buffer {
-  return crypto.createHash('sha256').update(value, 'utf8').digest()
-}
 
 function basicAuth (req: Request, res: Response, next: NextFunction) {
   const ip = throttleKey(clientIp(req))
@@ -44,7 +43,7 @@ function basicAuth (req: Request, res: Response, next: NextFunction) {
   if (header.startsWith('Basic ')) {
     const decoded = Buffer.from(header.slice(6), 'base64').toString('utf8')
     const password = decoded.slice(decoded.indexOf(':') + 1)
-    if (crypto.timingSafeEqual(sha256(password), sha256(adminPassword()))) {
+    if (safeEquals(password, adminPassword())) {
       adminThrottle.succeed(ip)
       next()
       return
@@ -94,22 +93,6 @@ async function toView (link: PortalLink, baseUrl: string, duplicates: Set<string
     duplicate: duplicates.has(link.id),
     neverExpires: !link.expiresAt
   }
-}
-
-/**
- * Token for the admin forms. The browser resends Basic Auth credentials on
- * cross-site requests too, so a POST must prove it came from our own page.
- */
-export function adminFormToken (): string {
-  return deriveKey('admin-form').toString('hex')
-}
-
-function validFormPost (req: Request): boolean {
-  // Browsers that send Sec-Fetch-Site tell us directly; the token covers the rest
-  const site = req.get('sec-fetch-site')
-  if (site && site !== 'same-origin') return false
-  const token = typeof req.body?.csrf === 'string' ? req.body.csrf : ''
-  return crypto.timingSafeEqual(sha256(token), sha256(adminFormToken()))
 }
 
 const STATUS_ORDER = { active: 0, 'no-password': 1, expired: 2 }
@@ -182,6 +165,8 @@ export function createAdminApp () {
     log('Admin: guest download quality set to ' + quality)
     res.redirect(303, (result.ok ? '/?gespeichert' : '/?nicht-dauerhaft') + '#einstellungen')
   })
+
+  registerBrandingRoutes(app)
 
   app.get('/qr/:id.:format(png|svg)', asyncHandler(async (req, res) => {
     const link = await findLink(req.params.id)

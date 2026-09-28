@@ -46,7 +46,8 @@ When the link expires or is deleted, the album goes offline.
   wrong attempt.
 - **Admin pages** on a separate port: all shares as a compact list with their passwords and warnings (weak, duplicate,
   missing password, no expiry), QR codes as PNG/SVG, printable A6 cards and password suggestions. Guest downloads
-  can be switched between the original files and smaller preview images there.
+  can be switched between the original files and smaller preview images there, and a *Branding* tab sets the name,
+  links, share texts, logos and icons without touching any files.
 - **No third parties.** Fonts are self-hosted, and there are no trackers, no external requests and no Google Fonts.
   The pages are hidden from search engines.
 - Everything the upstream gallery offers: justified-rows layout, PhotoSwipe lightbox, videos and motion photos,
@@ -102,8 +103,8 @@ The fork keeps its additions separate from the upstream code so that upstream up
 | `app/public/portal/` | Stylesheets and the small scripts required by the CSP |
 | `app/public/brand/` | Neutral default logos and icons |
 
-To run it for your own events, put your logos, icons and a `branding.json` (name, website, imprint, privacy, share
-text) into the branding folder on your server. The [branding section](docs/configuration.md#branding) lists the
+To run it for your own events, set your name, links, share texts, logos and icons on the admin page (tab
+*Branding*), or put them as files into the branding folder on your server. The [branding section](docs/configuration.md#branding) lists the
 files; no code changes or image rebuilds are needed. The interface texts in both languages live in
 `app/src/portal/i18n.tsx` (pages) and `app/src/shared/i18n.ts` (gallery scripts), and the colours in
 `app/public/portal/*.css`. If you change the code, point `sourceUrl` at your own public repository, because the

@@ -89,7 +89,8 @@ function brandOption (key: string, fallback: string, lang?: Lang): string {
 }
 
 export function brandName (lang: Lang = defaultLang()): string {
-  return brandOption('brandName', t(lang).defaultBrandName, lang)
+  // An empty name (e.g. cleared on the admin page) means the neutral default
+  return brandOption('brandName', '', lang) || t(lang).defaultBrandName
 }
 
 /** Footer links; an empty value hides the link. */
@@ -120,7 +121,7 @@ export function sourceUrl (): string {
  * "Share: ..." / "Teilen: ..." in the album description.
  */
 export function shareTextTemplate (lang: Lang = defaultLang()): string {
-  return brandOption('shareText', t(lang).gallery.shareText, lang)
+  return brandOption('shareText', '', lang) || t(lang).gallery.shareText
 }
 
 /** Link appended to shared images (marketing link, not the album); empty = none. */

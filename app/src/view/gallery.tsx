@@ -4,7 +4,7 @@ import { ASSET_VERSION } from '../version'
 import { jsonForInlineScript } from '../utils/text'
 import type { PortalGalleryData } from '../portal/gallery'
 import { BrandFooter, LangSwitch, STATIC } from '../portal/views'
-import { BRAND } from '../portal/branding'
+import { brandUrl } from '../portal/branding'
 import { brandName } from '../portal/settings'
 import { Lang, t } from '../portal/i18n'
 import { CLIENT_MESSAGES } from '../shared/i18n'
@@ -97,9 +97,9 @@ export function Gallery (props: GalleryProps) {
           <meta name="twitter:image" content={ogImageUrl}/>
           <meta name="twitter:card" content="summary_large_image"/>
         </>}
-        <link rel="icon" href="/favicon.ico" sizes="any"/>
-        <link rel="icon" href={`${BRAND}/icon-192.png`} type="image/png"/>
-        <link rel="apple-touch-icon" href={`${BRAND}/apple-touch-icon.png`}/>
+        <link rel="icon" href={brandUrl('favicon.ico')} sizes="any"/>
+        <link rel="icon" href={brandUrl('icon-192.png')} type="image/png"/>
+        <link rel="apple-touch-icon" href={brandUrl('apple-touch-icon.png')}/>
         <link type="text/css" rel="stylesheet" href={`/share/static/${ASSET_VERSION}/style.css`}/>
         <link type="text/css" rel="stylesheet" href="/share/static/photoswipe/photoswipe.css"/>
         <link type="text/css" rel="stylesheet" href={`/share/static/${ASSET_VERSION}/photoswipe-overrides.css`}/>
@@ -108,7 +108,7 @@ export function Gallery (props: GalleryProps) {
       <body>
         <div class="eg-brandbar">
           <a href="/" class="eg-brandbar-logo" aria-label={brand + ' – ' + m.home}>
-            <img src={`${BRAND}/logo-banner.png`} alt={brand} width="183" height="71"/>
+            <img src={brandUrl('logo-banner.png')} alt={brand} width="183" height="71"/>
           </a>
           <LangSwitch lang={lang} class="eg-lang-corner"/>
         </div>

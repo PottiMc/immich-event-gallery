@@ -253,3 +253,91 @@ code {
 .adm-header .adm-lang { margin-left: auto; align-self: flex-start; }
 .adm-header .adm-lang a { color: var(--eg-muted); }
 .adm-header .adm-lang a[aria-current] { color: var(--eg-bg); }
+
+/* Page tabs: shares | branding */
+.adm-tabs {
+  display: flex;
+  gap: 4px;
+  max-width: 980px;
+  margin: 8px auto 0;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--eg-line);
+}
+.adm-tabs a {
+  padding: 10px 16px;
+  color: var(--eg-muted);
+  text-decoration: none;
+  font-weight: 600;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.adm-tabs a:hover, .adm-tabs a:focus-visible { color: var(--eg-text); outline: none; }
+.adm-tabs a[aria-current="page"] { color: var(--eg-gold); border-bottom-color: var(--eg-gold); }
+
+/* Branding page */
+.adm-intro { margin: 0; max-width: 70ch; }
+.adm-hint { margin: 4px 0 0; color: var(--eg-muted); font-size: 13px; }
+.adm-hint code { font-size: 12px; padding: 1px 6px; word-break: normal; white-space: nowrap; }
+
+.adm-brand-form { display: grid; gap: 18px; margin-top: 8px; }
+.adm-brand-form > .adm-btn { justify-self: start; }
+.adm-field-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.adm-field label { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 6px; font-weight: 600; }
+.adm-field input, .adm-field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  color: var(--eg-text);
+  background: rgba(0, 0, 0, 0.35);
+  border: 1.5px solid var(--eg-line);
+  border-radius: 10px;
+  font: inherit;
+  font-size: 15px;
+}
+.adm-field textarea { resize: vertical; min-height: 64px; line-height: 1.4; }
+.adm-field input:focus-visible, .adm-field textarea:focus-visible { outline: none; border-color: var(--eg-gold); }
+.adm-field input::placeholder, .adm-field textarea::placeholder { color: rgba(184, 173, 156, 0.6); }
+
+.adm-source { font-size: 11px; padding: 1px 8px; font-weight: 600; }
+.adm-source-admin { color: #2b1a00; background: var(--eg-gold-light); }
+.adm-source-folder { color: var(--eg-text); background: rgba(255, 255, 255, 0.1); }
+.adm-source-default { color: var(--eg-muted); background: transparent; border: 1px solid var(--eg-line); }
+
+.adm-reset { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 18px; padding-top: 16px; border-top: 1px dashed var(--eg-line); }
+.adm-reset .adm-hint { margin: 0; }
+.adm-help .adm-alert { margin-bottom: 12px; }
+
+.adm-images { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.adm-image { display: flex; flex-direction: column; border: 1px solid var(--eg-line); border-radius: 14px; overflow: hidden; background: rgba(0, 0, 0, 0.2); }
+.adm-image-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 150px;
+  padding: 14px;
+  overflow: hidden;
+  background-color: #1b1815;
+  background-image: conic-gradient(rgba(255, 255, 255, 0.04) 25%, transparent 0 50%, rgba(255, 255, 255, 0.04) 0 75%, transparent 0);
+  background-size: 16px 16px;
+}
+.adm-image-light { background-color: #f4efe6; background-image: none; }
+.adm-image-preview img { display: block; width: auto; height: auto; max-width: 100%; max-height: 122px; }
+.adm-image-body { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px 16px; flex: 1; }
+.adm-image-body h3 { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; color: var(--eg-gold-light); font-size: 16px; }
+.adm-image-body .adm-hint { margin: 0; }
+.adm-image-meta { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; margin: 4px 0 0; font-size: 13px; font-variant-numeric: tabular-nums; }
+.adm-image-meta dt { color: var(--eg-muted); }
+.adm-image-meta dd { margin: 0; }
+.adm-image-warn { margin: 0; color: var(--eg-gold-bright); font-size: 13px; }
+.adm-image-status { margin: 0; min-height: 1.3em; color: #8fd19e; font-size: 13px; font-weight: 600; }
+.adm-image-status.adm-image-error { color: var(--eg-error); }
+.adm-image .adm-actions { margin-top: auto; }
+.adm-image form { margin: 0; }
+.adm-upload { position: relative; }
+.adm-upload input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+.adm-upload:has(input:focus-visible) { outline: 2px solid var(--eg-gold); outline-offset: 2px; }
+.adm-upload:has(input:disabled) { opacity: 0.5; cursor: not-allowed; }
+
+@media (max-width: 760px) {
+  .adm-field-row { grid-template-columns: 1fr; }
+}
