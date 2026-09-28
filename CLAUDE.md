@@ -29,6 +29,8 @@ Immich is automatically online.
   extras, views, admin)
 - `app/src/client/portal.ts`: share button (Web Share API with the image file, prefetched for Safari; wa.me
   fallback) and the "share album" dialog
+- `app/src/portal/runtime-settings.ts`: settings saved on the admin page (`DATA_DIR/settings.json`, a writable
+  volume), laid over the loaded config at startup and on save. Currently only the guest download quality
 - `app/src/portal/branding.ts`: operator branding from `BRANDING_DIR` (logos, icons, `branding.json`), falling
   back to the neutral assets in `app/public/brand/`. Real brand assets must **never** be committed; locally they live in
   the gitignored `app/branding/`

@@ -210,6 +210,8 @@ Guests do not see this line. The rest of the description is shown above the phot
   contains everything.
 - Do not copy the `postgres` folder while the stack is running. The dumps exist for that purpose.
 - Keep a copy of `.env`, above all `PORTAL_SECRET`. Without it, all printed QR codes stop working.
+- The `eg-portal-data` volume only holds the settings saved on the admin page. It needs no backup; if it is lost, set
+  them again there.
 
 ## Privacy notes
 

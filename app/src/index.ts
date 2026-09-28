@@ -32,6 +32,7 @@ import { startAdminServer } from './portal/admin'
 import { securityHeaders } from './portal/security'
 import { BRAND, brandAsset, sendBrandFile } from './portal/branding'
 import { deriveKey, trustProxy } from './portal/settings'
+import { loadRuntimeSettings } from './portal/runtime-settings'
 
 // Extend the Request type with a `password` property
 declare module 'express-serve-static-core' {
@@ -43,6 +44,8 @@ declare module 'express-serve-static-core' {
 // Read config.json (or the inline CONFIG env var) and apply backward-compat
 // migrations. Must run before any code that calls getConfigOption.
 loadConfig()
+// Settings changed on the admin page (DATA_DIR/settings.json) take precedence
+loadRuntimeSettings()
 
 const app = express()
 // Behind a reverse proxy: take the visitor IP from X-Forwarded-For

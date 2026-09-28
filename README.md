@@ -42,7 +42,8 @@ When the link expires or is deleted, the album goes offline.
 - **Brute-force protection.** Per-IP lockout with growing duration, a global cap, and an artificial delay on every
   wrong attempt.
 - **Admin pages** on a separate port: all shares with their passwords and warnings (weak, duplicate, missing password,
-  no expiry), QR codes as PNG/SVG, printable A6 cards and password suggestions.
+  no expiry), QR codes as PNG/SVG, printable A6 cards and password suggestions. Guest downloads can be switched
+  between the original files and smaller preview images there.
 - **No third parties.** Fonts are self-hosted, and there are no trackers, no external requests and no Google Fonts.
   The pages are hidden from search engines.
 - Everything the upstream gallery offers: justified-rows layout, PhotoSwipe lightbox, videos and motion photos,

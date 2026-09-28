@@ -8,6 +8,8 @@ The portal is configured in three places:
   of the repository or the image.
 - **`app/config.json`** holds gallery behaviour. It is baked into the image and can be overridden at runtime.
 
+A few settings can also be changed on the admin page, see [Admin settings](#admin-settings).
+
 ## Environment variables
 
 ### Portal container
@@ -25,6 +27,7 @@ The portal is configured in three places:
 | `IPP_CONFIG` | no | `/app/config.json` | Path to an alternative config file. |
 | `CONFIG` | no | – | The complete config as an inline JSON string. When set, no file is read. |
 | `BRANDING_DIR` | no | `/app/branding` | Branding folder inside the container, see [Branding](#branding). |
+| `DATA_DIR` | no | `/app/data` | Writable folder for the settings saved on the admin page, see [Admin settings](#admin-settings). |
 | `TZ` | no | `Europe/Berlin` | Time zone for logs and dates. |
 
 ### Compose only (`.env`)
@@ -96,6 +99,28 @@ Texts are read once at startup, so restart the container after changing `brandin
 immediately; browsers cache them for a day.
 
 For local development, put the folder at `app/branding/`, which is gitignored.
+
+## Admin settings
+
+The admin page has a section **Download für Gäste** that sets what guests get when they download a photo, either
+singly or as a ZIP:
+
+- **Verkleinert** (`preview`): the preview image Immich generates, by default a JPEG of 1440 px on the long side and
+  usually well under 1 MB. Size and quality are set in Immich under *Administration → Settings → Image Settings →
+  Preview*. After changing them, rerun the thumbnail job for all assets under *Jobs*.
+- **Original** (`original`): the uploaded file in full resolution.
+
+Videos are always served as the original file. Whether guests may download at all is still set per share in Immich
+(*Allow download*).
+
+The choice is stored in `settings.json` in `DATA_DIR`. It takes effect immediately and overrides
+`ipp.maxDownloadQuality` from `config.json`. As long as nothing has been saved on the admin page, `config.json`
+applies.
+
+The compose file mounts the named volume `eg-portal-data` at `/app/data`. It is writable although the container's
+filesystem is read-only, and it inherits its ownership from the image, so no `chown` is needed. If you use a bind
+mount instead, the folder must be writable for UID 1000 (`node`). If the folder is not writable, the admin page shows
+a warning and a change only lasts until the next restart.
 
 ## `config.json`
 

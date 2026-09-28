@@ -12,3 +12,6 @@ app/public/js/
 
 # Operator branding (logos, icons, texts) - lives on the server, not in the repo
 /app/branding/
+
+# Settings saved from the admin page (DATA_DIR) during local development
+/app/data/

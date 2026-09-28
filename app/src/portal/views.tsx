@@ -88,7 +88,7 @@ export interface LandingProps {
 function errorText (props: LandingProps): string | undefined {
   switch (props.error) {
     case 'wrong':
-      return 'Hm, zu diesem Passwort haben wir leider kein Album gefunden. Schau nochmal genau hin – ' +
+      return 'Zu diesem Passwort wurde kein Album gefunden. Schau nochmal genau hin – ' +
         'Groß- und Kleinschreibung, Leerzeichen und Bindestriche sind übrigens egal.' +
         (props.remaining !== undefined && props.remaining <= 2 && props.remaining > 0
           ? ` (Noch ${props.remaining} ${props.remaining === 1 ? 'Versuch' : 'Versuche'}, dann gibt's eine kurze Pause.)`
@@ -99,7 +99,7 @@ function errorText (props: LandingProps): string | undefined {
       return 'Dieser QR-Code bzw. Link ist nicht mehr gültig – vielleicht ist das Album schon offline. ' +
         'Wenn du das Passwort hast, kannst du es hier eingeben.'
     case 'expired':
-      return 'Dieses Album ist leider nicht mehr online. Melde dich gerne bei uns, falls du noch Bilder brauchst.'
+      return 'Dieses Album ist leider nicht mehr online. Falls du noch Bilder brauchst, wende dich gerne an den Veranstalter.'
     case 'unavailable':
       return 'Die Bilder sind gerade nicht erreichbar. Bitte versuch es in ein paar Minuten noch einmal.'
   }
@@ -123,7 +123,7 @@ export function Landing (props: LandingProps) {
           <h1>Deine Bilder vom Event</h1>
           <p class="eg-lead">
             Schön, dass du dabei warst! 🍷<br/>
-            Gib hier das Passwort ein, das du von uns bekommen hast – dann geht's direkt zu deinen Bildern.
+            Gib hier das Passwort ein, das du bekommen hast – dann geht's direkt zu deinen Bildern.
           </p>
           <form method="post" action="/" class="eg-form" autoComplete="off">
             <label for="passwort" class="eg-sr-only">Passwort</label>

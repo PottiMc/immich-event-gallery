@@ -4,6 +4,7 @@
  */
 
 import { BRAND } from './branding'
+import { DownloadQuality } from './runtime-settings'
 import { brandName } from './settings'
 import { BrandHead, STATIC } from './views'
 
@@ -25,12 +26,22 @@ export interface AdminLinkView {
   neverExpires: boolean
 }
 
+export interface AdminSettingsView {
+  downloadQuality: DownloadQuality
+  /** settings.json can be written, so changes survive a restart */
+  persistent: boolean
+  saved: boolean
+  notPersisted: boolean
+  csrf: string
+}
+
 export interface AdminPageProps {
   links: AdminLinkView[]
   error?: string
   baseUrl: string
   baseUrlMissing: boolean
   suggestions: string[]
+  settings: AdminSettingsView
 }
 
 function StatusBadges ({ link }: { link: AdminLinkView }) {
@@ -89,6 +100,51 @@ function LinkCard ({ link }: { link: AdminLinkView }) {
   )
 }
 
+function SettingsSection ({ settings }: { settings: AdminSettingsView }) {
+  const q = settings.downloadQuality
+  return (
+    <section class="adm-help adm-settings" id="einstellungen">
+      <h2>Download für Gäste</h2>
+      {settings.saved && <p class="adm-saved">Gespeichert ✓ – gilt ab sofort für alle Alben.</p>}
+      {(settings.notPersisted || !settings.persistent) && (
+        <div class="adm-alert">
+          <strong>Einstellungen werden nicht dauerhaft gespeichert.</strong> Der Datenordner des Portals
+          (<code>/app/data</code>) ist nicht beschreibbar. Die Auswahl gilt nur bis zum nächsten Neustart –
+          siehe Abschnitt „Admin settings“ in <code>docs/configuration.md</code>.
+        </div>
+      )}
+      <form method="post" action="/einstellungen" class="adm-form">
+        <input type="hidden" name="csrf" value={settings.csrf}/>
+        <label class="adm-choice">
+          <input type="radio" name="downloadQuality" value="preview" checked={q === 'preview'}/>
+          <span>
+            <strong>Verkleinert</strong> – die Vorschau-Version aus Immich (Standard 1440 px an der langen Seite,
+            meist unter 1 MB). Lädt schnell auch unterwegs und reicht für Handy, WhatsApp und Abzüge bis 10 × 15.
+          </span>
+        </label>
+        <label class="adm-choice">
+          <input type="radio" name="downloadQuality" value="original" checked={q === 'original'}/>
+          <span>
+            <strong>Original</strong> – die hochgeladene Datei in voller Auflösung (oft 3–15 MB pro Bild,
+            iPhone-Fotos ggf. als HEIC).
+          </span>
+        </label>
+        <button type="submit" class="adm-btn adm-btn-primary">Speichern</button>
+      </form>
+      <p class="adm-note">
+        Gilt für den Download einzelner Bilder und für „Alle herunterladen“ (ZIP). In der Galerie sehen Gäste immer die
+        Vorschau-Version. Videos werden stets im Original geladen. Ob Gäste überhaupt herunterladen dürfen, legst du pro
+        Album in Immich fest (<em>Download erlauben</em>).
+      </p>
+      <p class="adm-note">
+        Größe und Qualität der verkleinerten Version stellst du in Immich ein: <em>Administration → Einstellungen →
+        Bildeinstellungen → Vorschau</em> (z.B. 2160 px, Qualität 85). Danach unter <em>Aufträge</em> die
+        Miniaturansichten für <em>alle</em> Bilder neu erzeugen lassen.
+      </p>
+    </section>
+  )
+}
+
 export function AdminPage (props: AdminPageProps) {
   const active = props.links.filter(l => l.status === 'active').length
   return (
@@ -127,6 +183,8 @@ export function AdminPage (props: AdminPageProps) {
           )}
 
           {props.links.map(link => <LinkCard key={link.id} link={link}/>)}
+
+          <SettingsSection settings={props.settings}/>
 
           <section class="adm-help">
             <h2>Neues Album online stellen</h2>

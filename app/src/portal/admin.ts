@@ -18,7 +18,8 @@ import { AdminLinkView, AdminPage, PrintCard } from './admin-views'
 import { duplicatePasswords, isExpired, isWeakPassword, linkTitle, listSharedLinks, PortalLink } from './links'
 import { suggestPassword } from './passwords'
 import { BRAND, brandAsset, sendBrandFile } from './branding'
-import { adminPassword, adminPort, publicBaseUrl, publicHostLabel, trustProxy } from './settings'
+import { adminPassword, adminPort, deriveKey, publicBaseUrl, publicHostLabel, trustProxy } from './settings'
+import { downloadQuality, isDownloadQuality, saveRuntimeSettings, settingsPersistent } from './runtime-settings'
 import { formatWait, LoginThrottle } from './throttle'
 import { clientIp, securityHeaders, throttleKey } from './security'
 import { accessToken } from './tokens'
@@ -92,6 +93,22 @@ async function toView (link: PortalLink, baseUrl: string, duplicates: Set<string
   }
 }
 
+/**
+ * Token for the admin forms. The browser resends Basic Auth credentials on
+ * cross-site requests too, so a POST must prove it came from our own page.
+ */
+export function adminFormToken (): string {
+  return deriveKey('admin-form').toString('hex')
+}
+
+function validFormPost (req: Request): boolean {
+  // Browsers that send Sec-Fetch-Site tell us directly; the token covers the rest
+  const site = req.get('sec-fetch-site')
+  if (site && site !== 'same-origin') return false
+  const token = typeof req.body?.csrf === 'string' ? req.body.csrf : ''
+  return crypto.timingSafeEqual(sha256(token), sha256(adminFormToken()))
+}
+
 const STATUS_ORDER = { active: 0, 'no-password': 1, expired: 2 }
 
 function adminBaseUrl (): { baseUrl: string, missing: boolean } {
@@ -104,12 +121,8 @@ async function findLink (id: string): Promise<PortalLink | undefined> {
   return list.ok ? list.links.find(l => l.id === id) : undefined
 }
 
-export function startAdminServer () {
-  if (!adminPassword()) {
-    log('Admin page disabled (PORTAL_ADMIN_PASSWORD not set)')
-    return
-  }
-
+/** The admin app without listening, so tests can mount it. */
+export function createAdminApp () {
   const app = express()
   app.disable('x-powered-by')
   app.set('trust proxy', trustProxy())
@@ -126,7 +139,7 @@ export function startAdminServer () {
   app.get('/favicon.ico', (_req, res) => sendBrandFile(res, 'favicon.ico'))
   app.use(basicAuth)
 
-  app.get('/', asyncHandler(async (_req, res) => {
+  app.get('/', asyncHandler(async (req, res) => {
     const { baseUrl, missing } = adminBaseUrl()
     const list = await listSharedLinks(0)
     let views: AdminLinkView[] = []
@@ -140,9 +153,27 @@ export function startAdminServer () {
       error: list.ok ? undefined : list.message,
       baseUrl,
       baseUrlMissing: missing,
-      suggestions: Array.from({ length: 6 }, suggestPassword)
+      suggestions: Array.from({ length: 6 }, suggestPassword),
+      settings: {
+        downloadQuality: downloadQuality(),
+        persistent: settingsPersistent(),
+        saved: 'gespeichert' in req.query,
+        notPersisted: 'nicht-dauerhaft' in req.query,
+        csrf: adminFormToken()
+      }
     })))
   }))
+
+  app.post('/einstellungen', express.urlencoded({ extended: false, limit: '2kb' }), (req, res) => {
+    const quality = req.body?.downloadQuality
+    if (!validFormPost(req) || !isDownloadQuality(quality)) {
+      res.status(400).send('Ungültige Anfrage. Bitte die Admin-Seite neu laden und erneut speichern.')
+      return
+    }
+    const result = saveRuntimeSettings({ downloadQuality: quality })
+    log('Admin: guest download quality set to ' + quality)
+    res.redirect(303, (result.ok ? '/?gespeichert' : '/?nicht-dauerhaft') + '#einstellungen')
+  })
 
   app.get('/qr/:id.:format(png|svg)', asyncHandler(async (req, res) => {
     const link = await findLink(req.params.id)
@@ -179,6 +210,14 @@ export function startAdminServer () {
     })))
   }))
 
+  return app
+}
+
+export function startAdminServer () {
+  if (!adminPassword()) {
+    log('Admin page disabled (PORTAL_ADMIN_PASSWORD not set)')
+    return
+  }
   const port = adminPort()
-  app.listen(port, () => log('Admin page started on port ' + port))
+  createAdminApp().listen(port, () => log('Admin page started on port ' + port))
 }

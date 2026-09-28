@@ -16,8 +16,11 @@ USER node
 WORKDIR /app
 COPY --from=builder --chown=node:node app/ ./
 
-# --ignore-scripts: no install hooks from dependencies in the final image
-RUN npm ci --omit=dev --ignore-scripts
+# --ignore-scripts: no install hooks from dependencies in the final image.
+# data/ holds the settings saved on the admin page; owned by node, so a named
+# volume mounted there starts out writable.
+RUN npm ci --omit=dev --ignore-scripts \
+    && mkdir -p data
 
 ARG PACKAGE_VERSION
 ENV APP_VERSION=${PACKAGE_VERSION}

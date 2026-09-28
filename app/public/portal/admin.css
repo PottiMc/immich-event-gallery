@@ -124,6 +124,27 @@ code {
 
 .adm-suggestions { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 8px; }
 
+.adm-form { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; margin: 4px 0 14px; }
+
+.adm-choice {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border: 1.5px solid var(--eg-line);
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.adm-choice:has(input:checked) { border-color: var(--eg-gold); background: rgba(204, 172, 57, 0.08); }
+.adm-choice input { margin-top: 4px; accent-color: var(--eg-gold); flex: none; }
+.adm-choice strong { color: var(--eg-gold-light); }
+
+.adm-saved { margin: 0 0 12px; color: #8fd19e; font-weight: 600; }
+.adm-settings .adm-alert { margin-bottom: 12px; }
+
 @media (max-width: 600px) {
   .adm-link { grid-template-columns: 1fr; }
   .adm-qr { width: 160px; }

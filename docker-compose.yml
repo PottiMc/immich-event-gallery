@@ -15,8 +15,8 @@
 # Hardening:
 # - Two networks: the portal only reaches the Immich server, not the
 #   database, Valkey or machine learning (eg-portal / eg-internal).
-# - The portal runs with a read-only filesystem, no Linux capabilities and
-#   memory/process limits.
+# - The portal runs with a read-only filesystem (except its small settings
+#   volume), no Linux capabilities and memory/process limits.
 # - Logs are capped at 3 x 10 MB per container.
 #
 
@@ -136,6 +136,8 @@ services:
       # Optional branding: logos, icons and branding.json (see
       # docs/configuration.md#branding). Empty folder = neutral defaults.
       - ${BRANDING_LOCATION:-./branding}:/app/branding:ro
+      # Settings changed on the admin page (settings.json). Must stay writable.
+      - eg-portal-data:/app/data
     ports:
       # Public guest portal -> reverse proxy, no authentication
       - "${BIND_IP:-0.0.0.0}:${PORTAL_HOST_PORT:-3100}:3000"
@@ -171,3 +173,5 @@ networks:
 volumes:
   # Machine learning models (no backup needed, downloaded again on demand)
   eg-model-cache:
+  # Portal settings saved on the admin page (a few bytes)
+  eg-portal-data:
