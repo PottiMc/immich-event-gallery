@@ -41,70 +41,97 @@ export interface AdminPageProps {
   baseUrl: string
   baseUrlMissing: boolean
   suggestions: string[]
+  /** Unfold the help section (after "Neue Vorschläge") */
+  helpOpen: boolean
   settings: AdminSettingsView
 }
 
-function StatusBadges ({ link }: { link: AdminLinkView }) {
+function countText (link: AdminLinkView): string {
+  if (link.count === undefined) return link.kind
+  return `${link.count} ${link.count === 1 ? 'Element' : 'Elemente'}`
+}
+
+/** Warnings only; the status itself is the coloured dot. */
+function Badges ({ link }: { link: AdminLinkView }) {
+  const live = link.status !== 'expired'
   return (
-    <div class="adm-badges">
-      {link.status === 'active' && <span class="adm-badge adm-ok">online</span>}
-      {link.status === 'expired' && <span class="adm-badge adm-muted">abgelaufen</span>}
-      {link.status === 'no-password' && <span class="adm-badge adm-warn">kein Passwort</span>}
-      {link.duplicate && <span class="adm-badge adm-warn">Passwort doppelt</span>}
+    <>
+      {link.duplicate && live && (
+        <span class="adm-badge adm-warn" title="Ein anderes aktives Album hat (fast) dasselbe Passwort. Gäste landen dann im neuesten.">Passwort doppelt</span>
+      )}
       {link.weak && link.status === 'active' && <span class="adm-badge adm-warn">Passwort schwach</span>}
-      {link.neverExpires && link.status !== 'expired' && <span class="adm-badge adm-muted">läuft nie ab</span>}
-    </div>
+      {link.neverExpires && live && <span class="adm-badge adm-muted">läuft nie ab</span>}
+    </>
   )
 }
 
-function LinkCard ({ link }: { link: AdminLinkView }) {
+const STATUS_LABEL = { active: 'online', 'no-password': 'ohne Passwort – nur per Link/QR erreichbar', expired: 'abgelaufen' }
+
+/** One compact row per share; QR code and the rarer actions fold out. */
+function LinkRow ({ link }: { link: AdminLinkView }) {
   const usable = link.status !== 'expired'
+  const panelId = 'details-' + link.id
   return (
-    <article class={'adm-link' + (usable ? '' : ' adm-link-off')}>
-      <div class="adm-qr" dangerouslySetInnerHTML={{ __html: usable ? link.qrSvg : '' }}/>
-      <div class="adm-link-body">
+    <li class={'adm-row adm-row-' + link.status}>
+      <span class="adm-dot" title={STATUS_LABEL[link.status]} aria-label={STATUS_LABEL[link.status]}/>
+      <div class="adm-row-title">
         <h2>{link.title}</h2>
         <p class="adm-meta">
-          {link.kind}{link.count !== undefined ? ` · ${link.count} ${link.count === 1 ? 'Element' : 'Elemente'}` : ''}
+          {countText(link)}
           {link.albumName && link.albumName !== link.title ? ` · Album „${link.albumName}“` : ''}
           {' · '}{link.expiresText}
+          {' '}<Badges link={link}/>
         </p>
-        <StatusBadges link={link}/>
-        {link.password && (
-          <p class="adm-password">
-            Passwort: <code>{link.password}</code>
-            <button type="button" class="adm-mini" data-copy={link.password}>kopieren</button>
-          </p>
-        )}
-        {link.status === 'no-password' && (
-          <p class="adm-note">
-            Ohne Passwort ist dieses Album nicht über die Startseite erreichbar – nur über den Link bzw. QR-Code.
-          </p>
-        )}
-        {link.duplicate && (
-          <p class="adm-note">
-            Ein anderes aktives Album hat (fast) dasselbe Passwort. Gäste landen dann im neuesten – bitte ändern.
-          </p>
-        )}
-        {usable && (
-          <div class="adm-actions">
-            <button type="button" class="adm-btn" data-copy={link.accessUrl}>Direktlink kopieren</button>
-            <a class="adm-btn" href={`/qr/${link.id}.png`} download>QR als PNG</a>
-            <a class="adm-btn" href={`/qr/${link.id}.svg`} download>QR als SVG</a>
-            <a class="adm-btn adm-btn-primary" href={`/karte/${link.id}`} target="_blank" rel="noopener">Karte drucken</a>
-            <a class="adm-btn" href={link.accessUrl} target="_blank" rel="noopener">Galerie öffnen</a>
-          </div>
-        )}
       </div>
-    </article>
+      <div class="adm-row-pass">
+        {link.password
+          ? <><code>{link.password}</code><button type="button" class="adm-mini" data-copy={link.password} title="Passwort kopieren">kopieren</button></>
+          : <span class="adm-badge adm-warn">kein Passwort</span>}
+      </div>
+      {usable && (
+        <div class="adm-row-actions">
+          <button type="button" class="adm-btn" data-copy={link.accessUrl} title="Direktlink (wie im QR-Code) kopieren">Link kopieren</button>
+          <a class="adm-btn adm-btn-primary" href={`/karte/${link.id}`} target="_blank" rel="noopener">Karte</a>
+          <button type="button" class="adm-toggle" aria-expanded="false" aria-controls={panelId} title="QR-Code und mehr">
+            <span aria-hidden="true">▾</span><span class="eg-sr-only">Details</span>
+          </button>
+        </div>
+      )}
+      {usable && (
+        <div class="adm-row-panel" id={panelId} hidden>
+          <div class="adm-qr" dangerouslySetInnerHTML={{ __html: link.qrSvg }}/>
+          <div class="adm-panel-body">
+            {link.status === 'no-password' && (
+              <p class="adm-note">
+                Ohne Passwort ist dieses Album nicht über die Startseite erreichbar – nur über den Link bzw. QR-Code.
+              </p>
+            )}
+            {link.duplicate && (
+              <p class="adm-note">
+                Ein anderes aktives Album hat (fast) dasselbe Passwort. Gäste landen dann im neuesten – bitte ändern.
+              </p>
+            )}
+            <div class="adm-actions">
+              <a class="adm-btn" href={`/qr/${link.id}.png`} download>QR als PNG</a>
+              <a class="adm-btn" href={`/qr/${link.id}.svg`} download>QR als SVG</a>
+              <a class="adm-btn" href={`/karte/${link.id}?dunkel`} target="_blank" rel="noopener">Karte dunkel</a>
+              <a class="adm-btn" href={link.accessUrl} target="_blank" rel="noopener">Galerie öffnen</a>
+            </div>
+          </div>
+        </div>
+      )}
+    </li>
   )
 }
 
 function SettingsSection ({ settings }: { settings: AdminSettingsView }) {
   const q = settings.downloadQuality
   return (
-    <section class="adm-help adm-settings" id="einstellungen">
-      <h2>Download für Gäste</h2>
+    <details class="adm-help adm-fold adm-settings" id="einstellungen" open={settings.saved || settings.notPersisted || !settings.persistent}>
+      <summary>
+        <h2>Download für Gäste</h2>
+        <span class="adm-summary-value">{q === 'preview' ? 'verkleinert' : 'Original'}</span>
+      </summary>
       {settings.saved && <p class="adm-saved">Gespeichert ✓ – gilt ab sofort für alle Alben.</p>}
       {(settings.notPersisted || !settings.persistent) && (
         <div class="adm-alert">
@@ -141,12 +168,14 @@ function SettingsSection ({ settings }: { settings: AdminSettingsView }) {
         Bildeinstellungen → Vorschau</em> (z.B. 2160 px, Qualität 85). Danach unter <em>Aufträge</em> die
         Miniaturansichten für <em>alle</em> Bilder neu erzeugen lassen.
       </p>
-    </section>
+    </details>
   )
 }
 
 export function AdminPage (props: AdminPageProps) {
   const active = props.links.filter(l => l.status === 'active').length
+  const current = props.links.filter(l => l.status !== 'expired')
+  const expired = props.links.filter(l => l.status === 'expired')
   return (
     <html lang="de">
       <head>
@@ -182,12 +211,26 @@ export function AdminPage (props: AdminPageProps) {
             </div>
           )}
 
-          {props.links.map(link => <LinkCard key={link.id} link={link}/>)}
+          {current.length > 0 && (
+            <ul class="adm-list">
+              {current.map(link => <LinkRow key={link.id} link={link}/>)}
+            </ul>
+          )}
+
+          {expired.length > 0 && (
+            <details class="adm-fold adm-expired">
+              <summary><h2>Abgelaufen</h2><span class="adm-summary-value">{expired.length}</span></summary>
+              <ul class="adm-list">
+                {expired.map(link => <LinkRow key={link.id} link={link}/>)}
+              </ul>
+              <p class="adm-note">Abgelaufene Freigaben löschst du in Immich, dann verschwinden sie hier.</p>
+            </details>
+          )}
 
           <SettingsSection settings={props.settings}/>
 
-          <section class="adm-help">
-            <h2>Neues Album online stellen</h2>
+          <details class="adm-help adm-fold" id="hilfe" open={props.helpOpen || (props.links.length === 0 && !props.error)}>
+            <summary><h2>Neues Album online stellen</h2><span class="adm-summary-value adm-summary-hint">Anleitung und Passwort-Vorschläge</span></summary>
             <ol>
               <li>In Immich ein Album anlegen und die Bilder hochladen. Der Albumname ist der Titel, den Gäste sehen.</li>
               <li>Im Album auf <em>Teilen → Link erstellen</em>. Dort ein <strong>Passwort</strong> setzen,
@@ -204,8 +247,8 @@ export function AdminPage (props: AdminPageProps) {
                 <li key={s}><code>{s}</code> <button type="button" class="adm-mini" data-copy={s}>kopieren</button></li>
               ))}
             </ul>
-            <p><a href="/">Neue Vorschläge</a></p>
-          </section>
+            <p><a href="/?vorschlaege#hilfe">Neue Vorschläge</a></p>
+          </details>
         </main>
         <script src={`${STATIC}/portal/admin.js`}/>
       </body>

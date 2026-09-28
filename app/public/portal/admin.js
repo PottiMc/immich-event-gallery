@@ -11,3 +11,14 @@ document.addEventListener('click', async function (e) {
     window.prompt('Zum Kopieren:', btn.getAttribute('data-copy'))
   }
 })
+
+// Admin page: fold out QR code and further actions of a share
+document.addEventListener('click', function (e) {
+  const toggle = e.target.closest('.adm-toggle')
+  if (!toggle) return
+  const panel = document.getElementById(toggle.getAttribute('aria-controls'))
+  if (!panel) return
+  const open = toggle.getAttribute('aria-expanded') !== 'true'
+  toggle.setAttribute('aria-expanded', String(open))
+  panel.hidden = !open
+})

@@ -154,6 +154,7 @@ export function createAdminApp () {
       baseUrl,
       baseUrlMissing: missing,
       suggestions: Array.from({ length: 6 }, suggestPassword),
+      helpOpen: 'vorschlaege' in req.query,
       settings: {
         downloadQuality: downloadQuality(),
         persistent: settingsPersistent(),
