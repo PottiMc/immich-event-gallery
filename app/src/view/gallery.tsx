@@ -5,8 +5,12 @@ import { jsonForInlineScript } from '../utils/text'
 import type { PortalGalleryData } from '../portal/gallery'
 import { BrandFooter, LangSwitch, STATIC } from '../portal/views'
 import { brandUrl } from '../portal/branding'
-import { brandName } from '../portal/settings'
+import { brandName, newsletterText, privacyUrl } from '../portal/settings'
+import { MAX_EMAIL } from '../portal/mail'
+import { MAX_NAME, newsletterEnabled } from '../portal/newsletter'
+import { newsletterAfter } from '../portal/runtime-settings'
 import { Lang, t } from '../portal/i18n'
+import { themeColor, ThemeStyle } from '../portal/theme'
 import { CLIENT_MESSAGES } from '../shared/i18n'
 import { MAX_PHOTOS, MIN_DETAILS, REMOVAL_REASONS } from '../portal/removal'
 
@@ -48,6 +52,47 @@ function countLabel (items: GalleryItem[], lang: Lang): string {
 const ICON_SHARE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M18,16.08C17.24,16.08 16.56,16.38 16.04,16.85L8.91,12.7C8.96,12.47 9,12.24 9,12C9,11.76 8.96,11.53 8.91,11.3L15.96,7.19C16.5,7.69 17.21,8 18,8A3,3 0 0,0 21,5A3,3 0 0,0 18,2A3,3 0 0,0 15,5C15,5.24 15.04,5.47 15.09,5.7L8.04,9.81C7.5,9.31 6.79,9 6,9A3,3 0 0,0 3,12A3,3 0 0,0 6,15C6.79,15 7.5,14.69 8.04,14.19L15.16,18.34C15.11,18.55 15.08,18.77 15.08,19C15.08,20.61 16.39,21.91 18,21.91C19.61,21.91 20.92,20.61 20.92,19A2.92,2.92 0 0,0 18,16.08Z"/></svg>'
 
 const ICON_REMOVE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M13.3,21H5C3.9,21 3,20.1 3,19V5C3,3.9 3.9,3 5,3H19C20.1,3 21,3.9 21,5V13.3C20.4,13.1 19.7,13 19,13C17.9,13 16.8,13.3 15.9,13.9L14.5,12L11,16.5L8.5,13.5L5,18H13.1C13,18.3 13,18.7 13,19C13,19.7 13.1,20.4 13.3,21M20.4,19L22.5,21.1L21.1,22.5L19,20.4L16.9,22.5L15.5,21.1L17.6,19L15.5,16.9L16.9,15.5L19,17.6L21.1,15.5L22.5,16.9L20.4,19Z"/></svg>'
+
+const ICON_MAIL = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20,8L12,13L4,8V6L12,11L20,6M20,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6C22,4.89 21.1,4 20,4Z"/></svg>'
+
+/**
+ * Newsletter sign-up band. It sits inside #gallery; the client layout moves
+ * it between the photo rows (after `data-after` photos) and posts the form.
+ */
+function NewsletterBand ({ lang, path }: { lang: Lang, path: string }) {
+  const m = t(lang).newsletter
+  const privacy = privacyUrl()
+  return (
+    <section id="eg-newsletter" class="eg-newsletter" aria-labelledby="eg-newsletter-title"
+      data-endpoint={path + '/newsletter'} data-after={String(newsletterAfter())}
+      data-sending={m.sending} data-sent={m.sent} data-failed={m.failed}>
+      <div class="eg-newsletter-text">
+        <span class="eg-newsletter-icon" dangerouslySetInnerHTML={{ __html: ICON_MAIL }}/>
+        <div>
+          <h2 id="eg-newsletter-title">{m.heading}</h2>
+          <p>{newsletterText(lang)}</p>
+        </div>
+      </div>
+      <form id="eg-newsletter-form" class="eg-newsletter-form">
+        <div class="eg-newsletter-fields">
+          <label class="eg-sr-only" for="eg-newsletter-email">{m.emailLabel}</label>
+          <input id="eg-newsletter-email" name="email" type="email" required maxLength={MAX_EMAIL}
+            autoComplete="email" placeholder={m.emailLabel}/>
+          <label class="eg-sr-only" for="eg-newsletter-name">{m.nameLabel}</label>
+          <input id="eg-newsletter-name" name="name" type="text" maxLength={MAX_NAME}
+            autoComplete="given-name" placeholder={m.nameLabel}/>
+          <button type="submit" class="eg-button">{m.submit}</button>
+        </div>
+        <p class="eg-newsletter-privacy">
+          {m.privacy}
+          {privacy && <>{' '}<a href={privacy} target="_blank" rel="noopener">{m.privacyLink}</a></>}
+        </p>
+        <p class="eg-newsletter-error" role="alert" hidden></p>
+      </form>
+      <p class="eg-newsletter-done" role="status" hidden></p>
+    </section>
+  )
+}
 
 /** Dialog for asking the operator to remove photos (privacy). */
 function RemovalDialog ({ lang, path }: { lang: Lang, path: string }) {
@@ -152,7 +197,7 @@ export function Gallery (props: GalleryProps) {
         <meta charSet="utf-8"/>
         <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
         <meta name="robots" content="noindex, nofollow"/>
-        <meta name="theme-color" content="#0d0b0a"/>
+        <meta name="theme-color" content={themeColor()}/>
         <title>{pageTitle}</title>
         <meta property="og:title" content={pageTitle}/>
         <meta name="twitter:title" content={pageTitle}/>
@@ -173,6 +218,7 @@ export function Gallery (props: GalleryProps) {
         <link type="text/css" rel="stylesheet" href="/share/static/photoswipe/photoswipe.css"/>
         <link type="text/css" rel="stylesheet" href={`/share/static/${ASSET_VERSION}/photoswipe-overrides.css`}/>
         <link type="text/css" rel="stylesheet" href={`${STATIC}/portal/gallery.css`}/>
+        <ThemeStyle/>
       </head>
       <body>
         <div class="eg-brandbar">
@@ -221,9 +267,12 @@ export function Gallery (props: GalleryProps) {
         {props.items.length > 0 && (
           <p class="eg-tip">{m.gallery.tip(<span dangerouslySetInnerHTML={{ __html: ICON_SHARE }}/>)}</p>
         )}
-{/* Container is intentionally empty - web.js's virtualisation manager
-            populates it with only the tiles within the viewport buffer. */}
-        <div id="gallery"></div>
+{/* web.js's virtualisation manager populates the container with only
+            the tiles within the viewport buffer. The only static child is the
+            portal's newsletter band, which the layout places between rows. */}
+        <div id="gallery">
+          {props.portal && props.items.length > 0 && newsletterEnabled() && <NewsletterBand lang={lang} path={props.path}/>}
+        </div>
         {props.showDownloadZip && (
           <div id="select-toolbar" hidden>
             <button id="select-cancel" class="toolbar-btn" type="button" aria-label={m.gallery.selectCancel}>

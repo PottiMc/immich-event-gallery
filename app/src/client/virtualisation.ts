@@ -135,10 +135,13 @@ export function computeLayoutAndRender () {
   }
   state.lastContainerW = containerW
 
+  // The band's height depends on the width (its form wraps on narrow screens)
+  if (state.band) state.band.height = state.band.el.offsetHeight
   const result = computeLayout(containerW)
   state.layout = result.layout
   state.headers = result.headers
   state.container.style.height = result.totalHeight + 'px'
+  placeBand(result.bandTop)
 
   for (const [, el] of state.renderedTiles) el.remove()
   state.renderedTiles.clear()
@@ -147,6 +150,34 @@ export function computeLayoutAndRender () {
   // Otherwise virtualize() would rebuild every seen tile at once
   state.stickyTiles.clear()
 
+  virtualize()
+  loadVisibleTiles()
+}
+
+function placeBand (top: number | undefined) {
+  if (!state.band || top === undefined) return
+  state.band.top = top
+  state.band.el.style.top = top + 'px'
+}
+
+/**
+ * Portal: the newsletter band changed its height (e.g. the form turned into
+ * the "sent" note). Move the tiles below it in place instead of rebuilding
+ * them, so their thumbnails are not fetched again.
+ */
+export function refreshLayout () {
+  if (!state.container || !state.lastContainerW) return
+  const result = computeLayout(state.lastContainerW)
+  state.layout = result.layout
+  state.headers = result.headers
+  state.container.style.height = result.totalHeight + 'px'
+  placeBand(result.bandTop)
+  for (const [index, el] of state.renderedTiles) {
+    const l = state.layout[index]
+    if (l) el.style.top = l.top + 'px'
+  }
+  for (const [, el] of state.renderedHeaders) el.remove()
+  state.renderedHeaders.clear()
   virtualize()
   loadVisibleTiles()
 }

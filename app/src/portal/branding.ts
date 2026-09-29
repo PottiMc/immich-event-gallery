@@ -1,6 +1,6 @@
 /*
- * Operator branding kept out of the repository and the image: logos, icons
- * and brand texts. Three layers, first match wins:
+ * Operator branding kept out of the repository and the image: logos, icons,
+ * brand texts and colors. Three layers, first match wins:
  *
  *   1. set on the admin page: DATA_DIR/branding/ (the writable data volume)
  *   2. the branding folder: BRANDING_DIR (default ./branding, i.e.
@@ -60,6 +60,31 @@ function adminTextsFile (): string {
   return join(adminBrandingDir(), 'branding.json')
 }
 
+/** Colors set on the admin page live in their own file, so saving the texts never touches them. */
+function adminColorsFile (): string {
+  return join(adminBrandingDir(), 'colors.json')
+}
+
+/** The brand colors an operator can set; everything else on the pages is derived from them (theme.ts). */
+export const COLOR_KEYS = ['accent', 'button', 'background', 'text'] as const
+export type ColorKey = typeof COLOR_KEYS[number]
+export type BrandColors = Partial<Record<ColorKey, string>>
+
+export function isHexColor (value: unknown): value is string {
+  return typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value)
+}
+
+/** Keep only known keys with a valid #rrggbb value, lower-cased. */
+function pickColors (value: unknown): BrandColors {
+  const colors: BrandColors = {}
+  if (!value || typeof value !== 'object') return colors
+  for (const key of COLOR_KEYS) {
+    const color = (value as Record<string, unknown>)[key]
+    if (isHexColor(color)) colors[key] = color.toLowerCase()
+  }
+  return colors
+}
+
 function readJsonObject (file: string): Record<string, unknown> {
   if (!existsSync(file)) return {}
   try {
@@ -75,6 +100,8 @@ interface TextLayers {
   admin: Record<string, unknown>
   folder: Record<string, unknown>
   merged: Record<string, unknown>
+  adminColors: BrandColors
+  folderColors: BrandColors
 }
 
 let layers: TextLayers | undefined
@@ -83,9 +110,38 @@ function textLayers (): TextLayers {
   if (!layers) {
     const admin = readJsonObject(adminTextsFile())
     const folder = readJsonObject(join(brandingDir(), 'branding.json'))
-    layers = { admin, folder, merged: { ...folder, ...admin } }
+    layers = {
+      admin,
+      folder,
+      merged: { ...folder, ...admin },
+      adminColors: pickColors(readJsonObject(adminColorsFile())),
+      // In the branding folder the colors are part of branding.json: "colors": { "accent": "#…" }
+      folderColors: pickColors(folder.colors)
+    }
   }
   return layers
+}
+
+/** Brand colors that are set, per color: the admin page's over the branding folder's. Unset ones use the CSS defaults. */
+export function brandColors (): BrandColors {
+  const { adminColors, folderColors } = textLayers()
+  return { ...folderColors, ...adminColors }
+}
+
+/** The colors of the branding folder alone: what applies when the admin page's colors are reset. */
+export function folderColors (): BrandColors {
+  return textLayers().folderColors
+}
+
+export function brandColorSource (key: ColorKey): BrandSource {
+  const { adminColors, folderColors } = textLayers()
+  if (key in adminColors) return 'admin'
+  if (key in folderColors) return 'folder'
+  return 'default'
+}
+
+export function hasAdminColors (): boolean {
+  return Object.keys(textLayers().adminColors).length > 0
 }
 
 /** Brand texts: the admin page's values over the branding folder's branding.json (read once, empty if absent). */
@@ -141,6 +197,18 @@ export function saveBrandTexts (texts: Record<string, unknown>): StoreResult {
 /** Drop the texts set on the admin page, so the branding folder and defaults apply again. */
 export function resetBrandTexts (): StoreResult {
   return store(() => { if (existsSync(adminTextsFile())) unlinkSync(adminTextsFile()) }, 'reset the brand texts')
+}
+
+/** Replace the colors set on the admin page; an empty set removes the file. */
+export function saveBrandColors (colors: BrandColors): StoreResult {
+  const picked = pickColors(colors)
+  if (!Object.keys(picked).length) return resetBrandColors()
+  return store(() => writeAtomic(adminColorsFile(), JSON.stringify(picked, null, 2) + '\n'), 'save the brand colors')
+}
+
+/** Drop the colors set on the admin page, so the branding folder and defaults apply again. */
+export function resetBrandColors (): StoreResult {
+  return store(() => { if (existsSync(adminColorsFile())) unlinkSync(adminColorsFile()) }, 'reset the brand colors')
 }
 
 /** Folder that currently provides a brand file. */

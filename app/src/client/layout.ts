@@ -10,6 +10,7 @@ import {
   MOBILE_COLS,
   HEADER_HEIGHT,
   GROUP_GAP,
+  BAND_GAP,
   type LayoutEntry,
   type HeaderEntry,
   type GroupSpec
@@ -21,6 +22,8 @@ export interface LayoutResult {
   layout: LayoutEntry[]
   headers: HeaderEntry[]
   totalHeight: number
+  // Portal: top of the newsletter band, when there is one
+  bandTop?: number
 }
 
 /**
@@ -54,11 +57,31 @@ export function computeLayout (containerW: number): LayoutResult {
       : layoutJustifiedGroup(containerW, group.indices, y, tileLayout)
     if (g < groups.length - 1) y += GROUP_GAP
   }
-  return {
+  const result = {
     layout: tileLayout,
     headers: newHeaders,
     totalHeight: Math.max(0, y)
   }
+  return state.band ? insertBand(result, state.band.after, state.band.height) : result
+}
+
+/**
+ * Portal: make room for the newsletter band after the row that holds photo
+ * number `after`, so no row is cut in half. Everything below moves down.
+ * With fewer photos (or `after` in the last row) the band goes at the end.
+ */
+export function insertBand (result: LayoutResult, after: number, height: number): LayoutResult {
+  const { layout, headers, totalHeight } = result
+  const last = layout[Math.max(1, Math.min(after, layout.length)) - 1]
+  if (!last) return { ...result, bandTop: 0, totalHeight: height }
+  const rowTop = last.top
+  if (!layout.some(l => l && l.top > rowTop)) {
+    return { ...result, bandTop: totalHeight + BAND_GAP, totalHeight: totalHeight + BAND_GAP + height }
+  }
+  const shift = height + 2 * BAND_GAP
+  for (const l of layout) if (l && l.top > rowTop) l.top += shift
+  for (const h of headers) if (h.top > rowTop) h.top += shift
+  return { layout, headers, totalHeight: totalHeight + shift, bandTop: rowTop + last.height + BAND_GAP }
 }
 
 function itemIndices (): number[] {

@@ -6,10 +6,10 @@
 @import url('./portal.css');
 
 html.dark {
-  --color-bg: #0d0b0a;
-  --color-fg: #f4efe6;
-  --color-primary: #CCAC39;
-  --color-gray: #211d1a;
+  --color-bg: var(--eg-bg);
+  --color-fg: var(--eg-text);
+  --color-primary: var(--eg-gold);
+  --color-gray: var(--eg-surface-2);
   --font-sans: 'Outfit', 'Neulis Alt', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
 }
 
@@ -18,7 +18,7 @@ body {
   flex-direction: column;
   min-height: 100vh;
   background:
-    radial-gradient(ellipse 70% 320px at 50% 0, rgba(204, 172, 57, 0.12), transparent 70%),
+    radial-gradient(ellipse 70% 320px at 50% 0, rgba(var(--eg-accent-rgb), 0.12), transparent 70%),
     var(--color-bg);
   background-repeat: no-repeat;
 }
@@ -95,7 +95,7 @@ body {
   padding: 0 16px;
   border-radius: 999px;
   border: 1.5px solid var(--eg-line);
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--eg-field, rgba(0, 0, 0, 0.3));
   color: var(--eg-gold-light);
   font: inherit;
   font-size: 15px;
@@ -107,13 +107,13 @@ body {
 
 .eg-pill:hover, .eg-pill:focus-visible,
 #download-all.eg-pill:hover, #download-all.eg-pill:focus-visible {
-  background: rgba(204, 172, 57, 0.12);
+  background: rgba(var(--eg-accent-rgb), 0.12);
   border-color: var(--eg-gold);
   outline: none;
 }
 
 #eg-album-share {
-  color: #fff;
+  color: var(--eg-on-button, #fff);
   background: var(--eg-berry);
   border-color: var(--eg-berry);
 }
@@ -135,6 +135,81 @@ body {
   }
   #header h1 { font-size: 24px; }
   .eg-header-actions .eg-pill { flex: 1 1 0; justify-content: center; }
+}
+
+/*
+  Newsletter sign-up band between the photo rows. Without JavaScript it sits
+  above the photos; gallery JS adds .eg-placed and positions it like a tile
+  row (the layout reserves its height).
+*/
+.eg-newsletter {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+  align-items: center;
+  gap: 16px 32px;
+  padding: 24px 28px;
+  border: 1px solid var(--eg-line);
+  border-radius: 16px;
+  background: linear-gradient(180deg, var(--eg-surface-2), var(--eg-surface));
+  font-family: var(--eg-font);
+}
+
+.eg-newsletter.eg-placed { position: absolute; left: 0; right: 0; }
+.eg-newsletter [hidden] { display: none !important; }
+
+.eg-newsletter-text { display: flex; align-items: flex-start; gap: 16px; min-width: 0; }
+.eg-newsletter-icon { display: inline-flex; flex: 0 0 auto; color: var(--eg-gold); }
+.eg-newsletter-icon svg { width: 34px; height: 34px; }
+.eg-newsletter h2 { margin: 0 0 4px; color: var(--eg-gold); font-size: 21px; font-weight: 600; line-height: 1.25; }
+.eg-newsletter p { margin: 0; color: var(--eg-text); font-size: 15px; line-height: 1.45; }
+
+.eg-newsletter-form { min-width: 0; }
+.eg-newsletter-fields { display: flex; flex-wrap: wrap; gap: 8px; }
+.eg-newsletter-fields input {
+  flex: 1 1 200px;
+  min-width: 0;
+  box-sizing: border-box;
+  height: 48px;
+  margin: 0;
+  padding: 0 14px;
+  border: 1.5px solid var(--eg-line);
+  border-radius: 12px;
+  background: var(--eg-field, rgba(0, 0, 0, 0.35));
+  color: var(--eg-text);
+  font: inherit;
+  font-size: 16px;
+}
+.eg-newsletter-fields input[name="name"] { flex-basis: 150px; }
+.eg-newsletter-fields input::placeholder { color: var(--eg-placeholder, #7d7466); }
+.eg-newsletter-fields input:focus { border-color: var(--eg-gold); outline: none; }
+.eg-newsletter-fields .eg-button { flex: 0 0 auto; height: 48px; padding: 0 20px; font-size: 16px; }
+
+.eg-newsletter p.eg-newsletter-privacy { margin-top: 8px; color: var(--eg-muted); font-size: 12.5px; }
+.eg-newsletter p.eg-newsletter-error { margin-top: 8px; color: var(--eg-error); font-size: 14px; }
+.eg-newsletter p.eg-newsletter-done { font-size: 16px; }
+.eg-newsletter-done strong { color: var(--eg-gold-light); }
+
+/* style.css positions every link in #gallery as a tile */
+#gallery .eg-newsletter a {
+  position: static;
+  display: inline;
+  overflow: visible;
+  background: none;
+  color: var(--eg-gold-light);
+  text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+  .eg-newsletter { grid-template-columns: minmax(0, 1fr); gap: 14px; padding: 20px; }
+}
+
+@media (max-width: 640px) {
+  /* The photos run edge to edge on phones; the band keeps a margin */
+  .eg-newsletter.eg-placed { left: 12px; right: 12px; }
+  .eg-newsletter { padding: 18px 16px; }
+  .eg-newsletter-icon svg { width: 28px; height: 28px; }
+  .eg-newsletter-fields .eg-button { flex: 1 1 100%; }
 }
 
 /* Selected tiles + selection toolbar in brand colours */
@@ -199,7 +274,7 @@ body {
   cursor: pointer;
 }
 
-.eg-dialog-close:hover, .eg-dialog-close:focus-visible { color: var(--eg-text); background: rgba(255, 255, 255, 0.08); outline: none; }
+.eg-dialog-close:hover, .eg-dialog-close:focus-visible { color: var(--eg-text); background: rgba(var(--eg-text-rgb), 0.08); outline: none; }
 
 /* Toast */
 #eg-toast {
@@ -210,7 +285,7 @@ body {
   transform: translateX(-50%);
   max-width: calc(100vw - 32px);
   padding: 12px 18px;
-  color: #1a1400;
+  color: var(--eg-on-accent, #1a1400);
   background: var(--eg-gold-light);
   border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
@@ -222,7 +297,7 @@ body {
 #eg-toast[hidden] { display: none; }
 
 /* Lightbox: share button stands out a little */
-.pswp__button--share-button { --pswp-icon-color: #FFCC66; color: #FFCC66; }
+.pswp__button--share-button { --pswp-icon-color: var(--eg-gold-bright); color: var(--eg-gold-bright); }
 
 /* Language switcher next to the logo */
 .eg-brandbar { position: relative; }
@@ -231,14 +306,14 @@ body {
 /* "Remove photos": quieter than share/download, so it doesn't invite clicks */
 .eg-pill.eg-pill-quiet {
   color: var(--eg-muted);
-  border-color: rgba(184, 173, 156, 0.3);
+  border-color: rgba(var(--eg-muted-rgb), 0.3);
   background: transparent;
 }
 
 .eg-pill.eg-pill-quiet:hover, .eg-pill.eg-pill-quiet:focus-visible {
   color: var(--eg-text);
   border-color: var(--eg-muted);
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(var(--eg-text-rgb), 0.05);
 }
 
 @media (max-width: 640px) {
@@ -258,7 +333,7 @@ body {
 .eg-removal-policy {
   padding: 10px 12px;
   border-left: 3px solid var(--eg-gold);
-  background: rgba(204, 172, 57, 0.08);
+  background: rgba(var(--eg-accent-rgb), 0.08);
   border-radius: 6px;
   font-size: 14px !important;
 }
@@ -312,7 +387,7 @@ body {
   height: 24px;
   border-radius: 50%;
   background: var(--eg-berry);
-  color: #fff;
+  color: var(--eg-on-button, #fff);
   font-size: 15px;
   line-height: 24px;
   text-align: center;
@@ -355,7 +430,7 @@ body {
   padding: 10px 12px;
   border: 1.5px solid var(--eg-line);
   border-radius: 10px;
-  background: rgba(0, 0, 0, 0.35);
+  background: var(--eg-field, rgba(0, 0, 0, 0.35));
   color: var(--eg-text);
   font: inherit;
   font-size: 16px;

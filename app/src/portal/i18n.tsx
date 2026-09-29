@@ -112,6 +112,122 @@ const en = {
     shareText: 'That was “{title}” – photo {number} of {total}'
   },
 
+  newsletter: {
+    heading: 'Stay in touch',
+    text: 'News and upcoming events straight to your inbox.',
+    emailLabel: 'Your e-mail address',
+    nameLabel: 'First name (optional)',
+    submit: 'Subscribe',
+    sending: 'Sending …',
+    privacy: 'Your address is only used for the confirmation e-mail and – once you confirm – for the newsletter. ' +
+      'You can unsubscribe at any time.',
+    privacyLink: 'Privacy policy',
+    sent: 'On its way to {email}. If nothing arrives, take a quick look in your spam folder.',
+    failed: 'That didn’t work. Please try again later.',
+    invalidEmail: 'Please enter a valid e-mail address.',
+    invalidRequest: 'Invalid request.',
+    throttled: 'A few e-mails have just been sent – please try again later.',
+    notConfigured: 'E-mail is not set up.',
+    sendFailed: 'The e-mail could not be sent. Please try again later.',
+
+    mailSubject: (brand: string) => `Please confirm your newsletter subscription – ${brand}`,
+    mailGreeting: (name: string) => name ? `Hi ${name},` : 'Hi,',
+    mailIntro: (brand: string) => `you’d like to receive the newsletter from ${brand}. Please confirm with one click:`,
+    mailButton: 'Yes, I want the newsletter',
+    mailNote: (days: number) => `Nothing happens without your confirmation – the link is valid for ${days} days.`,
+    mailIgnore: 'If you didn’t ask for this, simply ignore this e-mail.',
+    mailRegards: 'Best wishes',
+    sigWeb: 'Web',
+    sigMail: 'E-mail',
+    sigPhone: 'Phone / WhatsApp',
+
+    pageTitle: 'Newsletter',
+    question: (brand: string, email: ComponentChildren) => <>Would you like to receive the newsletter from {brand} at {email}?</>,
+    confirmButton: 'Yes, confirm newsletter',
+    questionHint: 'Only this click confirms the subscription.',
+    doneHeading: 'Thank you!',
+    doneText: 'Your newsletter subscription is confirmed. I’ll be in touch with news and upcoming dates – you can ' +
+      'unsubscribe at any time.',
+    expiredHeading: 'Link expired',
+    expiredText: (mail: ComponentChildren) => <>
+      This confirmation link is invalid or older than 14 days. Feel free to {mail}, and I’ll add you.
+    </>,
+    expiredMailLink: 'send me a short e-mail',
+    confirmThrottled: 'That was a few too many attempts. Please try again in a few minutes.',
+
+    notifySubject: (email: string) => `New newsletter subscription: ${email}`,
+    notifyIntro: 'A guest has confirmed the newsletter subscription:',
+    notifyName: 'Name',
+    notifyEmail: 'E-mail',
+    notifySource: 'Source',
+    notifyConfirmed: 'Confirmed',
+    notifyAction: 'Please add to the newsletter list.'
+  },
+
+  mail: {
+    errors: {
+      auth: 'Login rejected – check SMTP_USER and SMTP_PASS.',
+      sender: 'Sender rejected – is the SMTP_FROM address verified with your mail provider?',
+      recipient: 'Recipient rejected.',
+      unreachable: 'Mail server not reachable – check SMTP_HOST and SMTP_PORT.',
+      tls: 'Encryption does not match the port – port 465 needs SMTP_SECURITY=ssl, port 587 starttls.',
+      other: 'Sending failed.'
+    } as Record<'auth' | 'sender' | 'recipient' | 'unreachable' | 'tls' | 'other', string>
+  },
+
+  nlAdmin: {
+    title: 'Newsletter',
+    subtitleNew: (n: number) => n === 1 ? '1 new sign-up' : `${n} new sign-ups`,
+    subtitleDone: 'All confirmed sign-ups are added',
+    badgeNew: (n: number) => `${n} new`,
+    badgeDone: 'all added',
+    overviewHint: (n: number) => n === 1 ? '1 new newsletter sign-up' : `${n} new newsletter sign-ups`,
+    intro: 'Sign-ups use double opt-in: an address only counts once the guest has clicked the link in the confirmation ' +
+      'e-mail (time and IP are kept as proof). Add new addresses to your newsletter tool, then tick them off here. ' +
+      'Unconfirmed sign-ups expire after 30 days.',
+    listHeading: 'Sign-ups',
+    copyNew: 'Copy new addresses',
+    markAll: 'Mark all new as added',
+    csvNew: 'CSV (new)',
+    csvAll: 'CSV (all confirmed)',
+    showAll: 'Also show added and unconfirmed',
+    showNew: 'Only show new',
+    emptyNew: 'No new sign-ups.',
+    emptyAll: 'No sign-ups yet.',
+    waiting: 'waiting for confirmation',
+    confirmedNew: (date: string) => `new · confirmed ${date}`,
+    transferred: (date: string) => `added ${date}`,
+    markOne: 'Added ✓',
+    unmark: 'Not added after all',
+    remove: 'Delete',
+    confirmRemove: (email: string) => `Delete ${email} from the list?`,
+    marked: (n: number) => n === 1 ? '1 address marked as added ✓' : `${n} addresses marked as added ✓`,
+    unmarked: 'Marked as not added ✓',
+    removed: 'Deleted ✓',
+    requestedAt: 'requested',
+    confirmedAt: 'confirmed',
+
+    settingsHeading: 'Sign-up in the albums',
+    enabled: 'Show the newsletter sign-up in every album',
+    after: 'Position: after how many photos',
+    afterHint: 'The sign-up comes after the row with this photo. Albums with fewer photos show it at the end.',
+    textsHint: (link: ComponentChildren) => <>Heading text and signature details are set on the {link} page.</>,
+    save: 'Save',
+    saved: 'Saved ✓',
+    notPersisted: 'Saved for now, but the data folder is not writable – the setting is lost on restart.',
+    mailOff: (vars: ComponentChildren) => <>
+      <strong>E-mail is not set up</strong>, so the sign-up stays hidden. Set {vars} on the server and restart the portal.
+    </>,
+    mailStatus: 'E-mail',
+    mailNotify: 'Notifications go to',
+    testButton: 'Send a test e-mail',
+    testOk: (to: string) => `Test e-mail sent to ${to} ✓`,
+    testFailed: (text: string) => `Test e-mail failed: ${text}`,
+    testSubject: 'Test e-mail from the photo portal',
+    testText: 'If you can read this, sending e-mail from the photo portal works.',
+    csvHeader: ['E-mail', 'Name', 'Source', 'Requested', 'Confirmed', 'IP', 'Added']
+  },
+
   removal: {
     button: 'Remove photos',
     buttonTitle: 'Ask for photos to be removed for privacy reasons',
@@ -165,6 +281,7 @@ const en = {
     title: 'Photo admin',
     tabShares: 'Shares',
     tabBranding: 'Branding',
+    tabNewsletter: 'Newsletter',
     tabStats: 'Statistics',
     tooManyFailures: (wait: string) => `Too many failed attempts. Please try again in ${wait}.`,
     loginRequired: 'Login required',
@@ -343,8 +460,8 @@ const en = {
 
   branding: {
     title: 'Branding',
-    intro: 'Name, links, share text and images of your portal. Changes take effect right away and are stored in the ' +
-      'portal’s data folder. They take precedence over the branding folder on the server.',
+    intro: 'Name, links, share and newsletter texts, colors and images of your portal. Changes take effect right away and ' +
+      'are stored in the portal’s data folder. They take precedence over the branding folder on the server.',
     notWritable: (dataDir: ComponentChildren) => <>
       <strong>Nothing can be saved here.</strong> The portal’s data folder ({dataDir}) is not writable. See the section
       “Data folder” in <code>docs/configuration.md</code>.
@@ -370,14 +487,52 @@ const en = {
       Sent along when a guest shares a photo. Placeholders: {placeholders}. Empty = default text. A line
       “Share: …” / “Teilen: …” in an album description overrides it for that album.
     </>,
+    newsletterTextEn: 'Newsletter text for English guests',
+    newsletterTextDe: 'Newsletter text for German guests',
+    newsletterTextHint: 'One or two sentences above the newsletter sign-up in the albums. Empty = default text.',
+    phone: 'Phone / WhatsApp',
+    phoneHint: 'In the signature of the newsletter confirmation e-mail. Empty = left out.',
+    instagramUrl: 'Instagram',
+    instagramUrlHint: 'Profile link in the signature of the newsletter confirmation e-mail. Empty = left out.',
     save: 'Save texts',
     saved: 'Saved ✓ – the guest pages show the new texts right away.',
     textsReset: 'Reset ✓ – the texts from the branding folder or the defaults apply again.',
     resetTexts: 'Reset texts',
     resetTextsHint: 'Removes the texts saved here. Then the branding folder or the defaults apply again.',
     invalidUrl: (field: string) => `“${field}” needs a full address starting with https://, or leave it empty.`,
+    invalidPhone: 'The phone number may only contain digits, spaces and + ( ) / . -',
     tooLong: (field: string) => `“${field}” is too long.`,
     saveFailed: 'Could not save. Is the data folder writable?',
+
+    colorsHeading: 'Colors',
+    colorsIntro: 'Four colors are enough: all other shades (lighter accent, hover, boxes, grey notes, print colors) ' +
+      'are derived from them. They apply to the guest pages, the print card and this admin area.',
+    colors: {
+      accent: ['Accent', 'Headings, links, frames and icons.'],
+      button: ['Buttons', 'Main buttons such as “Show photos” and “Share album”. The label turns white or dark automatically.'],
+      background: ['Background', 'Page background; boxes are slightly lighter. A light background switches the pages to a light look – ' +
+        'then upload a logo for dark backgrounds that also works on light ones (below).'],
+      text: ['Text', 'Running text. The grey of notes is mixed from text and background.']
+    } as Record<string, [string, string]>,
+    colorDefault: 'Default',
+    colorDefaultTitle: (value: string) => `Back to ${value} (branding folder or default)`,
+    preview: 'Preview',
+    previewTitle: 'Summer party 2026',
+    previewText: 'Enter the password from your card.',
+    previewMuted: 'The photos stay online until 30 Nov.',
+    previewButton: 'Show photos',
+    previewGhost: 'Share album',
+    saveColors: 'Save colors',
+    colorsSaved: 'Saved ✓ – the pages use the new colors right away.',
+    colorsReset: 'Reset ✓ – the colors from the branding folder or the defaults apply again.',
+    resetColors: 'Reset colors',
+    resetColorsHint: 'Removes the colors saved here. Then the branding folder or the defaults apply again.',
+    invalidColor: (field: string) => `Please choose a color for “${field}”.`,
+    lowContrastText: (ratio: string) => `Text and background have little contrast (${ratio}:1) – hard to read, ` +
+      'especially on a phone outdoors. At least 4.5:1 is recommended.',
+    lowContrastAccent: (ratio: string) => `The accent color hardly stands out from the background (${ratio}:1). ` +
+      'At least 3:1 is recommended.',
+    lowContrastButton: (ratio: string) => `Buttons hardly stand out from the background (${ratio}:1).`,
 
     imagesHeading: 'Logos and icons',
     imagesIntro: 'PNG with a transparent background works best for the logos. Maximum 5 MB per file.',
@@ -520,6 +675,123 @@ const de: Messages = {
     shareText: 'Das war „{titel}“ – Bild {nr} von {anzahl}'
   },
 
+  newsletter: {
+    heading: 'Bleib auf dem Laufenden',
+    text: 'Neuigkeiten und neue Termine direkt in dein Postfach.',
+    emailLabel: 'Deine E-Mail-Adresse',
+    nameLabel: 'Vorname (optional)',
+    submit: 'Newsletter abonnieren',
+    sending: 'Wird gesendet …',
+    privacy: 'Deine Adresse wird nur für die Bestätigungsmail verwendet und – nach deiner Bestätigung – für den ' +
+      'Newsletter. Abmelden geht jederzeit.',
+    privacyLink: 'Datenschutzerklärung',
+    sent: 'Ist unterwegs an {email}. Falls nichts ankommt: kurz in den Spam-Ordner schauen.',
+    failed: 'Das hat nicht geklappt. Bitte versuch es später noch einmal.',
+    invalidEmail: 'Bitte gib eine gültige E-Mail-Adresse ein.',
+    invalidRequest: 'Ungültige Anfrage.',
+    throttled: 'Es wurden gerade schon einige Mails verschickt – bitte später noch einmal.',
+    notConfigured: 'Mailversand ist nicht eingerichtet.',
+    sendFailed: 'Die Mail konnte leider nicht gesendet werden. Bitte versuch es später noch einmal.',
+
+    mailSubject: (brand: string) => `Bitte bestätige deine Newsletter-Anmeldung – ${brand}`,
+    mailGreeting: (name: string) => name ? `Hallo ${name},` : 'Hallo,',
+    mailIntro: (brand: string) => `du möchtest den Newsletter von ${brand} bekommen. Bitte bestätige das mit einem Klick:`,
+    mailButton: 'Ja, ich möchte den Newsletter',
+    mailNote: (days: number) => `Ohne Bestätigung passiert nichts – der Link gilt ${days} Tage.`,
+    mailIgnore: 'Falls du das nicht warst, ignorier diese Mail einfach.',
+    mailRegards: 'Viele Grüße',
+    sigWeb: 'Web',
+    sigMail: 'Mail',
+    sigPhone: 'Telefon / WhatsApp',
+
+    pageTitle: 'Newsletter',
+    question: (brand: string, email: ComponentChildren) => <>Möchtest du den Newsletter von {brand} an {email} bekommen?</>,
+    confirmButton: 'Ja, Newsletter bestätigen',
+    questionHint: 'Erst dieser Klick bestätigt die Anmeldung.',
+    doneHeading: 'Danke!',
+    doneText: 'Deine Anmeldung zum Newsletter ist bestätigt. Ich melde mich mit Neuigkeiten und neuen Terminen – ' +
+      'abmelden kannst du dich jederzeit.',
+    expiredHeading: 'Link abgelaufen',
+    expiredText: (mail: ComponentChildren) => <>
+      Dieser Bestätigungslink ist ungültig oder älter als 14 Tage. {mail}, dann trage ich dich ein.
+    </>,
+    expiredMailLink: 'Schreib mir gern eine kurze Mail',
+    confirmThrottled: 'Das waren ein paar Versuche zu viel. Bitte probier es in ein paar Minuten noch einmal.',
+
+    notifySubject: (email: string) => `Neue Newsletter-Anmeldung: ${email}`,
+    notifyIntro: 'Ein Gast hat die Newsletter-Anmeldung bestätigt:',
+    notifyName: 'Name',
+    notifyEmail: 'Mail',
+    notifySource: 'Anlass',
+    notifyConfirmed: 'Bestätigt',
+    notifyAction: 'Bitte in den Newsletter-Verteiler übernehmen.'
+  },
+
+  mail: {
+    errors: {
+      auth: 'Anmeldung abgelehnt – SMTP_USER und SMTP_PASS prüfen.',
+      sender: 'Absender abgelehnt – ist die Adresse aus SMTP_FROM beim Mail-Anbieter (z. B. Brevo) bestätigt?',
+      recipient: 'Empfänger abgelehnt.',
+      unreachable: 'Mailserver nicht erreichbar – SMTP_HOST und SMTP_PORT prüfen.',
+      tls: 'Verschlüsselung passt nicht zum Port – Port 465 braucht SMTP_SECURITY=ssl, Port 587 starttls.',
+      other: 'Versand fehlgeschlagen.'
+    } as Record<'auth' | 'sender' | 'recipient' | 'unreachable' | 'tls' | 'other', string>
+  },
+
+  nlAdmin: {
+    title: 'Newsletter',
+    subtitleNew: (n: number) => n === 1 ? '1 neue Anmeldung' : `${n} neue Anmeldungen`,
+    subtitleDone: 'Alle bestätigten Anmeldungen sind eingetragen',
+    badgeNew: (n: number) => `${n} neu`,
+    badgeDone: 'alles eingetragen',
+    overviewHint: (n: number) => n === 1 ? '1 neue Newsletter-Anmeldung' : `${n} neue Newsletter-Anmeldungen`,
+    intro: 'Die Anmeldung läuft mit Double-Opt-in: Eine Adresse zählt erst, wenn der Gast den Link in der ' +
+      'Bestätigungsmail angeklickt hat (Zeit und IP bleiben als Nachweis gespeichert). Trag neue Adressen in dein ' +
+      'Newsletter-Programm ein und hake sie hier ab. Unbestätigte Anmeldungen verfallen nach 30 Tagen.',
+    listHeading: 'Anmeldungen',
+    copyNew: 'Neue Adressen kopieren',
+    markAll: 'Alle neuen als eingetragen markieren',
+    csvNew: 'CSV (neue)',
+    csvAll: 'CSV (alle bestätigten)',
+    showAll: 'Auch schon eingetragene und unbestätigte zeigen',
+    showNew: 'Nur neue zeigen',
+    emptyNew: 'Keine neuen Anmeldungen.',
+    emptyAll: 'Noch keine Anmeldungen.',
+    waiting: 'wartet auf Bestätigung',
+    confirmedNew: (date: string) => `neu · bestätigt ${date}`,
+    transferred: (date: string) => `eingetragen ${date}`,
+    markOne: 'Eingetragen ✓',
+    unmark: 'Doch nicht eingetragen',
+    remove: 'Löschen',
+    confirmRemove: (email: string) => `${email} aus der Liste löschen?`,
+    marked: (n: number) => n === 1 ? '1 Adresse als eingetragen markiert ✓' : `${n} Adressen als eingetragen markiert ✓`,
+    unmarked: 'Als nicht eingetragen markiert ✓',
+    removed: 'Gelöscht ✓',
+    requestedAt: 'angefragt',
+    confirmedAt: 'bestätigt',
+
+    settingsHeading: 'Anmeldung in den Alben',
+    enabled: 'Newsletter-Anmeldung in jedem Album zeigen',
+    after: 'Position: nach wie vielen Bildern',
+    afterHint: 'Die Anmeldung kommt nach der Reihe mit diesem Bild. Alben mit weniger Bildern zeigen sie am Ende.',
+    textsHint: (link: ComponentChildren) => <>Text über der Anmeldung und Angaben für die Unterschrift stellst du unter {link} ein.</>,
+    save: 'Speichern',
+    saved: 'Gespeichert ✓',
+    notPersisted: 'Vorerst gespeichert, aber der Datenordner ist nicht beschreibbar – nach einem Neustart ist die Einstellung weg.',
+    mailOff: (vars: ComponentChildren) => <>
+      <strong>Mailversand ist nicht eingerichtet</strong>, deshalb bleibt die Anmeldung ausgeblendet. Trag {vars} auf dem
+      Server ein und starte das Portal neu.
+    </>,
+    mailStatus: 'Mailversand',
+    mailNotify: 'Benachrichtigungen gehen an',
+    testButton: 'Testmail senden',
+    testOk: (to: string) => `Testmail an ${to} gesendet ✓`,
+    testFailed: (text: string) => `Testmail fehlgeschlagen: ${text}`,
+    testSubject: 'Testmail vom Bilder-Portal',
+    testText: 'Wenn du das liest, klappt der Mailversand vom Bilder-Portal.',
+    csvHeader: ['E-Mail', 'Name', 'Anlass', 'Angefragt', 'Bestätigt', 'IP', 'Übertragen']
+  },
+
   removal: {
     button: 'Bilder entfernen',
     buttonTitle: 'Entfernung von Bildern aus Datenschutzgründen beantragen',
@@ -572,6 +844,7 @@ const de: Messages = {
     title: 'Bilder-Admin',
     tabShares: 'Freigaben',
     tabBranding: 'Branding',
+    tabNewsletter: 'Newsletter',
     tabStats: 'Statistik',
     tooManyFailures: (wait: string) => `Zu viele Fehlversuche. Bitte in ${wait} erneut versuchen.`,
     loginRequired: 'Anmeldung erforderlich',
@@ -749,8 +1022,8 @@ const de: Messages = {
 
   branding: {
     title: 'Branding',
-    intro: 'Name, Links, Teilen-Text und Bilder deines Portals. Änderungen gelten sofort und werden im Datenordner des ' +
-      'Portals gespeichert. Sie haben Vorrang vor dem Branding-Ordner auf dem Server.',
+    intro: 'Name, Links, Teilen- und Newsletter-Text, Farben und Bilder deines Portals. Änderungen gelten sofort und werden ' +
+      'im Datenordner des Portals gespeichert. Sie haben Vorrang vor dem Branding-Ordner auf dem Server.',
     notWritable: (dataDir: ComponentChildren) => <>
       <strong>Hier kann nichts gespeichert werden.</strong> Der Datenordner des Portals ({dataDir}) ist nicht
       beschreibbar. Siehe Abschnitt „Data folder“ in <code>docs/configuration.md</code>.
@@ -776,14 +1049,52 @@ const de: Messages = {
       Wird mitgeschickt, wenn ein Gast ein Bild teilt. Platzhalter: {placeholders}. Leer = Standardtext. Eine Zeile
       „Share: …“ / „Teilen: …“ in der Albumbeschreibung ersetzt ihn für dieses Album.
     </>,
+    newsletterTextEn: 'Newsletter-Text für englische Gäste',
+    newsletterTextDe: 'Newsletter-Text für deutsche Gäste',
+    newsletterTextHint: 'Ein, zwei Sätze über der Newsletter-Anmeldung in den Alben. Leer = Standardtext.',
+    phone: 'Telefon / WhatsApp',
+    phoneHint: 'In der Unterschrift der Newsletter-Bestätigungsmail. Leer = entfällt.',
+    instagramUrl: 'Instagram',
+    instagramUrlHint: 'Profil-Link in der Unterschrift der Newsletter-Bestätigungsmail. Leer = entfällt.',
     save: 'Texte speichern',
     saved: 'Gespeichert ✓ – die Gästeseiten zeigen die neuen Texte sofort.',
     textsReset: 'Zurückgesetzt ✓ – es gelten wieder die Texte aus dem Branding-Ordner bzw. die Standards.',
     resetTexts: 'Texte zurücksetzen',
     resetTextsHint: 'Entfernt die hier gespeicherten Texte. Dann gelten wieder der Branding-Ordner bzw. die Standards.',
     invalidUrl: (field: string) => `„${field}“ braucht eine vollständige Adresse mit https:// – oder bleibt leer.`,
+    invalidPhone: 'Die Telefonnummer darf nur Ziffern, Leerzeichen und + ( ) / . - enthalten.',
     tooLong: (field: string) => `„${field}“ ist zu lang.`,
     saveFailed: 'Speichern hat nicht geklappt. Ist der Datenordner beschreibbar?',
+
+    colorsHeading: 'Farben',
+    colorsIntro: 'Vier Farben reichen: Alle anderen Töne (hellerer Akzent, Hover, Kästen, graue Hinweise, Druckfarben) ' +
+      'werden daraus abgeleitet. Sie gelten für die Gästeseiten, die Druckkarte und diesen Admin-Bereich.',
+    colors: {
+      accent: ['Akzentfarbe', 'Überschriften, Links, Rahmen und Symbole.'],
+      button: ['Buttonfarbe', 'Haupt-Buttons wie „Bilder ansehen“ und „Album teilen“. Die Schrift darauf wird automatisch weiß oder dunkel.'],
+      background: ['Hintergrund', 'Seitenhintergrund; Kästen sind etwas heller. Ein heller Hintergrund stellt die Seiten auf ein helles Aussehen um – ' +
+        'dann unten beim „Logo für dunklen Hintergrund“ eines hochladen, das auch auf hellem Grund lesbar ist.'],
+      text: ['Textfarbe', 'Fließtext. Das Grau von Hinweisen wird aus Text und Hintergrund gemischt.']
+    } as Record<string, [string, string]>,
+    colorDefault: 'Standard',
+    colorDefaultTitle: (value: string) => `Zurück zu ${value} (Branding-Ordner bzw. Standard)`,
+    preview: 'Vorschau',
+    previewTitle: 'Sommerfest 2026',
+    previewText: 'Gib das Passwort von deiner Karte ein.',
+    previewMuted: 'Die Bilder sind bis 30.11. online.',
+    previewButton: 'Bilder ansehen',
+    previewGhost: 'Album teilen',
+    saveColors: 'Farben speichern',
+    colorsSaved: 'Gespeichert ✓ – die Seiten zeigen die neuen Farben sofort.',
+    colorsReset: 'Zurückgesetzt ✓ – es gelten wieder die Farben aus dem Branding-Ordner bzw. die Standards.',
+    resetColors: 'Farben zurücksetzen',
+    resetColorsHint: 'Entfernt die hier gespeicherten Farben. Dann gelten wieder der Branding-Ordner bzw. die Standards.',
+    invalidColor: (field: string) => `Bitte für „${field}“ eine Farbe wählen.`,
+    lowContrastText: (ratio: string) => `Text und Hintergrund haben wenig Kontrast (${ratio}:1) – schwer lesbar, ` +
+      'vor allem draußen auf dem Handy. Empfohlen ist mindestens 4,5:1.',
+    lowContrastAccent: (ratio: string) => `Die Akzentfarbe hebt sich kaum vom Hintergrund ab (${ratio}:1). ` +
+      'Empfohlen ist mindestens 3:1.',
+    lowContrastButton: (ratio: string) => `Die Buttons heben sich kaum vom Hintergrund ab (${ratio}:1).`,
 
     imagesHeading: 'Logos und Icons',
     imagesIntro: 'Für die Logos am besten PNG mit transparentem Hintergrund. Höchstens 5 MB pro Datei.',

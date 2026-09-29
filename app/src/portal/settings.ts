@@ -129,6 +129,21 @@ export function shareUrl (): string {
   return brandOption('shareUrl', websiteUrl())
 }
 
+/** Text above the newsletter sign-up in the albums; empty = the neutral default. */
+export function newsletterText (lang: Lang = defaultLang()): string {
+  return brandOption('newsletterText', '', lang) || t(lang).newsletter.text
+}
+
+/** Phone / WhatsApp number for the e-mail signature; empty = left out. */
+export function phoneNumber (): string {
+  return brandOption('phone', '')
+}
+
+/** Instagram profile for the e-mail signature; empty = left out. */
+export function instagramUrl (): string {
+  return brandOption('instagramUrl', '')
+}
+
 /**
  * Fully-qualified public URL of the portal, used for QR codes and og:image.
  */

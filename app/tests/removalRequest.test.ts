@@ -179,11 +179,13 @@ describe('POST removal request', () => {
     expect(await res.json()).toEqual({ ok: true })
     expect(sent).toHaveLength(1)
     expect(sent[0]).toMatchObject({
-      from: 'portal@example.com',
+      from: { name: 'Photo Portal', address: 'portal@example.com' },
       to: 'owner@example.com',
       replyTo: 'alex@example.com',
-      subject: 'Bitte meine Bilder entfernen'
+      subject: 'Bitte meine Bilder entfernen',
+      headers: { 'Auto-Submitted': 'auto-generated' }
     })
+    expect(sent[0].messageId).toMatch(/^<[\w-]+@example\.com>$/)
     expect(sent[0].text).toContain('Bild 2 von 3 – IMG_0002.JPG')
   })
 

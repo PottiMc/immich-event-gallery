@@ -17,7 +17,15 @@ export type DownloadQuality = 'original' | 'preview'
 
 export interface RuntimeSettings {
   downloadQuality?: DownloadQuality
+  /** Newsletter sign-up shown in the albums */
+  newsletterEnabled?: boolean
+  /** Number of photos before the newsletter band */
+  newsletterAfter?: number
 }
+
+/** Default position of the newsletter band: about three rows on a computer, four on a phone. */
+export const NEWSLETTER_AFTER_DEFAULT = 12
+export const NEWSLETTER_AFTER_MAX = 500
 
 export type SaveResult = { ok: true } | { ok: false, message: string }
 
@@ -39,10 +47,22 @@ export function isDownloadQuality (value: unknown): value is DownloadQuality {
 function sanitize (raw: unknown): RuntimeSettings {
   const settings: RuntimeSettings = {}
   if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
-    const value = (raw as Record<string, unknown>).downloadQuality
-    if (isDownloadQuality(value)) settings.downloadQuality = value
+    const r = raw as Record<string, unknown>
+    if (isDownloadQuality(r.downloadQuality)) settings.downloadQuality = r.downloadQuality
+    if (typeof r.newsletterEnabled === 'boolean') settings.newsletterEnabled = r.newsletterEnabled
+    if (Number.isInteger(r.newsletterAfter) && (r.newsletterAfter as number) >= 1 &&
+      (r.newsletterAfter as number) <= NEWSLETTER_AFTER_MAX) settings.newsletterAfter = r.newsletterAfter as number
   }
   return settings
+}
+
+/** Whether the operator switched the newsletter sign-up on (mail must work too, see newsletter.ts). */
+export function newsletterSwitchedOn (): boolean {
+  return current.newsletterEnabled === true
+}
+
+export function newsletterAfter (): number {
+  return current.newsletterAfter || NEWSLETTER_AFTER_DEFAULT
 }
 
 /** Lay the runtime settings over the loaded config. */

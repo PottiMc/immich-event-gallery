@@ -30,6 +30,8 @@ import { ASSET_VERSION } from './version'
 import { registerPortalRoutes, unlockShare } from './portal/routes'
 import { startAdminServer } from './portal/admin'
 import { handleRemovalRequest } from './portal/removal'
+import { handleNewsletterSignup } from './portal/newsletter'
+import { logMailConfig } from './portal/mail'
 import { shareKeyGuard } from './portal/key-guard'
 import { securityHeaders } from './portal/security'
 import { BRAND, brandAsset, sendBrandFile } from './portal/branding'
@@ -284,6 +286,19 @@ app.post('/share/:key/removal-request', shareKeyGuard, decodeCookie, asyncHandle
 }))
 
 /*
+ * [ROUTE] Portal: newsletter sign-up from an album. Sends the double opt-in
+ * confirmation e-mail - see portal/newsletter.ts.
+ */
+app.post('/share/:key/newsletter', shareKeyGuard, decodeCookie, asyncHandler(async (req, res) => {
+  const resolved = await resolveShare(req, KeyType.key)
+  if (!resolved.ok) {
+    respondToInvalidRequest(res, resolved.status, resolved.reason)
+    return
+  }
+  await handleNewsletterSignup(req, res, resolved.link)
+}))
+
+/*
  * [ROUTE] Catch accidental POST requests to share URLs (e.g. from browser history
  * state issues) and force a clean GET redirect.
  * See https://github.com/alangrainger/immich-public-proxy/pull/205
@@ -414,6 +429,7 @@ process.on('SIGTERM', () => {
 const port = Number(process.env.IPP_PORT) || 3000
 const server = app.listen(port, () => {
   console.log(dayjs().format() + ' Server started on port ' + port)
+  logMailConfig()
   // Bail out early if the Immich server is older than IPP supports, rather
   // than silently serving broken album shares. Unknown/unreachable is
   // tolerated (logs a warning and continues) - see enforceMinimumImmichVersion.

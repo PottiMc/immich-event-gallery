@@ -24,7 +24,13 @@
   --eg-bg: #0d0b0a;
   --eg-surface: #171412;
   --eg-surface-2: #211d1a;
-  --eg-line: rgba(204, 172, 57, 0.28);
+  --eg-accent-rgb: 204, 172, 57;
+  --eg-button-rgb: 163, 0, 90;
+  --eg-bg-rgb: 13, 11, 10;
+  --eg-surface-rgb: 23, 20, 18;
+  --eg-text-rgb: 244, 239, 230;
+  --eg-muted-rgb: 184, 173, 156;
+  --eg-line: rgba(var(--eg-accent-rgb), 0.28);
   --eg-text: #f4efe6;
   --eg-muted: #b8ad9c;
   --eg-error: #ff8fb8;
@@ -39,8 +45,8 @@
   display: flex;
   flex-direction: column;
   background:
-    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(204, 172, 57, 0.16), transparent 70%),
-    radial-gradient(ellipse 60% 40% at 50% 110%, rgba(163, 0, 90, 0.14), transparent 70%),
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(var(--eg-accent-rgb), 0.16), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 50% 110%, rgba(var(--eg-button-rgb), 0.14), transparent 70%),
     var(--eg-bg);
   color: var(--eg-text);
   font-family: var(--eg-font);
@@ -109,18 +115,18 @@
   font-size: 18px;
   text-align: center;
   color: var(--eg-text);
-  background: rgba(0, 0, 0, 0.35);
+  background: var(--eg-field, rgba(0, 0, 0, 0.35));
   border: 1.5px solid var(--eg-line);
   border-radius: 12px;
   outline: none;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 
-.eg-form input::placeholder { color: #7d7466; font-size: 15px; }
+.eg-form input::placeholder { color: var(--eg-placeholder, #7d7466); font-size: 15px; }
 
 .eg-form input:focus {
   border-color: var(--eg-gold);
-  box-shadow: 0 0 0 3px rgba(204, 172, 57, 0.22);
+  box-shadow: 0 0 0 3px rgba(var(--eg-accent-rgb), 0.22);
 }
 
 .eg-form input[aria-invalid="true"] { border-color: var(--eg-error); }
@@ -135,7 +141,7 @@
   font-size: 17px;
   font-weight: 600;
   letter-spacing: 0.02em;
-  color: #fff;
+  color: var(--eg-on-button, #fff);
   background: var(--eg-berry);
   border: 0;
   border-radius: 12px;
@@ -156,7 +162,7 @@
 }
 
 .eg-button-ghost:hover, .eg-button-ghost:focus-visible {
-  background: rgba(204, 172, 57, 0.1);
+  background: rgba(var(--eg-accent-rgb), 0.1);
   border-color: var(--eg-gold);
 }
 
@@ -220,7 +226,7 @@
   padding: 3px;
   border: 1px solid var(--eg-line);
   border-radius: 999px;
-  background: rgba(23, 20, 18, 0.72);
+  background: rgba(var(--eg-surface-rgb), 0.72);
   font-family: var(--eg-font);
   font-size: 12px;
   font-weight: 600;
@@ -237,7 +243,7 @@
   text-decoration: none;
 }
 
-.eg-lang a:hover, .eg-lang a:focus-visible { color: var(--eg-text); background: rgba(255, 255, 255, 0.07); outline: none; }
+.eg-lang a:hover, .eg-lang a:focus-visible { color: var(--eg-text); background: rgba(var(--eg-text-rgb), 0.07); outline: none; }
 .eg-lang a[aria-current] { color: var(--eg-bg); background: var(--eg-gold-light); }
 
 /* Guest pages: own row at the top right, so it never covers the logo */

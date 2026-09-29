@@ -6,6 +6,7 @@
  *   GET  /license   licence notice with the source code link (AGPL-3.0),
  *                   also as /lizenz
  *   POST /share/unlock  password page of a /share/<key> link (see unlockShare)
+ *   GET/POST /newsletter/:token  newsletter confirmation (see newsletter.ts)
  */
 
 import dayjs from 'dayjs'
@@ -23,6 +24,7 @@ import { LoginThrottle } from './throttle'
 import { recordLogin } from './stats'
 import { langOf, t, varyLang } from './i18n'
 import { Landing, LandingProps, LicensePage } from './views'
+import { registerNewsletterRoutes } from './newsletter'
 
 export const guestThrottle = new LoginThrottle()
 
@@ -143,6 +145,8 @@ export function registerPortalRoutes (app: Express) {
     noStore(res)
     res.redirect(303, '/share/' + link.key)
   }))
+
+  registerNewsletterRoutes(app)
 }
 
 /**

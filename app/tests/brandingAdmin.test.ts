@@ -5,20 +5,37 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
 import { adminFormToken, createAdminApp } from '../src/portal/admin'
-import { isWebAddress, parseBrandTexts } from '../src/portal/admin-branding'
+import { isWebAddress, parseBrandColors, parseBrandTexts } from '../src/portal/admin-branding'
 import {
+  brandColors,
+  brandColorSource,
   brandFileSource,
   brandTextSource,
   brandUrl,
   imageInfo,
   MAX_BRAND_FILE_BYTES,
+  resetBrandColors,
   resetBrandFile,
   resetBrandingCache,
   resetBrandTexts,
+  saveBrandColors,
   saveBrandFile,
   saveBrandTexts
 } from '../src/portal/branding'
-import { brandName, imprintUrl, shareTextTemplate, shareUrl, websiteUrl } from '../src/portal/settings'
+import { contrast, themeCss, themeVars } from '../src/portal/theme'
+import { Landing } from '../src/portal/views'
+import {
+  brandName,
+  imprintUrl,
+  instagramUrl,
+  newsletterText,
+  phoneNumber,
+  shareTextTemplate,
+  shareUrl,
+  websiteUrl
+} from '../src/portal/settings'
+import { h } from 'preact'
+import { renderPage } from '../src/view/render'
 
 function png (width: number, height: number): Buffer {
   const header = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13, 0x49, 0x48, 0x44, 0x52])
@@ -137,6 +154,25 @@ describe('branding layers', () => {
     expect(brandName('de')).toBe('Bilder-Portal')
   })
 
+  it('saves the newsletter text and the signature details', () => {
+    const parsed = parseBrandTexts({
+      newsletterTextEn: '',
+      newsletterTextDe: 'Neue Termine für Weinproben, etwa einmal im Monat.',
+      phone: '+49 170 1234567',
+      instagramUrl: 'https://instagram.com/weingut'
+    })
+    expect(parsed.ok && saveBrandTexts(parsed.texts).ok).toBe(true)
+    expect(newsletterText('de')).toBe('Neue Termine für Weinproben, etwa einmal im Monat.')
+    // An empty text means the default of that language
+    expect(newsletterText('en')).toBe('News and upcoming events straight to your inbox.')
+    expect(phoneNumber()).toBe('+49 170 1234567')
+    expect(instagramUrl()).toBe('https://instagram.com/weingut')
+
+    expect(parseBrandTexts({ instagramUrl: 'javascript:alert(1)' })).toEqual({ ok: false, field: 'instagramUrl', reason: 'url' })
+    expect(parseBrandTexts({ phone: '0170<script>' })).toEqual({ ok: false, field: 'phone', reason: 'phone' })
+    expect(parseBrandTexts({ newsletterTextDe: 'x'.repeat(301) })).toEqual({ ok: false, field: 'newsletterTextDe', reason: 'length' })
+  })
+
   it('accepts only http(s) addresses for links', () => {
     expect(isWebAddress('https://weingut.example/impressum')).toBe(true)
     expect(isWebAddress('javascript:alert(1)')).toBe(false)
@@ -144,6 +180,76 @@ describe('branding layers', () => {
     expect(isWebAddress('weingut.example')).toBe(false)
     expect(parseBrandTexts({ imprintUrl: 'javascript:alert(1)' })).toEqual({ ok: false, field: 'imprintUrl', reason: 'url' })
     expect(parseBrandTexts({ brandName: 'x'.repeat(81) })).toEqual({ ok: false, field: 'brandName', reason: 'length' })
+  })
+})
+
+describe('brand colors', () => {
+  it('leaves the stylesheet defaults alone without brand colors', () => {
+    expect(themeCss()).toBe('')
+    const html = renderPage(h(Landing, { baseUrl: 'https://x', lang: 'en' }))
+    expect(html).not.toContain('eg-theme')
+    expect(html).toContain('<meta name="theme-color" content="#0d0b0a"/>')
+  })
+
+  it('lays admin colors over branding.json, per color', () => {
+    writeFileSync(join(folder, 'branding.json'), JSON.stringify({ colors: { accent: '#336699', button: 'red', text: '#EEEEEE' } }))
+    resetBrandingCache()
+    // Invalid values are ignored
+    expect(brandColors()).toEqual({ accent: '#336699', text: '#eeeeee' })
+    expect(brandColorSource('accent')).toBe('folder')
+    expect(brandColorSource('button')).toBe('default')
+
+    expect(saveBrandColors({ accent: '#aa2200', background: '#ffffff' }).ok).toBe(true)
+    expect(brandColors()).toEqual({ accent: '#aa2200', background: '#ffffff', text: '#eeeeee' })
+    expect(brandColorSource('accent')).toBe('admin')
+    expect(JSON.parse(readFileSync(join(data, 'branding', 'colors.json'), 'utf8'))).toEqual({ accent: '#aa2200', background: '#ffffff' })
+
+    // Saving or resetting the texts keeps the colors
+    const parsed = parseBrandTexts({ brandName: 'Test' })
+    expect(parsed.ok && saveBrandTexts(parsed.texts).ok).toBe(true)
+    expect(resetBrandTexts().ok).toBe(true)
+    expect(brandColorSource('accent')).toBe('admin')
+
+    expect(resetBrandColors().ok).toBe(true)
+    expect(brandColors()).toEqual({ accent: '#336699', text: '#eeeeee' })
+  })
+
+  it('derives only the shades that depend on a set color', () => {
+    const vars = themeVars({ button: '#ffdd00' })
+    expect(vars['--eg-berry']).toBe('#ffdd00')
+    expect(vars['--eg-button-rgb']).toBe('255, 221, 0')
+    // Dark label on a light button, and a print shade that reads on white paper
+    expect(vars['--eg-on-button']).toBe('#1a1612')
+    expect(contrast(vars['--eg-button-print'], '#ffffff')).toBeGreaterThanOrEqual(4.5)
+    expect(contrast(vars['--eg-button-bright'], '#0d0b0a')).toBeGreaterThanOrEqual(4.5)
+    expect(vars['--eg-gold']).toBeUndefined()
+    expect(vars['--eg-bg']).toBeUndefined()
+    expect(vars['color-scheme']).toBeUndefined()
+
+    const light = themeVars({ background: '#fafafa', text: '#222222' })
+    expect(light['color-scheme']).toBe('light')
+    expect(light['--eg-field']).toBeDefined()
+    expect(light['--eg-muted']).toMatch(/^#[0-9a-f]{6}$/)
+    // The accent depends on the text color for its lighter shades
+    expect(light['--eg-gold-light']).toBeDefined()
+    expect(light['--eg-gold']).toBeUndefined()
+  })
+
+  it('puts the colors into the guest pages', () => {
+    expect(saveBrandColors({ accent: '#336699', background: '#102030' }).ok).toBe(true)
+    const html = renderPage(h(Landing, { baseUrl: 'https://x', lang: 'en' }))
+    expect(html).toContain('<style id="eg-theme">:root { --eg-gold: #336699;')
+    expect(html).toContain('<meta name="theme-color" content="#102030"/>')
+    // After the stylesheet, so it wins over its defaults
+    expect(html.indexOf('id="eg-theme"')).toBeGreaterThan(html.indexOf('portal.css'))
+  })
+
+  it('keeps only colors that differ from the fallback and refuses invalid ones', () => {
+    const form = { accent: '#CCAC39', button: '#123456', background: '#0d0b0a', text: '#f4efe6' }
+    expect(parseBrandColors(form)).toEqual({ ok: true, colors: { button: '#123456' } })
+    expect(parseBrandColors({ ...form, text: 'red' })).toEqual({ ok: false, field: 'text' })
+    expect(parseBrandColors({ ...form, background: '#000; } body { x' })).toEqual({ ok: false, field: 'background' })
+    expect(parseBrandColors({ accent: '#ccac39' })).toEqual({ ok: false, field: 'button' })
   })
 })
 
@@ -192,6 +298,34 @@ describe('branding page', () => {
     const bad = await postForm('/branding/texte', { csrf: adminFormToken(), websiteUrl: 'javascript:alert(1)' })
     expect(bad.status).toBe(400)
     expect(brandName()).toBe('Weingut Test')
+  })
+
+  it('saves and resets colors', async () => {
+    const colors = { accent: '#336699', button: '#a3005a', background: '#0d0b0a', text: '#f4efe6' }
+    const ok = await postForm('/branding/farben', { csrf: adminFormToken(), ...colors })
+    expect(ok.status).toBe(303)
+    expect(ok.headers.get('location')).toBe('/branding?farben-gespeichert#farben')
+    expect(brandColors()).toEqual({ accent: '#336699' })
+
+    const page = await (await fetch(base + '/branding?farben-gespeichert', { headers: { ...auth, 'accept-language': 'de' } })).text()
+    expect(page).toContain('Akzentfarbe')
+    expect(page).toContain('value="#336699"')
+    expect(page).toContain('Gespeichert ✓ – die Seiten zeigen die neuen Farben sofort.')
+    expect(page).toContain('--eg-gold: #336699;')
+
+    expect((await postForm('/branding/farben', colors)).status).toBe(400)
+    expect((await postForm('/branding/farben', { csrf: adminFormToken(), ...colors, text: 'white' })).status).toBe(400)
+    expect(brandColors()).toEqual({ accent: '#336699' })
+
+    const reset = await postForm('/branding/farben/zuruecksetzen', { csrf: adminFormToken() })
+    expect(reset.status).toBe(303)
+    expect(brandColors()).toEqual({})
+  })
+
+  it('warns about unreadable colors', async () => {
+    expect(saveBrandColors({ text: '#222222' }).ok).toBe(true)
+    const page = await (await fetch(base + '/branding', { headers: { ...auth, 'accept-language': 'en' } })).text()
+    expect(page).toContain('Text and background have little contrast')
   })
 
   it('uploads images, rejects wrong ones and serves the new file', async () => {

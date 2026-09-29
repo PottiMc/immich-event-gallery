@@ -9,8 +9,10 @@ import { brandUrl } from './branding'
 import { CardOptions } from './card'
 import { ComponentChildren } from 'preact'
 import { Lang, Messages, t } from './i18n'
+import { pendingCount } from './newsletter'
 import { DownloadQuality } from './runtime-settings'
 import { brandName } from './settings'
+import { ThemeStyle } from './theme'
 import { BrandHead, LangSwitch, STATIC } from './views'
 
 export interface AdminLinkView {
@@ -162,7 +164,7 @@ function SettingsSection ({ settings, m }: { settings: AdminSettingsView, m: Mes
 
 interface AdminHeaderProps {
   lang: Lang
-  active: 'shares' | 'stats' | 'branding'
+  active: 'shares' | 'stats' | 'branding' | 'newsletter'
   title: string
   subtitle: ComponentChildren
 }
@@ -170,6 +172,7 @@ interface AdminHeaderProps {
 /** Header of every admin page: logo, title, language switcher and the page tabs. */
 export function AdminHeader ({ lang, active, title, subtitle }: AdminHeaderProps) {
   const m = t(lang)
+  const pending = pendingCount()
   return (
     <>
       <header class="adm-header">
@@ -184,6 +187,10 @@ export function AdminHeader ({ lang, active, title, subtitle }: AdminHeaderProps
         <a href="/" aria-current={active === 'shares' ? 'page' : undefined}>{m.admin.tabShares}</a>
         <a href="/statistik" aria-current={active === 'stats' ? 'page' : undefined}>{m.admin.tabStats}</a>
         <a href="/branding" aria-current={active === 'branding' ? 'page' : undefined}>{m.admin.tabBranding}</a>
+        <a href="/newsletter" aria-current={active === 'newsletter' ? 'page' : undefined}>
+          {m.admin.tabNewsletter}
+          {pending > 0 && <span class="adm-tab-count" title={m.nlAdmin.overviewHint(pending)}>{pending}</span>}
+        </a>
         <form method="post" action="/abmelden" class="adm-logout">
           <input type="hidden" name="csrf" value={adminFormToken()}/>
           <button type="submit">{m.admin.logout}</button>
@@ -214,6 +221,11 @@ export function AdminPage (props: AdminPageProps) {
         />
 
         <main class="adm-main">
+          {pendingCount() > 0 && (
+            <p class="adm-alert adm-alert-info">
+              <a href="/newsletter#newsletter">{m.nlAdmin.overviewHint(pendingCount())} →</a>
+            </p>
+          )}
           {props.baseUrlMissing && (
             <div class="adm-alert">
               {m.admin.baseUrlMissing(<code>PUBLIC_BASE_URL=https://bilder.example.com</code>)}
@@ -417,6 +429,7 @@ export function PrintCard (props: CardProps) {
         <meta name="robots" content="noindex, nofollow"/>
         <title>{m.card.title + ' – ' + options.title}</title>
         <link rel="stylesheet" href={`${STATIC}/portal/card.css`}/>
+        <ThemeStyle/>
         {!sheet && <style>{'@page { size: 105mm 148mm; margin: 0; }'}</style>}
       </head>
       <body class={(options.dark ? 'card-dark ' : '') + (sheet ? 'card-sheet' : 'card-single')}>

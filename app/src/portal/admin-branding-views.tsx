@@ -1,5 +1,5 @@
 /*
- * Branding page of the admin server: brand texts and links, logos and icons.
+ * Branding page of the admin server: brand texts and links, colors, logos and icons.
  */
 
 import { ComponentChildren } from 'preact'
@@ -17,6 +17,21 @@ export interface BrandTextValues {
   shareUrl: string
   shareTextEn: string
   shareTextDe: string
+  newsletterTextEn: string
+  newsletterTextDe: string
+  phone: string
+  instagramUrl: string
+}
+
+export interface ColorView {
+  key: string
+  label: string
+  hint: string
+  /** #rrggbb that applies now */
+  value: string
+  /** What applies without the admin page's color: branding folder or default */
+  fallback: string
+  source: BrandSource
 }
 
 export interface ImageView {
@@ -43,6 +58,11 @@ export interface BrandingPageProps {
   hasAdminTexts: boolean
   notice?: 'saved' | 'texts-reset'
   error?: string
+  colors: ColorView[]
+  hasAdminColors: boolean
+  colorNotice?: 'saved' | 'reset'
+  colorError?: string
+  contrastWarnings: string[]
   images: ImageView[]
   imageNotice?: { name: string, kind: 'saved' | 'reset' }
 }
@@ -74,6 +94,64 @@ function Field ({ name, label, hint, props, type = 'text', placeholder, multilin
           autoComplete="off" spellcheck={false} aria-describedby={id + '-hint'}/>}
       <p class="adm-hint" id={id + '-hint'}>{hint}</p>
     </div>
+  )
+}
+
+function ColorsSection ({ props }: { props: BrandingPageProps }) {
+  const m = t(props.lang)
+  const b = m.branding
+  return (
+    <section class="adm-help" id="farben" aria-labelledby="farben-title">
+      <h2 id="farben-title">{b.colorsHeading}</h2>
+      <p class="adm-note">{b.colorsIntro}</p>
+      {props.colorNotice === 'saved' && <p class="adm-saved" role="status">{b.colorsSaved}</p>}
+      {props.colorNotice === 'reset' && <p class="adm-saved" role="status">{b.colorsReset}</p>}
+      {props.colorError && <div class="adm-alert" role="alert">{props.colorError}</div>}
+      {props.contrastWarnings.map(warning => <p key={warning} class="adm-image-warn adm-color-warn">{warning}</p>)}
+      <div class="adm-colors-layout">
+        <form method="post" action="/branding/farben" class="adm-brand-form adm-colors" id="farben-form">
+          <input type="hidden" name="csrf" value={props.csrf}/>
+          {props.colors.map(color => {
+            const id = 'farbe-' + color.key
+            return (
+              <div class="adm-color" key={color.key}>
+                <input id={id} name={color.key} type="color" value={color.value} data-color={color.key} aria-describedby={id + '-hint'}/>
+                <div class="adm-color-body">
+                  <label for={id}>{color.label} <SourceBadge source={color.source} m={m}/></label>
+                  <p class="adm-hint" id={id + '-hint'}>{color.hint}</p>
+                  <p class="adm-color-meta">
+                    <code class="adm-color-hex" data-hex-for={color.key}>{color.value}</code>
+                    <button type="button" class="adm-mini" data-default-for={color.key} data-default={color.fallback}
+                      title={b.colorDefaultTitle(color.fallback)} hidden>{b.colorDefault}</button>
+                  </p>
+                </div>
+              </div>
+            )
+          })}
+          <button type="submit" class="adm-btn adm-btn-primary" disabled={!props.persistent}>{b.saveColors}</button>
+        </form>
+        <figure class="adm-color-preview" id="farben-vorschau">
+          <figcaption>{b.preview}</figcaption>
+          <div class="adm-pv" aria-hidden="true">
+            <div class="adm-pv-card">
+              <p class="adm-pv-title">{b.previewTitle}</p>
+              <p class="adm-pv-text">{b.previewText}</p>
+              <span class="adm-pv-field">••••••••</span>
+              <span class="adm-pv-button">{b.previewButton}</span>
+              <span class="adm-pv-ghost">{b.previewGhost}</span>
+              <p class="adm-pv-muted">{b.previewMuted}</p>
+            </div>
+          </div>
+        </figure>
+      </div>
+      {props.hasAdminColors && (
+        <form method="post" action="/branding/farben/zuruecksetzen" class="adm-reset">
+          <input type="hidden" name="csrf" value={props.csrf}/>
+          <button type="submit" class="adm-btn">{b.resetColors}</button>
+          <span class="adm-hint">{b.resetColorsHint}</span>
+        </form>
+      )}
+    </section>
   )
 }
 
@@ -167,6 +245,17 @@ export function BrandingPage (props: BrandingPageProps) {
                 <Field name="shareTextDe" label={b.shareTextDe} props={props} multiline placeholder={t('de').gallery.shareText}
                   hint={b.shareTextHint(<><code>{'{titel}'}</code> <code>{'{nr}'}</code> <code>{'{anzahl}'}</code></>)}/>
               </div>
+              <div class="adm-field-row">
+                <Field name="newsletterTextEn" label={b.newsletterTextEn} hint={b.newsletterTextHint} props={props} multiline
+                  placeholder={t('en').newsletter.text}/>
+                <Field name="newsletterTextDe" label={b.newsletterTextDe} hint={b.newsletterTextHint} props={props} multiline
+                  placeholder={t('de').newsletter.text}/>
+              </div>
+              <div class="adm-field-row">
+                <Field name="phone" label={b.phone} hint={b.phoneHint} props={props} placeholder="+49 …"/>
+                <Field name="instagramUrl" label={b.instagramUrl} hint={b.instagramUrlHint} props={props} type="url"
+                  placeholder="https://instagram.com/…"/>
+              </div>
               <button type="submit" class="adm-btn adm-btn-primary" disabled={!props.persistent}>{b.save}</button>
             </form>
             {props.hasAdminTexts && (
@@ -177,6 +266,8 @@ export function BrandingPage (props: BrandingPageProps) {
               </form>
             )}
           </section>
+
+          <ColorsSection props={props}/>
 
           <section class="adm-help" id="bilder" aria-labelledby="bilder-title">
             <h2 id="bilder-title">{b.imagesHeading}</h2>

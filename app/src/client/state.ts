@@ -21,6 +21,8 @@ export const STICKY_TILE_LIMIT = 1500
 export const HEADER_HEIGHT = 48
 // Vertical gap between groups
 export const GROUP_GAP = 16
+// Space above and below the portal's newsletter band
+export const BAND_GAP = 28
 // Long-press threshold for entering select mode via touch/mouse
 export const LONG_PRESS_MS = 500
 
@@ -43,6 +45,15 @@ export interface HeaderEntry {
   label: string
   top: number
   height: number
+}
+
+// Portal: the newsletter band placed between the photo rows
+export interface BandState {
+  el: HTMLElement
+  // Number of photos before the band (it follows the row of the last one)
+  after: number
+  height: number
+  top: number
 }
 
 export interface GroupSpec {
@@ -97,6 +108,8 @@ export const state = {
   metaBase: '',
   // Portal share settings (absent on non-portal pages)
   portal: null as PortalClientConfig | null,
+  // Portal newsletter band (absent when the sign-up is off)
+  band: null as BandState | null,
   // Re-render callbacks registered by lightbox UI elements (sidebar, caption,
   // download button). Each re-renders for the current slide. Invoked after a
   // lazy item's detail arrives so the just-opened slide reflects it.

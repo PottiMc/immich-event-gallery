@@ -30,9 +30,30 @@ A few settings can also be changed on the admin page, see [Admin settings](#admi
 | `DATA_DIR` | no | `/app/data` | Writable folder for the settings saved on the admin page and the statistics, see [Data folder](#data-folder). |
 | `TZ` | no | `Europe/Berlin` | Time zone for logs and dates. |
 
+#### E-mail (optional)
+
+Removal requests and the newsletter sign-up send e-mail over SMTP. E-mail counts as set up when `SMTP_HOST` is set
+and the sender address is valid. At startup the portal logs one line with host, port, encryption, sender and whether
+a login is set (never the password). Every send uses its own connection with a 25-second timeout, one at a time.
+Mails carry a display name, `Date`, a `Message-ID` on the sender's domain and `Auto-Submitted: auto-generated`.
+
+| Variable | Required | Default | Purpose |
+|---|---|---|---|
+| `SMTP_HOST` | yes | – | SMTP relay, e.g. `smtp-relay.brevo.com`. Empty = no e-mail at all |
+| `SMTP_PORT` | no | `587` | SMTP port |
+| `SMTP_SECURITY` | no | `ssl` on port 465, else `starttls` | `starttls`, `ssl` or `none` (`keine` works too). The older `SMTP_SECURE=true\|false` is still read. |
+| `SMTP_USER`, `SMTP_PASS` | no | – | SMTP login |
+| `SMTP_FROM` | yes | `SMTP_USER` | Sender address, verified with your mail provider. May be `Name <address>`. |
+| `SMTP_NAME` | no | the name from `SMTP_FROM`, else the brand name | Display name of the sender |
+| `REMOVAL_REQUEST_LANG` | no | `portal.defaultLanguage` | Language of the e-mails to you (`en` or `de`) |
+
+The *Newsletter* tab on the admin page shows these settings (without the password) and can send a test e-mail to
+the sender address. SMTP errors are explained there and in the log: login rejected, sender rejected, recipient
+rejected, server unreachable, or encryption not matching the port.
+
 #### Removal requests (optional)
 
-With `SMTP_HOST` and `REMOVAL_REQUEST_TO` set, the gallery shows a *Remove photos* button. Guests select photos, pick
+With e-mail set up and `REMOVAL_REQUEST_TO` set, the gallery shows a *Remove photos* button. Guests select photos, pick
 a privacy reason (they can be recognised, their child can be recognised, the photo shows personal information, or
 another privacy reason), explain it, enter their name and e-mail address and confirm that the request is about
 privacy and not about how they look. The portal then sends a plain-text e-mail listing the photos (number in the
@@ -43,13 +64,15 @@ changed in Immich: you decide and remove the photos yourself.
 | Variable | Required | Default | Purpose |
 |---|---|---|---|
 | `REMOVAL_REQUEST_TO` | yes | – | Address that receives the requests |
-| `SMTP_HOST` | yes | – | SMTP server |
-| `SMTP_PORT` | no | `587` | SMTP port |
-| `SMTP_SECURE` | no | `true` on port 465 | `true` for implicit TLS, `false` for STARTTLS/plain |
-| `SMTP_USER`, `SMTP_PASS` | no | – | SMTP login |
-| `SMTP_FROM` | no | `SMTP_USER` | Sender address |
-| `REMOVAL_REQUEST_LANG` | no | `portal.defaultLanguage` | Language of the e-mail (`en` or `de`) |
 | `IMMICH_ADMIN_URL` | no | – | Address of your Immich web UI, e.g. `https://immich.example.com`. The e-mail then links every photo to `…/photos/<id>` instead of only listing its ID. |
+
+#### Newsletter sign-up (optional)
+
+| Variable | Required | Default | Purpose |
+|---|---|---|---|
+| `NEWSLETTER_NOTIFY` | no | the `SMTP_FROM` address | Receives an e-mail for every confirmed sign-up |
+
+See [Newsletter](#newsletter) for how it works.
 
 ### Compose only (`.env`)
 
@@ -77,7 +100,7 @@ Without any branding the portal is neutral: it is called "Photo Portal" ("Bilder
 picture icon, and hides the website, imprint and privacy links. There are two ways to add your own brand, and neither
 ends up in the repository or the image, so nobody who pulls the project gets your logos:
 
-- **On the admin page** (tab *Branding*): edit the name, links and share texts, and upload logos and icons. Changes
+- **On the admin page** (tab *Branding*): edit the name, links and share texts, pick the colors, and upload logos and icons. Changes
   take effect immediately. They are stored in `DATA_DIR/branding/` (the writable data volume) and take precedence
   over the branding folder. *Reset* removes a value set there, so the branding folder or the default applies again.
   Uploads must be PNG (logos and icons), JPEG (`og-image.jpg`) or ICO/PNG (`favicon.ico`), at most 5 MB each; SVG is
@@ -96,7 +119,7 @@ Every file is optional. Whatever is missing falls back to the neutral default in
 | `apple-touch-icon.png` | 180 × 180, opaque | Home-screen icon on iOS |
 | `og-image.jpg` | 1200 × 630 | Link preview of the landing page (WhatsApp, Signal, …) |
 | `favicon.ico` | 16–64 px | Browser tab |
-| `branding.json` | – | Brand texts, see below. It is never served to visitors. |
+| `branding.json` | – | Brand texts and colors, see below. It is never served to visitors. |
 
 `branding.json`:
 
@@ -110,7 +133,19 @@ Every file is optional. Whatever is missing falls back to the neutral default in
     "en": "That was “{title}” with Weingut Beispiel 🍷 – photo {number} of {total}",
     "de": "Das war „{titel}“ mit dem Weingut Beispiel 🍷 – Bild {nr} von {anzahl}"
   },
-  "shareUrl": "https://weingut.example"
+  "shareUrl": "https://weingut.example",
+  "newsletterText": {
+    "en": "New wine tastings and hikes, about once a month.",
+    "de": "Neue Weinproben und Wanderungen, etwa einmal im Monat."
+  },
+  "phone": "+49 170 1234567",
+  "instagramUrl": "https://instagram.com/weingut.beispiel",
+  "colors": {
+    "accent": "#ccac39",
+    "button": "#a3005a",
+    "background": "#0d0b0a",
+    "text": "#f4efe6"
+  }
 }
 ```
 
@@ -122,6 +157,10 @@ Every file is optional. Whatever is missing falls back to the neutral default in
 | `privacyUrl` | empty (hidden) | Privacy policy link in the footer |
 | `shareText` | `That was “{title}” – photo {number} of {total}` / German equivalent | Default text when a guest shares a photo |
 | `shareUrl` | `websiteUrl` | Link appended to shared photos (your website, not the album). Empty = no link. |
+| `newsletterText` | `News and upcoming events straight to your inbox.` / German equivalent | Text above the [newsletter](#newsletter) sign-up in the albums |
+| `phone` | empty (left out) | Phone / WhatsApp number in the signature of the newsletter confirmation e-mail |
+| `instagramUrl` | empty (left out) | Instagram profile in the signature of the newsletter confirmation e-mail |
+| `colors` | the values in the example | Brand colors as `#rrggbb`, see [Colors](#colors). Each one is optional. |
 | `sourceUrl` | this repository | Source code link on the licence page (`/license`, also `/lizenz`, linked as "License" in the footer). The AGPL requires it to point to the source of the version you run. |
 
 Every text value can be a plain string, used for all languages, or one string per language such as
@@ -138,6 +177,22 @@ Texts in the branding folder are read once at startup, so restart the container 
 from the file, so browsers load a new logo right away.
 
 For local development, put the folder at `app/branding/`, which is gitignored.
+
+### Colors
+
+Four colors define the look; every other shade is derived from them, so they always fit together:
+
+| Color | Used for |
+|---|---|
+| `accent` | Headings, links, frames and icons. Lighter shades mix in the text color; the print card uses a darkened shade that stays readable on white paper. |
+| `button` | Main buttons. Their label turns white or dark, whichever reads better. |
+| `background` | Page background; boxes are a little lighter. A light background switches the pages (form fields, status colors) to a light look. The header logo is `logo-banner.png` either way, so upload one that works on your background. |
+| `text` | Running text. The grey of notes and placeholders is mixed from text and background. |
+
+The colors apply to the guest pages, the print card and the admin area. The admin page shows a live preview and warns
+when text, accent or buttons have too little contrast against the background. A color set there takes precedence over
+the same color in `branding.json`; picking the value from the branding folder (or the default) again, or *Reset
+colors*, removes it. Without any colors the stylesheets keep their built-in defaults.
 
 ## Admin settings
 
@@ -156,8 +211,38 @@ The choice is stored in `settings.json` in `DATA_DIR`. It takes effect immediate
 `ipp.maxDownloadQuality` from `config.json`. As long as nothing has been saved on the admin page, `config.json`
 applies.
 
-Branding set on the admin page is stored in `DATA_DIR/branding/` (texts in `branding.json`, plus the uploaded
-images).
+Branding set on the admin page is stored in `DATA_DIR/branding/` (texts in `branding.json`, colors in `colors.json`,
+plus the uploaded images). The newsletter settings (on/off, position) are stored in `settings.json` as well.
+
+## Newsletter
+
+With [e-mail](#e-mail-optional) set up, the *Newsletter* tab on the admin page can show a sign-up form in every
+album. It sits as a band between the photo rows, after the row with photo number *N* (default 12, about three rows
+on a computer and four on a phone); albums with fewer photos show it at the end. Guests enter their e-mail address
+and, optionally, their first name.
+
+The sign-up uses double opt-in:
+
+1. The portal sends a confirmation e-mail (text and HTML) with a link to `/newsletter/<token>`. The token carries the
+   address, name, album title and time, signed with a key derived from `PORTAL_SECRET`, and is valid for 14 days.
+   Nothing about the token is stored.
+2. Opening the link only asks the question; mail programs and virus scanners open links on their own. The guest
+   confirms with the button on that page. Changed or older links show "Link expired".
+3. The confirmed address is stored with time and IP as proof, and `NEWSLETTER_NOTIFY` gets an e-mail with the guest
+   as reply-to.
+
+The portal does not add anyone to a newsletter tool itself. The *Newsletter* tab lists new confirmed addresses:
+copy them or download a CSV (semicolon-separated, UTF-8 with BOM for Excel), add them to your newsletter tool, then
+mark them as added. The admin overview reminds you while new ones are waiting.
+
+The list is `newsletter.json` in `DATA_DIR`. An address is stored only after its confirmation e-mail went out; an
+unconfirmed one expires after 30 days. Limits: 4 e-mails per address and 20 per IP per hour, 400 per day in total;
+30 confirmations per IP in 10 minutes.
+
+For scripts, the admin server offers a JSON API (POST requests need the `X-CSRF-Token` header):
+`GET /api/newsletter`, `POST /api/newsletter/uebertragen` (`{ "mails": [...], "an": true }`),
+`POST /api/newsletter/loeschen` (`{ "mail": "..." }`), `GET /api/newsletter.csv` (`?neu=1` new only, `?alle=1` also
+unconfirmed) and `POST /api/mail/test`.
 
 ## Statistics
 

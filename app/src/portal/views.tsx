@@ -9,6 +9,7 @@ import { ASSET_VERSION } from '../version'
 import { brandUrl } from './branding'
 import { Lang, LANGS, t } from './i18n'
 import { brandName, imprintUrl, privacyUrl, sourceUrl, websiteUrl } from './settings'
+import { themeColor, ThemeStyle } from './theme'
 
 export const STATIC = `/share/static/${ASSET_VERSION}`
 
@@ -27,7 +28,7 @@ export function BrandHead ({ title, lang, description, ogImage, ogUrl }: HeadPro
       <meta charSet="utf-8"/>
       <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
       <meta name="robots" content="noindex, nofollow"/>
-      <meta name="theme-color" content="#0d0b0a"/>
+      <meta name="theme-color" content={themeColor()}/>
       <title>{title}</title>
       {description && <meta name="description" content={description}/>}
       <meta property="og:title" content={title}/>
@@ -44,6 +45,7 @@ export function BrandHead ({ title, lang, description, ogImage, ogUrl }: HeadPro
       <link rel="icon" href={brandUrl('icon-192.png')} type="image/png"/>
       <link rel="apple-touch-icon" href={brandUrl('apple-touch-icon.png')}/>
       <link rel="stylesheet" href={`${STATIC}/portal/portal.css`}/>
+      <ThemeStyle/>
     </>
   )
 }
@@ -85,7 +87,7 @@ export function BrandFooter ({ lang }: { lang: Lang }) {
   )
 }
 
-function CenteredPage ({ children, script, lang }: { children: ComponentChildren, script?: string, lang: Lang }) {
+export function CenteredPage ({ children, script, lang }: { children: ComponentChildren, script?: string, lang: Lang }) {
   return (
     <body class="eg-page">
       <LangSwitch lang={lang} class="eg-lang-corner"/>

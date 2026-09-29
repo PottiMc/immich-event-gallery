@@ -7,6 +7,16 @@
   font-display: swap;
 }
 
+/* Brand colors, overridden by the brand colors set on the admin page (theme.tsx) */
+:root {
+  --eg-gold: #CCAC39;
+  --eg-gold-light: #E6C16E;
+  --eg-gold-bright: #FFCC66;
+  --eg-berry: #A3005A;
+  --eg-bg: #0d0b0a;
+  --eg-text: #f4efe6;
+}
+
 /* The single A6 layout overrides this in the page head */
 @page { size: 210mm 297mm; margin: 0; }
 
@@ -54,14 +64,14 @@ body {
 }
 
 .card-field input:focus,
-.card-field select:focus { outline: 2px solid #A3005A; outline-offset: 1px; }
+.card-field select:focus { outline: 2px solid var(--eg-berry); outline-offset: 1px; }
 
 .card-check { display: inline-flex; align-items: center; gap: 6px; padding-bottom: 9px; cursor: pointer; }
 
 .card-tools button {
   padding: 8px 18px;
-  color: #fff;
-  background: #A3005A;
+  color: var(--eg-on-button, #fff);
+  background: var(--eg-berry);
   border: 0;
   border-radius: 8px;
   font: inherit;
@@ -70,7 +80,7 @@ body {
   cursor: pointer;
 }
 
-.card-tools a { color: #A3005A; }
+.card-tools a { color: var(--eg-button-print, #A3005A); }
 
 .card-lang { display: inline-flex; gap: 6px; padding-bottom: 9px; }
 .card-lang a { text-decoration: none; }
@@ -109,12 +119,12 @@ body {
   width: auto;
   margin-bottom: 3mm;
   padding: 2.5mm;
-  background: #0d0b0a;
+  background: var(--eg-bg);
   border-radius: 3mm;
 }
 
 .card-kicker {
-  color: #8a7320;
+  color: var(--eg-accent-print, #8a7320);
   font-size: 10pt;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -132,7 +142,7 @@ body {
   display: inline-flex;
   align-items: center;
   margin-top: 1.5mm;
-  color: #8a7320;
+  color: var(--eg-accent-print, #8a7320);
   font-size: 12pt;
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -147,13 +157,13 @@ body {
   display: inline-flex;
   align-items: center;
   margin: 2mm 0 2.5mm;
-  color: #A3005A;
+  color: var(--eg-button-print, #A3005A);
   font-size: 10.5pt;
   font-weight: 600;
 }
 
 .card-alt { font-size: 9.5pt; line-height: 1.5; color: #3b342c; }
-.card-alt .card-icon { color: #8a7320; }
+.card-alt .card-icon { color: var(--eg-accent-print, #8a7320); }
 .card-password { font-size: 11.5pt; color: #1a1612; letter-spacing: 0.02em; }
 
 .card p.card-thanks {
@@ -162,19 +172,19 @@ body {
   margin-top: auto;
   padding-top: 2mm;
   font-size: 10pt;
-  color: #8a7320;
+  color: var(--eg-accent-print, #8a7320);
 }
 
-.card-thanks .card-icon { margin: 0 0 0 0.35em; color: #A3005A; }
+.card-thanks .card-icon { margin: 0 0 0 0.35em; color: var(--eg-button-print, #A3005A); }
 
 /* Dark variant (more ink, but very on-brand) */
-.card-dark .card { background: #0d0b0a; color: #f4efe6; }
-.card-dark .card-title { color: #E6C16E; }
-.card-dark .card-kicker, .card-dark .card-thanks, .card-dark p.card-date { color: #CCAC39; }
-.card-dark .card-alt { color: #d8cfc0; }
-.card-dark .card-alt .card-icon { color: #CCAC39; }
-.card-dark .card-password { color: #FFCC66; }
-.card-dark p.card-scan, .card-dark .card-thanks .card-icon { color: #ff5aa8; }
+.card-dark .card { background: var(--eg-bg); color: var(--eg-text); }
+.card-dark .card-title { color: var(--eg-gold-light); }
+.card-dark .card-kicker, .card-dark .card-thanks, .card-dark p.card-date { color: var(--eg-gold); }
+.card-dark .card-alt { color: var(--eg-card-alt, #d8cfc0); }
+.card-dark .card-alt .card-icon { color: var(--eg-gold); }
+.card-dark .card-password { color: var(--eg-gold-bright); }
+.card-dark p.card-scan, .card-dark .card-thanks .card-icon { color: var(--eg-button-bright, #ff5aa8); }
 .card-dark .card-qr { padding: 2mm; background: #fff; border-radius: 3mm; }
 .card-dark .card-logo { height: 22mm; margin-bottom: 5mm; padding: 0; background: none; border-radius: 0; }
 
@@ -206,7 +216,7 @@ body {
   background: #fff;
 }
 
-.card-dark .sheet-bleed { background: #0d0b0a; }
+.card-dark .sheet-bleed { background: var(--eg-bg); }
 
 .sheet-cell {
   position: absolute;

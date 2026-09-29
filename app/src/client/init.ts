@@ -14,6 +14,7 @@ import { initLightbox, openLightbox } from './lightbox.js'
 import { computeLayoutAndRender, onScroll } from './virtualisation.js'
 import { initAlbumShare } from './portal.js'
 import { initRemovalRequest } from './removal.js'
+import { initNewsletterBand } from './newsletter.js'
 
 function readInitParams (): InitParams {
   const el = document.getElementById('ipp-init')
@@ -34,6 +35,7 @@ function init () {
   state.container = document.getElementById('gallery')
   if (!state.container) return
 
+  initNewsletterBand()
   setupToolbar()
   initLightbox()
 

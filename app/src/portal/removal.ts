@@ -12,7 +12,6 @@
  */
 
 import dayjs from 'dayjs'
-import nodemailer, { Transporter } from 'nodemailer'
 import { Request, Response } from 'express-serve-static-core'
 import { fetchAssetDetail } from '../immich'
 import { dateSortComparator, groupByDateMode } from '../gallery/builder'
@@ -20,8 +19,8 @@ import { title } from '../share'
 import { Asset, SharedLink } from '../types'
 import { createLimiter } from '../utils/limiter'
 import { log } from '../utils/log'
-import { isLang } from '../shared/i18n'
-import { defaultLang, Lang, langOf, t } from './i18n'
+import { Lang, langOf, t } from './i18n'
+import { isValidEmail, mailEnabled, mailErrorText, operatorLang, sendMail, setMailTransport } from './mail'
 import { clientIp, throttleKey } from './security'
 import { LoginThrottle } from './throttle'
 
@@ -53,13 +52,7 @@ export function resetRemovalThrottle () {
 }
 
 export function removalRequestsEnabled (): boolean {
-  return !!(process.env.SMTP_HOST && process.env.REMOVAL_REQUEST_TO)
-}
-
-/** Language of the e-mail to the operator. */
-function mailLang (): Lang {
-  const lang = process.env.REMOVAL_REQUEST_LANG
-  return isLang(lang) ? lang : defaultLang()
+  return mailEnabled() && isValidEmail(process.env.REMOVAL_REQUEST_TO)
 }
 
 export interface RemovalRequest {
@@ -71,9 +64,6 @@ export interface RemovalRequest {
 }
 
 export type RemovalError = 'invalid' | 'tooMany'
-
-// Deliberately simple: one @, no spaces or line breaks, a dot in the domain
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 function text (value: unknown, max: number): string {
   return typeof value === 'string' ? value.trim().slice(0, max) : ''
@@ -96,7 +86,7 @@ export function parseRemovalRequest (body: unknown, link: SharedLink):
   const name = text(b.name, MAX_NAME)
   const email = text(b.email, MAX_EMAIL)
   if (!assetIds.length || !reason || details.length < MIN_DETAILS || name.length < 2 ||
-    !EMAIL.test(email) || b.confirm !== true) {
+    !isValidEmail(email) || b.confirm !== true) {
     return { ok: false, error: 'invalid' }
   }
   return { ok: true, value: { assetIds, reason, details, name, email } }
@@ -119,7 +109,7 @@ function takenAt (asset: Asset): string {
 }
 
 /** Plain-text e-mail to the operator. */
-export function removalMail (request: RemovalRequest, ctx: RemovalMailContext, lang: Lang = mailLang()) {
+export function removalMail (request: RemovalRequest, ctx: RemovalMailContext, lang: Lang = operatorLang()) {
   const m = t(lang).removal
   const immichUrl = (process.env.IMMICH_ADMIN_URL || '').replace(/\/+$/, '')
   const photoLines = ctx.photos.flatMap(({ asset, number }) => {
@@ -151,28 +141,8 @@ export function removalMail (request: RemovalRequest, ctx: RemovalMailContext, l
   return { subject: m.mailSubject, text: lines.join('\n') }
 }
 
-type Transport = Pick<Transporter, 'sendMail'>
-let transport: Transport | undefined
-
 /** Tests swap in a fake transport. */
-export function setRemovalTransport (fake: Transport | undefined) {
-  transport = fake
-}
-
-function smtpTransport (): Transport {
-  if (!transport) {
-    const port = Number(process.env.SMTP_PORT) || 587
-    const secure = process.env.SMTP_SECURE ? process.env.SMTP_SECURE === 'true' : port === 465
-    const user = process.env.SMTP_USER
-    transport = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port,
-      secure,
-      auth: user ? { user, pass: process.env.SMTP_PASS || '' } : undefined
-    })
-  }
-  return transport
-}
+export const setRemovalTransport = setMailTransport
 
 /** The photos in gallery order with their numbers, filenames loaded where missing. */
 async function selectedPhotos (link: SharedLink, ids: string[]) {
@@ -234,15 +204,14 @@ export async function handleRemovalRequest (req: Request, res: Response, link: S
     sentAt: new Date()
   })
   try {
-    await smtpTransport().sendMail({
-      from: process.env.SMTP_FROM || process.env.SMTP_USER,
-      to: process.env.REMOVAL_REQUEST_TO,
+    await sendMail({
+      to: process.env.REMOVAL_REQUEST_TO || '',
       replyTo: parsed.value.email,
       subject: mail.subject,
       text: mail.text
     })
   } catch (e) {
-    log.error('Removal request could not be sent: ' + (e instanceof Error ? e.message : String(e)))
+    log.error('Removal request could not be sent: ' + mailErrorText(e, 'en'))
     res.status(502).json({ error: m.errorSend })
     return
   }

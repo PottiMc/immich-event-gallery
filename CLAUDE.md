@@ -33,6 +33,12 @@ Immich is automatically online.
   select photos and send a privacy reason, explanation, name and e-mail to `POST /share/:key/removal-request` (JSON,
   same-origin, unlocked share only). The operator gets an e-mail via nodemailer; nothing is written to Immich.
   3 requests per IP and hour, 30 in total, max 50 photos.
+- E-mail (`portal/mail.ts`) is shared by removal requests and the newsletter: env `SMTP_*`, one connection per send,
+  sends queued one at a time, strict address check, readable SMTP error causes, one startup log line.
+- Newsletter (`portal/newsletter.ts`, `client/newsletter.ts`, admin tab in `portal/admin-newsletter.ts`): switched on
+  in the admin (`settings.json`), a sign-up band placed between the photo rows by `insertBand` in `client/layout.ts`.
+  Double opt-in with an HMAC-signed, self-contained token (`nl1.` prefix, 14 days); GET `/newsletter/:token` only
+  asks, POST confirms. Confirmed addresses in `DATA_DIR/newsletter.json`; the operator carries them over by hand.
 
 ## Layout
 
@@ -51,6 +57,8 @@ Immich is automatically online.
   (`?lang=` switcher → cookie `lang` → `Accept-Language` → `portal.defaultLanguage`)
 - `app/src/portal/branding.ts`: operator branding in three layers: set on the admin page (`DATA_DIR/branding/`),
   the branding folder (`BRANDING_DIR`: logos, icons, `branding.json`), the neutral assets in `app/public/brand/`.
+  Four brand colors (`colors`); `portal/theme.tsx` derives the other shades and writes them as CSS custom properties
+  after the stylesheets. Keep new colors in the CSS as `var(--eg-…)`, never as a literal brand color.
   Link brand images with `brandUrl()` so a new upload is not hidden by the browser cache. Uploads are checked by their
   first bytes (PNG/JPEG/ICO only, never SVG). `admin-branding.ts` + `admin-branding-views.tsx` are the admin page for it. Real brand assets must **never** be committed; locally they live in
   the gitignored `app/branding/`
