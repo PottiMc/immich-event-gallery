@@ -16,10 +16,11 @@ import { asyncHandler } from '../http'
 import { getShareByKey, isKey } from '../immich'
 import { log } from '../utils/log'
 import { renderPage } from '../view/render'
-import { listSharedLinks, matchAccessToken, matchPassword, passwordEquals } from './links'
+import { listSharedLinks, matchAccessToken, matchPassword, passwordEquals, PortalLink } from './links'
 import { clientIp as requestIp, throttleKey } from './security'
 import { publicBaseUrl, sessionDays } from './settings'
 import { LoginThrottle } from './throttle'
+import { recordLogin } from './stats'
 import { langOf, t, varyLang } from './i18n'
 import { Landing, LandingProps, LicensePage } from './views'
 
@@ -110,6 +111,7 @@ export function registerPortalRoutes (app: Express) {
 
     guestThrottle.succeed(ip)
     grantAccess(req, link.key, link.password)
+    recordLogin(req, link, 'password')
     log('Portal: login to link ' + link.id + ' from ' + ip)
     res.redirect(303, '/share/' + link.key)
   }))
@@ -136,6 +138,7 @@ export function registerPortalRoutes (app: Express) {
     }
     guestThrottle.succeed(ip)
     grantAccess(req, link.key, link.password)
+    recordLogin(req, link, 'qr')
     log('Portal: QR access to link ' + link.id + ' from ' + ip)
     noStore(res)
     res.redirect(303, '/share/' + link.key)
@@ -144,9 +147,10 @@ export function registerPortalRoutes (app: Express) {
 
 /**
  * Password check for a /share/<key> link. Returns the password to store in
- * the session, or undefined if the input is wrong.
+ * the session (plus the link, if it is in the API key owner's list), or
+ * undefined if the input is wrong.
  */
-async function verifySharePassword (key: string, input: string): Promise<string | undefined> {
+async function verifySharePassword (key: string, input: string): Promise<{ password: string, link?: PortalLink } | undefined> {
   let list = await listSharedLinks()
   let link = list.ok ? list.links.find(l => l.key === key) : undefined
   if (list.ok && !link) {
@@ -156,13 +160,13 @@ async function verifySharePassword (key: string, input: string): Promise<string 
   if (link) {
     // Same forgiving comparison as the landing page; the session gets the
     // real password, which is what Immich expects
-    return link.password && passwordEquals(link.password, input) ? link.password : undefined
+    return link.password && passwordEquals(link.password, input) ? { password: link.password, link } : undefined
   }
   // Not in the API key owner's list (e.g. another Immich user's link, or the
   // list is unavailable): let Immich decide, exact match only
   if (!input) return undefined
   const share = await getShareByKey(key, input)
-  return share.valid && share.link && !share.passwordRequired ? input : undefined
+  return share.valid && share.link && !share.passwordRequired ? { password: input } : undefined
 }
 
 /**
@@ -193,8 +197,8 @@ export async function unlockShare (req: Request, res: Response) {
     return
   }
 
-  const password = await verifySharePassword(key, input)
-  if (!password) {
+  const verified = await verifySharePassword(key, input)
+  if (!verified) {
     const next = guestThrottle.fail(ip)
     log('Portal: wrong password for a share link from ' + ip)
     await delay(FAIL_DELAY_MS)
@@ -208,7 +212,8 @@ export async function unlockShare (req: Request, res: Response) {
   }
 
   guestThrottle.succeed(ip)
-  grantAccess(req, key, password)
+  grantAccess(req, key, verified.password)
+  if (verified.link) recordLogin(req, verified.link, 'password')
   res.json({ ok: true })
 }
 

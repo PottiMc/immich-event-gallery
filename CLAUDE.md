@@ -39,6 +39,11 @@ Immich is automatically online.
   fallback) and the "share album" dialog
 - `app/src/portal/runtime-settings.ts`: settings saved on the admin page (`DATA_DIR/settings.json`, a writable
   volume), laid over the loaded config at startup and on save. Currently only the guest download quality
+- `app/src/portal/stats.ts`: daily counters per share (visitors, page views, downloads, ZIPs, logins) in
+  `DATA_DIR/stats.json`, recorded from `immich.ts` (gallery view, "download all"), `index.ts` (selective ZIP, single
+  `/original` download) and `portal/routes.ts` (logins). Counts only: unique visitors via an in-memory hash with a
+  daily salt, bots and link previews skipped. `admin-stats.ts` + `admin-stats-views.tsx` are the admin page for it
+  (CSS bar charts, no chart library)
 - `app/src/portal/i18n.tsx`: all page texts in English and German, and the language choice per request
   (`?lang=` switcher → cookie `lang` → `Accept-Language` → `portal.defaultLanguage`)
 - `app/src/portal/branding.ts`: operator branding in three layers: set on the admin page (`DATA_DIR/branding/`),

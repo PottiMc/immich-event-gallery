@@ -26,6 +26,7 @@ import { BrandedPassword } from './portal/views'
 import { langOf } from './portal/i18n'
 import { respondToInvalidRequest } from './invalidRequestHandler'
 import { encrypt } from './encrypt'
+import { recordDownload, recordView } from './portal/stats'
 import { TtlLruCache } from './utils/ttlLruCache'
 
 /*
@@ -199,10 +200,12 @@ export async function handleShareRequest (req: IncomingShareRequest, res: Respon
 
   if (req.mode === 'download' && canDownload(link)) {
     // Download all assets as a zip file
+    recordDownload(req.req, link, link.assets.length, true)
     await downloadAll(res, link)
   } else if (link.assets.length === 1) {
     // This is an individual item (not a gallery)
     log('Serving link ' + req.key)
+    recordView(req.req, link)
     const asset = link.assets[0]
     // Photos default to a direct image unless `singleImage` opts into a gallery;
     // videos default to a gallery unless `singleVideo` is explicitly disabled.
@@ -220,6 +223,7 @@ export async function handleShareRequest (req: IncomingShareRequest, res: Respon
   } else {
     // Multiple images - render as a gallery
     log('Serving link ' + req.key)
+    recordView(req.req, link)
     await gallery(res, link)
   }
 }

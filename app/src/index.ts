@@ -35,6 +35,7 @@ import { BRAND, brandAsset, sendBrandFile } from './portal/branding'
 import { languageMiddleware } from './portal/i18n'
 import { deriveKey, trustProxy } from './portal/settings'
 import { loadRuntimeSettings } from './portal/runtime-settings'
+import { recordDownload } from './portal/stats'
 
 // Extend the Request type with a `password` property
 declare module 'express-serve-static-core' {
@@ -264,6 +265,7 @@ app.post('/:shareType(share|s)/:key/download', decodeCookie, asyncHandler(async 
     return
   }
 
+  recordDownload(req, resolved.link, validAssets.length, true)
   await downloadAssets(res, resolved.link, validAssets)
 }))
 
@@ -322,10 +324,20 @@ app.get('/share/:type(photo|video)/:key/:id/:size?', decodeCookie, asyncHandler(
     type: req.params.type === 'video' ? AssetType.video : resolved.asset.type
   }
 
+  // Portal statistics: a download is a GET of /original that went through
+  // (the first chunk only, should a client ask in ranges)
+  const range = req.headers.range || ''
+  if (req.params.type === 'photo' && req.params.size === ImageSize.original && req.method === 'GET' &&
+    (!range || /^bytes=0-/.test(range))) {
+    res.once('finish', () => {
+      if (res.statusCode < 300) recordDownload(req, resolved.link, 1, false)
+    })
+  }
+
   const request = {
     req,
     key: req.params.key,
-    range: req.headers.range || ''
+    range
   }
   await assetBuffer(request, res, asset, req.params.size, resolved.link, req.params.type === 'video')
 }))

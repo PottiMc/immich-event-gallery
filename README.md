@@ -50,7 +50,8 @@ When the link expires or is deleted, the album goes offline.
 - **Admin pages** on a separate port: all shares as a compact list with their passwords and warnings (weak, duplicate,
   missing password, no expiry), QR codes as PNG/SVG, printable cards (four per A4 sheet with crop marks, or A6) and password suggestions. Guest downloads
   can be switched between the original files and smaller preview images there, and a *Branding* tab sets the name,
-  links, share texts, logos and icons without touching any files.
+  links, share texts, logos and icons without touching any files. A *Statistics* tab charts visitors and downloads per
+  day and flags shares nobody visits any more – counts only, no IP addresses or cookies.
 - **No third parties.** Fonts are self-hosted, and there are no trackers, no external requests and no Google Fonts.
   The pages are hidden from search engines.
 - Everything the upstream gallery offers: justified-rows layout, PhotoSwipe lightbox, videos and motion photos,

@@ -119,6 +119,7 @@ function LinkRow ({ link, m }: { link: AdminLinkView, m: Messages }) {
               <a class="adm-btn" href={`/qr/${link.id}.svg`} download>{m.admin.qrSvg}</a>
               <a class="adm-btn" href={`/karte/${link.id}?dunkel`} target="_blank" rel="noopener">{m.admin.cardDark}</a>
               <a class="adm-btn" href={link.accessUrl} target="_blank" rel="noopener">{m.admin.openGallery}</a>
+              <a class="adm-btn" href={`/statistik?freigabe=${encodeURIComponent(link.id)}`}>{m.admin.statsLink}</a>
             </div>
           </div>
         </div>
@@ -161,7 +162,7 @@ function SettingsSection ({ settings, m }: { settings: AdminSettingsView, m: Mes
 
 interface AdminHeaderProps {
   lang: Lang
-  active: 'shares' | 'branding'
+  active: 'shares' | 'stats' | 'branding'
   title: string
   subtitle: ComponentChildren
 }
@@ -181,6 +182,7 @@ export function AdminHeader ({ lang, active, title, subtitle }: AdminHeaderProps
       </header>
       <nav class="adm-tabs" aria-label={m.admin.title}>
         <a href="/" aria-current={active === 'shares' ? 'page' : undefined}>{m.admin.tabShares}</a>
+        <a href="/statistik" aria-current={active === 'stats' ? 'page' : undefined}>{m.admin.tabStats}</a>
         <a href="/branding" aria-current={active === 'branding' ? 'page' : undefined}>{m.admin.tabBranding}</a>
         <form method="post" action="/abmelden" class="adm-logout">
           <input type="hidden" name="csrf" value={adminFormToken()}/>

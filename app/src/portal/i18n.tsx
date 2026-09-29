@@ -116,10 +116,10 @@ const en = {
     button: 'Remove photos',
     buttonTitle: 'Ask for photos to be removed for privacy reasons',
     title: 'Request photo removal',
-    intro: 'Can you be recognised in a photo and don’t want it online? Select the photos and tell us why – ' +
-      'we look at every request personally.',
+    intro: 'Can you be recognised in a photo and don’t want it online? Select the photos and tell me why – ' +
+      'I look at every request personally.',
     policy: 'This is about privacy: photos in which you or your child can clearly be recognised, or which show ' +
-      'personal information. Please understand that we don’t remove photos just because you don’t like how ' +
+      'personal information. Please understand that I don’t remove photos just because you don’t like how ' +
       'you look in them.',
     selectHint: 'Tap the photos that should be removed:',
     next: 'Continue',
@@ -136,11 +136,11 @@ const en = {
       'E.g. “I’m the person in the red jacket on the left …”',
     nameLabel: 'Your name',
     emailLabel: 'Your e-mail address',
-    emailHint: 'So we can get back to you. We only use it for this request.',
+    emailHint: 'So I can get back to you. I only use it for this request.',
     confirm: 'My details are true, and this request is about privacy – not about how I look in the photo.',
     submit: 'Send request',
     doneHeading: 'Thank you!',
-    doneText: 'Your request has reached us. We’ll look at it and get back to you by e-mail.',
+    doneText: 'Your request has reached me. I’ll look at it and get back to you by e-mail.',
     close: 'Close',
     errorInvalid: 'Please fill in all fields and select at least one photo.',
     errorTooMany: (max: number) => `Please select no more than ${max} photos per request.`,
@@ -165,6 +165,7 @@ const en = {
     title: 'Photo admin',
     tabShares: 'Shares',
     tabBranding: 'Branding',
+    tabStats: 'Statistics',
     tooManyFailures: (wait: string) => `Too many failed attempts. Please try again in ${wait}.`,
     loginRequired: 'Login required',
     loginTitle: 'Sign in',
@@ -218,6 +219,7 @@ const en = {
     qrSvg: 'QR as SVG',
     cardDark: 'Dark card',
     openGallery: 'Open gallery',
+    statsLink: 'Statistics',
 
     settingsHeading: 'Guest downloads',
     valuePreview: 'reduced',
@@ -225,7 +227,7 @@ const en = {
     saved: 'Saved ✓ – applies to all albums right away.',
     notPersisted: (dataDir: ComponentChildren, doc: ComponentChildren) => <>
       <strong>Settings are not saved permanently.</strong> The portal’s data folder ({dataDir}) is not writable.
-      Your choice only lasts until the next restart – see the section “Admin settings” in {doc}.
+      Your choice only lasts until the next restart – see the section “Data folder” in {doc}.
     </>,
     choicePreview: () => <>
       <strong>Reduced</strong> – the preview version from Immich (1440 px on the long side by default, usually under
@@ -265,13 +267,87 @@ const en = {
     newSuggestions: 'New suggestions'
   },
 
+  stats: {
+    title: 'Statistics',
+    intro: 'Visitors and downloads per day – to see whether an album is still in use.',
+    filterShare: 'Share',
+    allShares: 'All shares',
+    deletedSuffix: '(deleted)',
+    filterRange: 'Period',
+    range30: 'Last 30 days',
+    range90: 'Last 90 days',
+    rangeAll: 'Since counting began',
+    show: 'Show',
+    showAll: 'show all shares',
+    tileVisitors: 'Visitors, last 7 days',
+    tileDownloads: 'Downloads, last 7 days',
+    tileLastVisit: 'Last visit',
+    tileLogins: 'Logins in the period',
+    loginsDetail: (password: string, qr: string) => `${password} with password · ${qr} via QR code`,
+    deltaUp: (pct: number) => `↑ ${pct} % compared with the 7 days before`,
+    deltaDown: (pct: number) => `↓ ${pct} % compared with the 7 days before`,
+    deltaSame: '→ as many as in the 7 days before',
+    deltaNew: '↑ none in the 7 days before',
+    deltaNone: 'none in the last 14 days',
+    never: 'none yet',
+    today: 'today',
+    yesterday: 'yesterday',
+    daysAgo: (n: number) => `${n} days ago`,
+    chartVisitors: 'Visitors per day',
+    chartVisitorsWeek: 'Visitors per week',
+    chartDownloads: 'Downloaded photos per day',
+    chartDownloadsWeek: 'Downloaded photos per week',
+    inPeriod: (n: string) => `${n} in the period`,
+    legendBars: 'Visitors',
+    legendAverage: '7-day average',
+    weekOf: (date: string) => `Week of ${date}`,
+    shortDate: 'D MMM',
+    tipVisitors: (date: string, visitors: string, views: string) => `${date}: ${visitors} visitors, ${views} page views`,
+    tipAverage: (average: string) => ` · 7-day average ${average}`,
+    tipDownloads: (date: string, photos: string, zips: string) => `${date}: ${photos} photos downloaded, ${zips} ZIP downloads`,
+    emptyVisitors: 'No visitors in this period.',
+    emptyDownloads: 'No downloads in this period.',
+    tableToggle: 'Show as table',
+    colDay: 'Day',
+    colWeek: 'Week',
+    colVisitors: 'Visitors',
+    colViews: 'Page views',
+    colDownloads: 'Downloads',
+    colZips: 'ZIPs',
+    colLogins: 'Password logins',
+    colQr: 'QR logins',
+    sharesHeading: 'Per share',
+    colShare: 'Share',
+    col30: 'Visitors, 30 days',
+    col7: '7 days',
+    colTotal: 'Visitors in total',
+    colDownloadsTotal: 'Downloads in total',
+    colLast: 'Last visit',
+    prevWeekTitle: (n: number) => `The 7 days before: ${n}`,
+    statusDeleted: 'deleted in Immich',
+    quiet: (days: number) => `No visit for ${days} days – can go`,
+    neverVisited: 'Never visited – can go',
+    quietNote: 'Shares that are still online but have had no visitor for 14 days are marked. You take the link ' +
+      'offline in Immich (delete the share or let it expire). The statistics stay here until you delete them.',
+    deleteStats: 'delete statistics',
+    deleteConfirm: 'Delete the statistics of this share for good?',
+    deleted: 'Statistics deleted ✓',
+    notPersisted: (dataDir: ComponentChildren) => <>
+      <strong>Statistics are not saved permanently.</strong> The portal’s data folder ({dataDir}) is not writable, so
+      the numbers are lost on the next restart.
+    </>,
+    countNote: 'How counting works: a guest counts once per day and share, however often they reload. Link previews ' +
+      '(WhatsApp, Telegram …) and bots are left out. Downloads count photos, including each photo in a ZIP. Only ' +
+      'daily totals are stored – no IP addresses, no cookies. Counting started with this version of the portal.'
+  },
+
   branding: {
     title: 'Branding',
     intro: 'Name, links, share text and images of your portal. Changes take effect right away and are stored in the ' +
       'portal’s data folder. They take precedence over the branding folder on the server.',
     notWritable: (dataDir: ComponentChildren) => <>
       <strong>Nothing can be saved here.</strong> The portal’s data folder ({dataDir}) is not writable. See the section
-      “Admin settings” in <code>docs/configuration.md</code>.
+      “Data folder” in <code>docs/configuration.md</code>.
     </>,
     sourceAdmin: 'set here',
     sourceFolder: 'branding folder',
@@ -449,9 +525,9 @@ const de: Messages = {
     buttonTitle: 'Entfernung von Bildern aus Datenschutzgründen beantragen',
     title: 'Bilder entfernen lassen',
     intro: 'Du bist auf einem Bild zu erkennen und möchtest nicht, dass es online ist? Wähl die Bilder aus und ' +
-      'sag uns kurz, warum – wir schauen uns jede Anfrage persönlich an.',
+      'sag mir kurz, warum – ich schaue mir jede Anfrage persönlich an.',
     policy: 'Es geht um Datenschutz: Bilder, auf denen du oder dein Kind klar zu erkennen seid, oder die ' +
-      'persönliche Informationen zeigen. Bitte hab Verständnis, dass wir Bilder nicht entfernen, nur weil man ' +
+      'persönliche Informationen zeigen. Bitte hab Verständnis, dass ich Bilder nicht entferne, nur weil man ' +
       'darauf nicht so vorteilhaft aussieht.',
     selectHint: 'Tipp die Bilder an, die entfernt werden sollen:',
     next: 'Weiter',
@@ -468,11 +544,11 @@ const de: Messages = {
       'Z. B. „Ich bin die Person mit der roten Jacke links …“',
     nameLabel: 'Dein Name',
     emailLabel: 'Deine E-Mail-Adresse',
-    emailHint: 'Damit wir dir antworten können. Wir nutzen sie nur für diese Anfrage.',
+    emailHint: 'Damit ich dir antworten kann. Ich nutze sie nur für diese Anfrage.',
     confirm: 'Meine Angaben stimmen, und es geht mir um Datenschutz – nicht darum, wie ich auf dem Bild aussehe.',
     submit: 'Anfrage senden',
     doneHeading: 'Danke!',
-    doneText: 'Deine Anfrage ist bei uns angekommen. Wir schauen sie uns an und melden uns per E-Mail bei dir.',
+    doneText: 'Deine Anfrage ist bei mir angekommen. Ich schaue sie mir an und melde mich per E-Mail bei dir.',
     close: 'Schließen',
     errorInvalid: 'Bitte füll alle Felder aus und wähl mindestens ein Bild aus.',
     errorTooMany: (max: number) => `Bitte wähl höchstens ${max} Bilder pro Anfrage aus.`,
@@ -496,6 +572,7 @@ const de: Messages = {
     title: 'Bilder-Admin',
     tabShares: 'Freigaben',
     tabBranding: 'Branding',
+    tabStats: 'Statistik',
     tooManyFailures: (wait: string) => `Zu viele Fehlversuche. Bitte in ${wait} erneut versuchen.`,
     loginRequired: 'Anmeldung erforderlich',
     loginTitle: 'Anmelden',
@@ -548,6 +625,7 @@ const de: Messages = {
     qrSvg: 'QR als SVG',
     cardDark: 'Karte dunkel',
     openGallery: 'Galerie öffnen',
+    statsLink: 'Statistik',
 
     settingsHeading: 'Download für Gäste',
     valuePreview: 'verkleinert',
@@ -555,7 +633,7 @@ const de: Messages = {
     saved: 'Gespeichert ✓ – gilt ab sofort für alle Alben.',
     notPersisted: (dataDir: ComponentChildren, doc: ComponentChildren) => <>
       <strong>Einstellungen werden nicht dauerhaft gespeichert.</strong> Der Datenordner des Portals ({dataDir}) ist
-      nicht beschreibbar. Die Auswahl gilt nur bis zum nächsten Neustart – siehe Abschnitt „Admin settings“ in {doc}.
+      nicht beschreibbar. Die Auswahl gilt nur bis zum nächsten Neustart – siehe Abschnitt „Data folder“ in {doc}.
     </>,
     choicePreview: () => <>
       <strong>Verkleinert</strong> – die Vorschau-Version aus Immich (Standard 1440 px an der langen Seite,
@@ -595,13 +673,87 @@ const de: Messages = {
     newSuggestions: 'Neue Vorschläge'
   },
 
+  stats: {
+    title: 'Statistik',
+    intro: 'Besucher und Downloads pro Tag – damit du siehst, ob ein Album noch genutzt wird.',
+    filterShare: 'Freigabe',
+    allShares: 'Alle Freigaben',
+    deletedSuffix: '(gelöscht)',
+    filterRange: 'Zeitraum',
+    range30: 'Letzte 30 Tage',
+    range90: 'Letzte 90 Tage',
+    rangeAll: 'Seit Beginn der Zählung',
+    show: 'Anzeigen',
+    showAll: 'alle Freigaben zeigen',
+    tileVisitors: 'Besucher, letzte 7 Tage',
+    tileDownloads: 'Downloads, letzte 7 Tage',
+    tileLastVisit: 'Letzter Besuch',
+    tileLogins: 'Anmeldungen im Zeitraum',
+    loginsDetail: (password: string, qr: string) => `${password} mit Passwort · ${qr} per QR-Code`,
+    deltaUp: (pct: number) => `↑ ${pct} % mehr als in den 7 Tagen davor`,
+    deltaDown: (pct: number) => `↓ ${pct} % weniger als in den 7 Tagen davor`,
+    deltaSame: '→ so viele wie in den 7 Tagen davor',
+    deltaNew: '↑ in den 7 Tagen davor keine',
+    deltaNone: 'keine in den letzten 14 Tagen',
+    never: 'noch keiner',
+    today: 'heute',
+    yesterday: 'gestern',
+    daysAgo: (n: number) => `vor ${n} Tagen`,
+    chartVisitors: 'Besucher pro Tag',
+    chartVisitorsWeek: 'Besucher pro Woche',
+    chartDownloads: 'Heruntergeladene Bilder pro Tag',
+    chartDownloadsWeek: 'Heruntergeladene Bilder pro Woche',
+    inPeriod: (n: string) => `${n} im Zeitraum`,
+    legendBars: 'Besucher',
+    legendAverage: '7-Tage-Schnitt',
+    weekOf: (date: string) => `Woche ab ${date}`,
+    shortDate: 'DD.MM.',
+    tipVisitors: (date: string, visitors: string, views: string) => `${date}: ${visitors} Besucher, ${views} Seitenaufrufe`,
+    tipAverage: (average: string) => ` · 7-Tage-Schnitt ${average}`,
+    tipDownloads: (date: string, photos: string, zips: string) => `${date}: ${photos} Bilder heruntergeladen, ${zips} ZIP-Downloads`,
+    emptyVisitors: 'Keine Besucher in diesem Zeitraum.',
+    emptyDownloads: 'Keine Downloads in diesem Zeitraum.',
+    tableToggle: 'Als Tabelle anzeigen',
+    colDay: 'Tag',
+    colWeek: 'Woche',
+    colVisitors: 'Besucher',
+    colViews: 'Seitenaufrufe',
+    colDownloads: 'Downloads',
+    colZips: 'ZIPs',
+    colLogins: 'Anmeldungen Passwort',
+    colQr: 'Anmeldungen QR',
+    sharesHeading: 'Pro Freigabe',
+    colShare: 'Freigabe',
+    col30: 'Besucher, 30 Tage',
+    col7: '7 Tage',
+    colTotal: 'Besucher gesamt',
+    colDownloadsTotal: 'Downloads gesamt',
+    colLast: 'Letzter Besuch',
+    prevWeekTitle: (n: number) => `Die 7 Tage davor: ${n}`,
+    statusDeleted: 'in Immich gelöscht',
+    quiet: (days: number) => `Seit ${days} Tagen kein Besuch – kann weg`,
+    neverVisited: 'Nie besucht – kann weg',
+    quietNote: 'Markiert sind Freigaben, die noch online sind, aber seit 14 Tagen keinen Besucher hatten. Den Link nimmst ' +
+      'du in Immich offline (Freigabe löschen oder ablaufen lassen). Die Statistik bleibt hier, bis du sie löschst.',
+    deleteStats: 'Statistik löschen',
+    deleteConfirm: 'Die Statistik dieser Freigabe endgültig löschen?',
+    deleted: 'Statistik gelöscht ✓',
+    notPersisted: (dataDir: ComponentChildren) => <>
+      <strong>Die Statistik wird nicht dauerhaft gespeichert.</strong> Der Datenordner des Portals ({dataDir}) ist
+      nicht beschreibbar, beim nächsten Neustart sind die Zahlen weg.
+    </>,
+    countNote: 'So wird gezählt: Ein Gast zählt pro Tag und Freigabe einmal, egal wie oft er neu lädt. Link-Vorschauen ' +
+      '(WhatsApp, Telegram …) und Bots zählen nicht mit. Downloads zählen Bilder, auch jedes Bild in einem ZIP. ' +
+      'Gespeichert werden nur Tagessummen – keine IP-Adressen, keine Cookies. Gezählt wird ab dieser Version des Portals.'
+  },
+
   branding: {
     title: 'Branding',
     intro: 'Name, Links, Teilen-Text und Bilder deines Portals. Änderungen gelten sofort und werden im Datenordner des ' +
       'Portals gespeichert. Sie haben Vorrang vor dem Branding-Ordner auf dem Server.',
     notWritable: (dataDir: ComponentChildren) => <>
       <strong>Hier kann nichts gespeichert werden.</strong> Der Datenordner des Portals ({dataDir}) ist nicht
-      beschreibbar. Siehe Abschnitt „Admin settings“ in <code>docs/configuration.md</code>.
+      beschreibbar. Siehe Abschnitt „Data folder“ in <code>docs/configuration.md</code>.
     </>,
     sourceAdmin: 'hier gesetzt',
     sourceFolder: 'Branding-Ordner',

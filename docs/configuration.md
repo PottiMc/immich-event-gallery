@@ -27,7 +27,7 @@ A few settings can also be changed on the admin page, see [Admin settings](#admi
 | `IPP_CONFIG` | no | `/app/config.json` | Path to an alternative config file. |
 | `CONFIG` | no | – | The complete config as an inline JSON string. When set, no file is read. |
 | `BRANDING_DIR` | no | `/app/branding` | Branding folder inside the container, see [Branding](#branding). |
-| `DATA_DIR` | no | `/app/data` | Writable folder for the settings saved on the admin page, see [Admin settings](#admin-settings). |
+| `DATA_DIR` | no | `/app/data` | Writable folder for the settings saved on the admin page and the statistics, see [Data folder](#data-folder). |
 | `TZ` | no | `Europe/Berlin` | Time zone for logs and dates. |
 
 #### Removal requests (optional)
@@ -156,10 +156,34 @@ applies.
 Branding set on the admin page is stored in `DATA_DIR/branding/` (texts in `branding.json`, plus the uploaded
 images).
 
+## Statistics
+
+The *Statistics* tab on the admin page shows visitors and downloads per day, for all shares or a single one, over the
+last 30 or 90 days or since counting began (longer periods are shown per week). Tiles compare the last 7 days with
+the 7 days before, and a table lists every share with its visitors, downloads and last visit. Shares that are still
+online but have had no visitor for 14 days are marked, so you know when a link can go.
+
+What is counted:
+
+- **Visitors**: a guest who opens a gallery counts once per day and share, however often they reload.
+- **Page views**: every gallery page load.
+- **Downloads**: downloaded files, a single download as well as every file in a ZIP; ZIP downloads are also counted
+  on their own.
+- **Logins**: with the password (landing page or password page) and through a QR code / access link.
+
+Link previews (WhatsApp, Telegram, …), crawlers and requests without a browser user agent are left out. Only daily
+totals per share are stored, in `stats.json` in `DATA_DIR` (written at most every 30 seconds and on shutdown). No IP
+addresses, user agents or cookies are stored: visitors are told apart with a salted hash that exists only in memory
+and whose salt changes every day. Statistics of shares that were deleted in Immich stay until you delete them on
+the statistics page.
+
+## Data folder
+
 The compose file mounts the named volume `eg-portal-data` at `/app/data`. It is writable although the container's
 filesystem is read-only, and it inherits its ownership from the image, so no `chown` is needed. If you use a bind
 mount instead, the folder must be writable for UID 1000 (`node`). If the folder is not writable, the admin page shows
-a warning: the download setting then only lasts until the next restart, and branding cannot be saved at all.
+a warning: the download setting and the statistics then only last until the next restart, and branding cannot be
+saved at all.
 
 ## `config.json`
 

@@ -26,6 +26,7 @@ import { qrSvg } from './gallery'
 import { adminFormToken, validFormPost } from './admin-forms'
 import { registerLoginRoutes, requireAdmin } from './admin-auth'
 import { registerBrandingRoutes } from './admin-branding'
+import { registerStatsRoutes } from './admin-stats'
 import { cardOptions, splitTitleDate } from './card'
 
 export { adminFormToken }
@@ -148,6 +149,7 @@ export function createAdminApp () {
   })
 
   registerBrandingRoutes(app)
+  registerStatsRoutes(app)
 
   app.get('/qr/:id.:format(png|svg)', asyncHandler(async (req, res) => {
     const link = await findLink(req.params.id)
