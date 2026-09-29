@@ -17,6 +17,9 @@
 #   database, Valkey or machine learning (eg-portal / eg-internal).
 # - The portal runs with a read-only filesystem (except its small settings
 #   volume), no Linux capabilities and memory/process limits.
+# - CPU caps on the portal, the Immich server and machine learning, so a flood
+#   of requests or a big import cannot starve the rest of the host
+#   (PORTAL_CPUS, IMMICH_CPUS, ML_CPUS; never more than the host has).
 # - Logs are capped at 3 x 10 MB per container.
 #
 
@@ -51,6 +54,7 @@ services:
       - redis
       - database
     restart: always
+    cpus: ${IMMICH_CPUS:-2}
     security_opt:
       - no-new-privileges:true
     logging: *logging
@@ -74,6 +78,7 @@ services:
     networks:
       - eg-internal
     restart: always
+    cpus: ${ML_CPUS:-2}
     security_opt:
       - no-new-privileges:true
     logging: *logging
@@ -167,6 +172,7 @@ services:
       - no-new-privileges:true
     mem_limit: 512m
     pids_limit: 200
+    cpus: ${PORTAL_CPUS:-1}
     logging: *logging
     healthcheck:
       test: curl -fs http://localhost:3000/share/healthcheck -o /dev/null || exit 1

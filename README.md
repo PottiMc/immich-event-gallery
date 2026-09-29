@@ -84,11 +84,14 @@ The portal is the only public component. Immich and the admin pages must stay be
   duration, up to 24 hours. IPv6 clients are counted per /64. More than 100 failures from anywhere within 15 minutes
   pause password entry for everyone for 5 minutes. QR links keep working because their tokens are not guessable.
 - **Every password entry point is throttled**, including the unlock form of a direct album link.
+- **Made-up share keys are throttled** too, because each lookup reaches Immich: after 20 unknown keys per IP within
+  10 minutes, or 300 from anywhere, unknown keys get a 404 without asking Immich. Keys of existing shares always pass.
 - **QR tokens** are an HMAC of the share key and its password. Changing the password in Immich invalidates old QR
   codes immediately and ends existing guest sessions within about two minutes.
 - **Strict headers:** a Content Security Policy without inline scripts, `X-Frame-Options`, `nosniff`,
   `Referrer-Policy: same-origin` (share keys are part of the URL), and HSTS over HTTPS.
-- **Hardened container:** read-only filesystem, all capabilities dropped, `no-new-privileges`, memory and PID limits.
+- **Hardened container:** read-only filesystem, all capabilities dropped, `no-new-privileges`, memory, CPU and PID
+  limits. The Immich server and machine learning have CPU limits as well.
   The portal sits on its own network and can only reach the Immich server.
 - Invalid, expired or failed requests return a plain 404 and reveal nothing about Immich.
 

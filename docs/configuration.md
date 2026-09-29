@@ -66,6 +66,9 @@ These are used by `docker-compose.yml` itself and are not passed to the portal:
 | `IMMICH_HOST_PORT` | `2284` | Host port of the Immich web UI |
 | `PORTAL_HOST_PORT` | `3100` | Host port of the guest portal |
 | `ADMIN_HOST_PORT` | `3101` | Host port of the admin pages |
+| `PORTAL_CPUS` | `1` | CPU cores the portal may use |
+| `IMMICH_CPUS` | `2` | CPU cores the Immich server may use. Keeps a request flood or a big import from slowing down the whole host |
+| `ML_CPUS` | `2` | CPU cores machine learning may use. Lower it to make face recognition slower but gentler |
 | `PORTAL_IMAGE` | `ghcr.io/pottimc/immich-event-gallery:latest` | Portal image. Pin a version or SHA tag for reproducible deployments. |
 
 ## Branding

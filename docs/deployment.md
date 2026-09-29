@@ -131,6 +131,8 @@ If the domain is proxied by Cloudflare (orange cloud), the portal sees Cloudflar
 
 - Use a CrowdSec or fail2ban integration on the reverse proxy to block known scanners before they reach the portal.
 - If your guests come from a known region, allow only those countries on the guest route.
+- The CPU limits in `.env` (`PORTAL_CPUS`, `IMMICH_CPUS`, `ML_CPUS`) keep the stack from taking the whole host under
+  load. Check the number of cores with `nproc` and never set more.
 
 ## 4. Set up Immich
 

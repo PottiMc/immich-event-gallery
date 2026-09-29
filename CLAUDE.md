@@ -19,6 +19,9 @@ Immich is automatically online.
   for 5 minutes. Every failure also costs 600 ms. `/z/` is exempt from the global pause.
 - `/share/unlock` validates the password itself and uses the same lockout. Upstream stored any password unchecked in
   the cookie.
+- Share-key guard (`portal/key-guard.ts`) on every `/share/…` route that asks Immich about a key: keys in the cached
+  link list pass; unknown keys whose request ends in 404 count, 20 per IP in 10 minutes or 300 in total pause
+  unknown-key lookups (404 without an Immich call).
 - The admin server runs on port 3001 behind a login form (`PORTAL_ADMIN_PASSWORD`, `portal/admin-auth.ts`: signed
   7-day session cookie; a Basic Auth header is still accepted for scripts; both share one lockout). It provides the
   share overview, QR codes as PNG/SVG, printable cards (`portal/card.ts`: four per A4 sheet with crop marks or single A6, title and date editable via

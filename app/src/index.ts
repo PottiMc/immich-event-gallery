@@ -30,6 +30,7 @@ import { ASSET_VERSION } from './version'
 import { registerPortalRoutes, unlockShare } from './portal/routes'
 import { startAdminServer } from './portal/admin'
 import { handleRemovalRequest } from './portal/removal'
+import { shareKeyGuard } from './portal/key-guard'
 import { securityHeaders } from './portal/security'
 import { BRAND, brandAsset, sendBrandFile } from './portal/branding'
 import { languageMiddleware } from './portal/i18n'
@@ -200,7 +201,7 @@ app.get(/^(|\/share)\/healthcheck$/, asyncHandler(async (_req, res) => {
 /*
  * [ROUTE] This is the main URL that someone would visit if they are opening a shared link
  */
-app.get('/:shareType(share|s)/:key/:mode(download)?', decodeCookie, asyncHandler(async (req, res) => {
+app.get('/:shareType(share|s)/:key/:mode(download)?', shareKeyGuard, decodeCookie, asyncHandler(async (req, res) => {
   const keyType = getKeyTypeFromShare(req.params.shareType)
 
   if (keyType === KeyType.slug && !getConfigOption('ipp.allowSlugLinks', true)) {
@@ -234,7 +235,7 @@ app.post('/share/unlock', asyncHandler(unlockShare))
  * Validates each ID against share.assets so the request can't pull anything
  * outside the share.
  */
-app.post('/:shareType(share|s)/:key/download', decodeCookie, asyncHandler(async (req, res) => {
+app.post('/:shareType(share|s)/:key/download', shareKeyGuard, decodeCookie, asyncHandler(async (req, res) => {
   const keyType = getKeyTypeFromShare(req.params.shareType)
   let requestedIds: unknown
   try {
@@ -273,7 +274,7 @@ app.post('/:shareType(share|s)/:key/download', decodeCookie, asyncHandler(async 
  * [ROUTE] Portal: a guest asks for photos of this share to be removed for
  * privacy reasons. Sends an e-mail to the operator - see portal/removal.ts.
  */
-app.post('/share/:key/removal-request', decodeCookie, asyncHandler(async (req, res) => {
+app.post('/share/:key/removal-request', shareKeyGuard, decodeCookie, asyncHandler(async (req, res) => {
   const resolved = await resolveShare(req, KeyType.key)
   if (!resolved.ok) {
     respondToInvalidRequest(res, resolved.status, resolved.reason)
@@ -294,7 +295,7 @@ app.post('/:shareType(share|s)/:key/:mode(download)?', (req, res) => {
 /*
  * [ROUTE] This is the direct link to a photo or video asset
  */
-app.get('/share/:type(photo|video)/:key/:id/:size?', decodeCookie, asyncHandler(async (req, res) => {
+app.get('/share/:type(photo|video)/:key/:id/:size?', shareKeyGuard, decodeCookie, asyncHandler(async (req, res) => {
   // Add the headers configured in config.json (most likely `cache-control`)
   addResponseHeaders(res)
 
@@ -351,7 +352,7 @@ app.get('/share/:type(photo|video)/:key/:id/:size?', decodeCookie, asyncHandler(
  * validated against the share's asset set (defence in depth - Immich also
  * enforces this via the share key) before we fetch `GET /assets/:id`.
  */
-app.get('/:shareType(share|s)/meta/:key/:id', decodeCookie, asyncHandler(async (req, res) => {
+app.get('/:shareType(share|s)/meta/:key/:id', shareKeyGuard, decodeCookie, asyncHandler(async (req, res) => {
   addResponseHeaders(res)
 
   const resolved = await resolveSharedAsset(req, getKeyTypeFromShare(req.params.shareType))
