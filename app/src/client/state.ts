@@ -54,6 +54,10 @@ export interface BandState {
   after: number
   height: number
   top: number
+  // Whether the layout put it after the last row (few photos)
+  atEnd: boolean
+  // Called after every placement
+  onPlace?: () => void
 }
 
 export interface GroupSpec {

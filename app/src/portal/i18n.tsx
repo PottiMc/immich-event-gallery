@@ -118,6 +118,8 @@ const en = {
     emailLabel: 'Your e-mail address',
     nameLabel: 'First name (optional)',
     submit: 'Subscribe',
+    barButton: 'Subscribe',
+    barClose: 'Hide',
     sending: 'Sending …',
     privacy: 'Your address is only used for the confirmation e-mail and – once you confirm – for the newsletter. ' +
       'You can unsubscribe at any time.',
@@ -211,6 +213,11 @@ const en = {
     enabled: 'Show the newsletter sign-up in every album',
     after: 'Position: after how many photos',
     afterHint: 'The sign-up comes after the row with this photo. Albums with fewer photos show it at the end.',
+    atEnd: 'Also show it after the last photo',
+    atEndHint: 'For guests who scroll past the first one. Not shown twice when the first one is already at the end.',
+    sticky: 'Show a bar at the bottom of the screen',
+    stickyHint: 'Appears once the guest scrolls and no sign-up is in view; its button opens the form. Guests can ' +
+      'hide it (for 14 days), and it goes away after a sign-up.',
     textsHint: (link: ComponentChildren) => <>Heading text and signature details are set on the {link} page.</>,
     save: 'Save',
     saved: 'Saved ✓',
@@ -681,6 +688,8 @@ const de: Messages = {
     emailLabel: 'Deine E-Mail-Adresse',
     nameLabel: 'Vorname (optional)',
     submit: 'Newsletter abonnieren',
+    barButton: 'Abonnieren',
+    barClose: 'Ausblenden',
     sending: 'Wird gesendet …',
     privacy: 'Deine Adresse wird nur für die Bestätigungsmail verwendet und – nach deiner Bestätigung – für den ' +
       'Newsletter. Abmelden geht jederzeit.',
@@ -774,6 +783,11 @@ const de: Messages = {
     enabled: 'Newsletter-Anmeldung in jedem Album zeigen',
     after: 'Position: nach wie vielen Bildern',
     afterHint: 'Die Anmeldung kommt nach der Reihe mit diesem Bild. Alben mit weniger Bildern zeigen sie am Ende.',
+    atEnd: 'Zusätzlich nach dem letzten Bild zeigen',
+    atEndHint: 'Für Gäste, die über die erste hinwegscrollen. Nicht doppelt, wenn die erste schon am Ende steht.',
+    sticky: 'Leiste am unteren Bildschirmrand zeigen',
+    stickyHint: 'Erscheint, sobald der Gast scrollt und gerade keine Anmeldung zu sehen ist; ihr Knopf öffnet das ' +
+      'Formular. Gäste können sie ausblenden (für 14 Tage), nach einer Anmeldung verschwindet sie.',
     textsHint: (link: ComponentChildren) => <>Text über der Anmeldung und Angaben für die Unterschrift stellst du unter {link} ein.</>,
     save: 'Speichern',
     saved: 'Gespeichert ✓',

@@ -10,7 +10,7 @@ import {
   STICKY_TILE_LIMIT,
   type HeaderEntry
 } from './state.js'
-import { computeLayout } from './layout.js'
+import { computeLayout, type LayoutResult } from './layout.js'
 import { createTile } from './tiles.js'
 
 /**
@@ -141,7 +141,7 @@ export function computeLayoutAndRender () {
   state.layout = result.layout
   state.headers = result.headers
   state.container.style.height = result.totalHeight + 'px'
-  placeBand(result.bandTop)
+  placeBand(result)
 
   for (const [, el] of state.renderedTiles) el.remove()
   state.renderedTiles.clear()
@@ -154,10 +154,12 @@ export function computeLayoutAndRender () {
   loadVisibleTiles()
 }
 
-function placeBand (top: number | undefined) {
-  if (!state.band || top === undefined) return
-  state.band.top = top
-  state.band.el.style.top = top + 'px'
+function placeBand ({ bandTop, totalHeight }: LayoutResult) {
+  if (!state.band || bandTop === undefined) return
+  state.band.top = bandTop
+  state.band.atEnd = bandTop + state.band.height >= totalHeight - 1
+  state.band.el.style.top = bandTop + 'px'
+  state.band.onPlace?.()
 }
 
 /**
@@ -171,7 +173,7 @@ export function refreshLayout () {
   state.layout = result.layout
   state.headers = result.headers
   state.container.style.height = result.totalHeight + 'px'
-  placeBand(result.bandTop)
+  placeBand(result)
   for (const [index, el] of state.renderedTiles) {
     const l = state.layout[index]
     if (l) el.style.top = l.top + 'px'

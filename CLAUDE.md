@@ -36,7 +36,8 @@ Immich is automatically online.
 - E-mail (`portal/mail.ts`) is shared by removal requests and the newsletter: env `SMTP_*`, one connection per send,
   sends queued one at a time, strict address check, readable SMTP error causes, one startup log line.
 - Newsletter (`portal/newsletter.ts`, `client/newsletter.ts`, admin tab in `portal/admin-newsletter.ts`): switched on
-  in the admin (`settings.json`), a sign-up band placed between the photo rows by `insertBand` in `client/layout.ts`.
+  in the admin (`settings.json`), a sign-up band placed between the photo rows by `insertBand` in `client/layout.ts`,
+  optionally a second band after the last photo and a sticky bottom bar that opens the form in a dialog.
   Double opt-in with an HMAC-signed, self-contained token (`nl1.` prefix, 14 days); GET `/newsletter/:token` only
   asks, POST confirms. Confirmed addresses in `DATA_DIR/newsletter.json`; the operator carries them over by hand.
 

@@ -346,6 +346,27 @@ describe('gallery band', () => {
     delete process.env.SMTP_HOST
     expect(renderPage(h(Gallery, props))).not.toContain('eg-newsletter')
   })
+
+  it('adds the band at the end and the sticky bar only when chosen', () => {
+    saveRuntimeSettings({ newsletterEnabled: true })
+    const plain = renderPage(h(Gallery, props))
+    expect(plain).not.toContain('eg-newsletter-end')
+    expect(plain).not.toContain('eg-newsletter-bar')
+    saveRuntimeSettings({ newsletterAtEnd: true, newsletterSticky: true })
+    const html = renderPage(h(Gallery, props))
+    expect(html).toContain('id="eg-newsletter-end"')
+    expect(html).toMatch(/id="eg-newsletter-bar"[^>]*hidden/)
+    expect(html).toContain('id="eg-newsletter-dialog"')
+    expect(html).toContain('>Abonnieren</button>')
+    // Three forms, each with its own field ids
+    expect(html.match(/class="eg-newsletter-form"/g)).toHaveLength(3)
+    for (const id of ['eg-newsletter-email', 'eg-newsletter-end-email', 'eg-newsletter-dialog-email']) {
+      expect(html.match(new RegExp(`id="${id}"`, 'g'))).toHaveLength(1)
+    }
+    // Switched off, none of them
+    saveRuntimeSettings({ newsletterEnabled: false })
+    expect(renderPage(h(Gallery, props))).not.toContain('eg-newsletter')
+  })
 })
 
 describe('newsletter admin page', () => {
@@ -385,10 +406,12 @@ describe('newsletter admin page', () => {
   })
 
   it('saves the settings and refuses forms without the token', async () => {
-    expect((await postForm('/newsletter/einstellungen', { enabled: '1', after: '16' })).status).toBe(303)
+    expect((await postForm('/newsletter/einstellungen', { enabled: '1', after: '16', sticky: '1' })).status).toBe(303)
     const html = await (await fetch(base + '/newsletter', { headers: auth })).text()
     expect(html).toMatch(/name="enabled" value="1" checked/)
     expect(html).toContain('value="16"')
+    expect(html).toMatch(/name="sticky" value="1" checked/)
+    expect(html).not.toMatch(/name="atEnd" value="1" checked/)
     const bad = await fetch(base + '/newsletter/einstellungen', {
       method: 'POST',
       headers: { ...auth, 'content-type': 'application/x-www-form-urlencoded' },

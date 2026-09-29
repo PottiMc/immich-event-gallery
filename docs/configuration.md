@@ -212,7 +212,7 @@ The choice is stored in `settings.json` in `DATA_DIR`. It takes effect immediate
 applies.
 
 Branding set on the admin page is stored in `DATA_DIR/branding/` (texts in `branding.json`, colors in `colors.json`,
-plus the uploaded images). The newsletter settings (on/off, position) are stored in `settings.json` as well.
+plus the uploaded images). The newsletter settings (on/off, position, band at the end, bar) are stored in `settings.json` as well.
 
 ## Newsletter
 
@@ -220,6 +220,16 @@ With [e-mail](#e-mail-optional) set up, the *Newsletter* tab on the admin page c
 album. It sits as a band between the photo rows, after the row with photo number *N* (default 12, about three rows
 on a computer and four on a phone); albums with fewer photos show it at the end. Guests enter their e-mail address
 and, optionally, their first name.
+
+Two options help guests who scroll past it:
+
+- **Also after the last photo**: the same band once more at the end of the album. It is left out when the first
+  band already sits at the end.
+- **Bar at the bottom of the screen**: a slim bar that appears once the guest has scrolled half a screen and no band
+  is in view. Its button opens the form in a dialog. Guests can close it (it then stays away for 14 days, remembered
+  in the browser's local storage), and it disappears after a sign-up.
+
+A sign-up in one place turns every form on the page into the "sent" note.
 
 The sign-up uses double opt-in:
 

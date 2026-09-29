@@ -8,7 +8,7 @@ import { brandUrl } from '../portal/branding'
 import { brandName, newsletterText, privacyUrl } from '../portal/settings'
 import { MAX_EMAIL } from '../portal/mail'
 import { MAX_NAME, newsletterEnabled } from '../portal/newsletter'
-import { newsletterAfter } from '../portal/runtime-settings'
+import { newsletterAfter, newsletterAtEnd, newsletterSticky } from '../portal/runtime-settings'
 import { Lang, t } from '../portal/i18n'
 import { themeColor, ThemeStyle } from '../portal/theme'
 import { CLIENT_MESSAGES } from '../shared/i18n'
@@ -56,30 +56,23 @@ const ICON_REMOVE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="cur
 const ICON_MAIL = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20,8L12,13L4,8V6L12,11L20,6M20,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6C22,4.89 21.1,4 20,4Z"/></svg>'
 
 /**
- * Newsletter sign-up band. It sits inside #gallery; the client layout moves
- * it between the photo rows (after `data-after` photos) and posts the form.
+ * The sign-up form with its "sent" note. It appears up to three times (band
+ * between the rows, band at the end, sticky bar dialog); a sign-up in one
+ * turns all of them into the note.
  */
-function NewsletterBand ({ lang, path }: { lang: Lang, path: string }) {
+function NewsletterSignup ({ lang, path, prefix }: { lang: Lang, path: string, prefix: string }) {
   const m = t(lang).newsletter
   const privacy = privacyUrl()
   return (
-    <section id="eg-newsletter" class="eg-newsletter" aria-labelledby="eg-newsletter-title"
-      data-endpoint={path + '/newsletter'} data-after={String(newsletterAfter())}
-      data-sending={m.sending} data-sent={m.sent} data-failed={m.failed}>
-      <div class="eg-newsletter-text">
-        <span class="eg-newsletter-icon" dangerouslySetInnerHTML={{ __html: ICON_MAIL }}/>
-        <div>
-          <h2 id="eg-newsletter-title">{m.heading}</h2>
-          <p>{newsletterText(lang)}</p>
-        </div>
-      </div>
-      <form id="eg-newsletter-form" class="eg-newsletter-form">
+    <div class="eg-newsletter-signup">
+      <form class="eg-newsletter-form" data-endpoint={path + '/newsletter'}
+        data-sending={m.sending} data-sent={m.sent} data-failed={m.failed}>
         <div class="eg-newsletter-fields">
-          <label class="eg-sr-only" for="eg-newsletter-email">{m.emailLabel}</label>
-          <input id="eg-newsletter-email" name="email" type="email" required maxLength={MAX_EMAIL}
+          <label class="eg-sr-only" for={prefix + '-email'}>{m.emailLabel}</label>
+          <input id={prefix + '-email'} name="email" type="email" required maxLength={MAX_EMAIL}
             autoComplete="email" placeholder={m.emailLabel}/>
-          <label class="eg-sr-only" for="eg-newsletter-name">{m.nameLabel}</label>
-          <input id="eg-newsletter-name" name="name" type="text" maxLength={MAX_NAME}
+          <label class="eg-sr-only" for={prefix + '-name'}>{m.nameLabel}</label>
+          <input id={prefix + '-name'} name="name" type="text" maxLength={MAX_NAME}
             autoComplete="given-name" placeholder={m.nameLabel}/>
           <button type="submit" class="eg-button">{m.submit}</button>
         </div>
@@ -90,7 +83,71 @@ function NewsletterBand ({ lang, path }: { lang: Lang, path: string }) {
         <p class="eg-newsletter-error" role="alert" hidden></p>
       </form>
       <p class="eg-newsletter-done" role="status" hidden></p>
+    </div>
+  )
+}
+
+function NewsletterIntro ({ lang, titleId }: { lang: Lang, titleId: string }) {
+  return (
+    <div class="eg-newsletter-text">
+      <span class="eg-newsletter-icon" dangerouslySetInnerHTML={{ __html: ICON_MAIL }}/>
+      <div>
+        <h2 id={titleId}>{t(lang).newsletter.heading}</h2>
+        <p>{newsletterText(lang)}</p>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Newsletter sign-up band. It sits inside #gallery; the client layout moves
+ * it between the photo rows (after `data-after` photos).
+ */
+function NewsletterBand ({ lang, path }: { lang: Lang, path: string }) {
+  return (
+    <section id="eg-newsletter" class="eg-newsletter" aria-labelledby="eg-newsletter-title"
+      data-after={String(newsletterAfter())}>
+      <NewsletterIntro lang={lang} titleId="eg-newsletter-title"/>
+      <NewsletterSignup lang={lang} path={path} prefix="eg-newsletter"/>
     </section>
+  )
+}
+
+/** The same band once more after the last photo (hidden by the client when the first one already sits there). */
+function NewsletterEndBand ({ lang, path }: { lang: Lang, path: string }) {
+  return (
+    <section id="eg-newsletter-end" class="eg-newsletter eg-newsletter-end" aria-labelledby="eg-newsletter-end-title">
+      <NewsletterIntro lang={lang} titleId="eg-newsletter-end-title"/>
+      <NewsletterSignup lang={lang} path={path} prefix="eg-newsletter-end"/>
+    </section>
+  )
+}
+
+/**
+ * Bar fixed to the bottom of the screen. The client shows it once the guest
+ * scrolls and no band is in view; its button opens the form in a dialog.
+ */
+function NewsletterStickyBar ({ lang, path }: { lang: Lang, path: string }) {
+  const m = t(lang).newsletter
+  return (
+    <>
+      <div id="eg-newsletter-bar" class="eg-newsletter-bar" role="region" aria-label={m.heading} hidden>
+        <span class="eg-newsletter-icon" dangerouslySetInnerHTML={{ __html: ICON_MAIL }}/>
+        <p class="eg-newsletter-bar-text">
+          <strong>{m.heading}</strong>
+          <span class="eg-newsletter-bar-more"> – {newsletterText(lang)}</span>
+        </p>
+        <button type="button" class="eg-button eg-newsletter-bar-open" aria-haspopup="dialog">{m.barButton}</button>
+        <button type="button" class="eg-newsletter-bar-close" aria-label={m.barClose} title={m.barClose}>×</button>
+      </div>
+      <dialog id="eg-newsletter-dialog" class="eg-dialog eg-newsletter-dialog" aria-labelledby="eg-newsletter-dialog-title">
+        <form method="dialog" class="eg-dialog-close-form">
+          <button class="eg-dialog-close" aria-label={t(lang).gallery.close}>×</button>
+        </form>
+        <NewsletterIntro lang={lang} titleId="eg-newsletter-dialog-title"/>
+        <NewsletterSignup lang={lang} path={path} prefix="eg-newsletter-dialog"/>
+      </dialog>
+    </>
   )
 }
 
@@ -165,6 +222,7 @@ export function Gallery (props: GalleryProps) {
   const m = t(lang)
   const client = CLIENT_MESSAGES[lang]
   const brand = brandName(lang)
+  const newsletter = !!props.portal && props.items.length > 0 && newsletterEnabled()
   const portal: PortalClientConfig | undefined = props.portal && {
     accessUrl: props.portal.accessUrl,
     shareTemplate: props.portal.shareTemplate,
@@ -271,7 +329,7 @@ export function Gallery (props: GalleryProps) {
             the tiles within the viewport buffer. The only static child is the
             portal's newsletter band, which the layout places between rows. */}
         <div id="gallery">
-          {props.portal && props.items.length > 0 && newsletterEnabled() && <NewsletterBand lang={lang} path={props.path}/>}
+          {newsletter && <NewsletterBand lang={lang} path={props.path}/>}
         </div>
         {props.showDownloadZip && (
           <div id="select-toolbar" hidden>
@@ -289,7 +347,9 @@ export function Gallery (props: GalleryProps) {
             </button>
           </div>
         )}
+        {newsletter && newsletterAtEnd() && <NewsletterEndBand lang={lang} path={props.path}/>}
         <BrandFooter lang={lang}/>
+        {newsletter && newsletterSticky() && <NewsletterStickyBar lang={lang} path={props.path}/>}
         {props.portal && (
           <dialog id="eg-share-dialog" class="eg-dialog" aria-labelledby="eg-share-title">
             <form method="dialog" class="eg-dialog-close-form">

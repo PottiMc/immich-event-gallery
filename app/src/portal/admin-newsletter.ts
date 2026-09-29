@@ -4,7 +4,7 @@
  * remembers which ones are done.
  *
  *   GET  /newsletter                  page (?alle = also added and unconfirmed)
- *   POST /newsletter/einstellungen    sign-up on/off and position
+ *   POST /newsletter/einstellungen    sign-up on/off, position, again at the end, sticky bar
  *   POST /newsletter/uebertragen      mark one (`mail`) or all new (`alle-neuen`) as added (`an`=1) or not (`an`=0)
  *   POST /newsletter/loeschen         delete one (`mail`)
  *   POST /newsletter/testmail         test e-mail to the sender address
@@ -32,6 +32,8 @@ import { listEntries, markTransferred, NewsletterEntry, notifyAddress, pendingCo
 import {
   NEWSLETTER_AFTER_MAX,
   newsletterAfter,
+  newsletterAtEnd,
+  newsletterSticky,
   newsletterSwitchedOn,
   saveRuntimeSettings,
   settingsPersistent
@@ -60,6 +62,8 @@ function render (req: Request, res: Response, status = 200, extra: { notice?: st
     showAll,
     enabled: newsletterSwitchedOn(),
     after: newsletterAfter(),
+    atEnd: newsletterAtEnd(),
+    sticky: newsletterSticky(),
     mailOn: mailEnabled(),
     mailDescription: describeMailConfig(),
     notify: notifyAddress(),
@@ -121,8 +125,11 @@ export function registerNewsletterAdminRoutes (app: Express) {
       return
     }
     const enabled = req.body?.enabled === '1'
-    const result = saveRuntimeSettings({ newsletterEnabled: enabled, newsletterAfter: after })
-    log('Admin: newsletter sign-up ' + (enabled ? 'on' : 'off') + ', after ' + after + ' photos')
+    const atEnd = req.body?.atEnd === '1'
+    const sticky = req.body?.sticky === '1'
+    const result = saveRuntimeSettings({ newsletterEnabled: enabled, newsletterAfter: after, newsletterAtEnd: atEnd, newsletterSticky: sticky })
+    log('Admin: newsletter sign-up ' + (enabled ? 'on' : 'off') + ', after ' + after + ' photos' +
+      (atEnd ? ', again at the end' : '') + (sticky ? ', sticky bar' : ''))
     res.redirect(303, '/newsletter?' + (result.ok ? 'gespeichert' : 'nicht-dauerhaft') + '#einstellungen')
   })
 

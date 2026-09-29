@@ -20,6 +20,8 @@ export interface NewsletterAdminProps {
   showAll: boolean
   enabled: boolean
   after: number
+  atEnd: boolean
+  sticky: boolean
   mailOn: boolean
   mailDescription: string
   notify: string
@@ -142,6 +144,14 @@ export function NewsletterAdminPage (props: NewsletterAdminProps) {
                   aria-describedby="nl-after-hint"/>
                 <p class="adm-hint" id="nl-after-hint">{n.afterHint}</p>
               </div>
+              <label class="adm-choice">
+                <input type="checkbox" name="atEnd" value="1" checked={props.atEnd}/>
+                <span>{n.atEnd}<br/><small class="adm-hint">{n.atEndHint}</small></span>
+              </label>
+              <label class="adm-choice">
+                <input type="checkbox" name="sticky" value="1" checked={props.sticky}/>
+                <span>{n.sticky}<br/><small class="adm-hint">{n.stickyHint}</small></span>
+              </label>
               <button type="submit" class="adm-btn adm-btn-primary">{n.save}</button>
             </form>
             <p class="adm-note">{n.textsHint(<a href="/branding#texte">{m.admin.tabBranding}</a>)}</p>

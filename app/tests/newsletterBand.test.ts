@@ -22,7 +22,7 @@ function items (n: number): GalleryItem[] {
 }
 
 function withBand (after: number, height = 200) {
-  state.band = { el: {} as HTMLElement, after, height, top: 0 }
+  state.band = { el: {} as HTMLElement, after, height, top: 0, atEnd: false }
 }
 
 describe('newsletter band layout', () => {

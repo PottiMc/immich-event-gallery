@@ -156,7 +156,7 @@ body {
 }
 
 .eg-newsletter.eg-placed { position: absolute; left: 0; right: 0; }
-.eg-newsletter [hidden] { display: none !important; }
+.eg-newsletter [hidden], .eg-newsletter-signup [hidden] { display: none !important; }
 
 .eg-newsletter-text { display: flex; align-items: flex-start; gap: 16px; min-width: 0; }
 .eg-newsletter-icon { display: inline-flex; flex: 0 0 auto; color: var(--eg-gold); }
@@ -164,7 +164,7 @@ body {
 .eg-newsletter h2 { margin: 0 0 4px; color: var(--eg-gold); font-size: 21px; font-weight: 600; line-height: 1.25; }
 .eg-newsletter p { margin: 0; color: var(--eg-text); font-size: 15px; line-height: 1.45; }
 
-.eg-newsletter-form { min-width: 0; }
+.eg-newsletter-signup { min-width: 0; }
 .eg-newsletter-fields { display: flex; flex-wrap: wrap; gap: 8px; }
 .eg-newsletter-fields input {
   flex: 1 1 200px;
@@ -185,10 +185,13 @@ body {
 .eg-newsletter-fields input:focus { border-color: var(--eg-gold); outline: none; }
 .eg-newsletter-fields .eg-button { flex: 0 0 auto; height: 48px; padding: 0 20px; font-size: 16px; }
 
-.eg-newsletter p.eg-newsletter-privacy { margin-top: 8px; color: var(--eg-muted); font-size: 12.5px; }
-.eg-newsletter p.eg-newsletter-error { margin-top: 8px; color: var(--eg-error); font-size: 14px; }
-.eg-newsletter p.eg-newsletter-done { font-size: 16px; }
+.eg-newsletter-signup p { margin: 0; line-height: 1.45; }
+.eg-newsletter-signup p.eg-newsletter-privacy { margin-top: 8px; color: var(--eg-muted); font-size: 12.5px; }
+.eg-newsletter-signup p.eg-newsletter-error { margin-top: 8px; color: var(--eg-error); font-size: 14px; }
+.eg-newsletter-signup p.eg-newsletter-done { color: var(--eg-text); font-size: 16px; }
 .eg-newsletter-done strong { color: var(--eg-gold-light); }
+
+.eg-newsletter-signup a { color: var(--eg-gold-light); }
 
 /* style.css positions every link in #gallery as a tile */
 #gallery .eg-newsletter a {
@@ -200,6 +203,83 @@ body {
   text-decoration: underline;
 }
 
+/* The same band once more after the last photo */
+.eg-newsletter-end { margin: 12px var(--gutter) 8px; }
+.eg-newsletter-end[hidden] { display: none; }
+
+/* Bar fixed to the bottom of the screen; its button opens the dialog */
+.eg-newsletter-bar {
+  position: fixed;
+  left: 50%;
+  bottom: 16px;
+  z-index: 90;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: min(880px, calc(100vw - 32px));
+  padding: 10px 10px 10px 18px;
+  border: 1px solid var(--eg-line);
+  border-radius: 16px;
+  background: rgba(var(--eg-surface-rgb), 0.96);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(6px);
+  font-family: var(--eg-font);
+  transform: translateX(-50%);
+  animation: eg-bar-in 0.25s ease-out;
+}
+.eg-newsletter-bar[hidden] { display: none; }
+.eg-newsletter-bar .eg-newsletter-icon svg { width: 26px; height: 26px; }
+.eg-newsletter-bar-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  color: var(--eg-text);
+  font-size: 15px;
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.eg-newsletter-bar-text strong { color: var(--eg-gold); font-weight: 600; }
+.eg-newsletter-bar-more { color: var(--eg-muted); }
+.eg-newsletter-bar .eg-newsletter-bar-open { flex: 0 0 auto; padding: 10px 18px; font-size: 15px; }
+.eg-newsletter-bar-close {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--eg-muted);
+  font: inherit;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+}
+.eg-newsletter-bar-close:hover, .eg-newsletter-bar-close:focus-visible { color: var(--eg-text); background: rgba(var(--eg-text-rgb), 0.08); outline: none; }
+
+@keyframes eg-bar-in {
+  from { opacity: 0; transform: translate(-50%, 16px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .eg-newsletter-bar { animation: none; }
+}
+
+/* Room for the bar below the footer; the toast moves above it */
+body.eg-bar-on { padding-bottom: 88px; }
+body.eg-bar-on #eg-toast { bottom: 96px; }
+
+.eg-dialog.eg-newsletter-dialog { width: min(460px, calc(100vw - 32px)); }
+.eg-newsletter-dialog .eg-newsletter-text { margin-bottom: 16px; padding-right: 28px; text-align: left; }
+.eg-newsletter-dialog .eg-newsletter-text h2 { margin: 0 0 4px; text-align: left; }
+.eg-newsletter-dialog .eg-newsletter-text p { margin: 0; }
+.eg-newsletter-dialog .eg-newsletter-signup { text-align: left; }
+.eg-newsletter-dialog .eg-newsletter-fields input,
+.eg-newsletter-dialog .eg-newsletter-fields .eg-button { flex: 1 1 100%; }
+
 @media (max-width: 900px) {
   .eg-newsletter { grid-template-columns: minmax(0, 1fr); gap: 14px; padding: 20px; }
 }
@@ -207,9 +287,14 @@ body {
 @media (max-width: 640px) {
   /* The photos run edge to edge on phones; the band keeps a margin */
   .eg-newsletter.eg-placed { left: 12px; right: 12px; }
+  .eg-newsletter-end { margin-inline: 12px; }
   .eg-newsletter { padding: 18px 16px; }
   .eg-newsletter-icon svg { width: 28px; height: 28px; }
   .eg-newsletter-fields .eg-button { flex: 1 1 100%; }
+  .eg-newsletter-bar { bottom: 10px; width: calc(100vw - 20px); gap: 10px; padding: 8px 6px 8px 14px; }
+  .eg-newsletter-bar-more { display: none; }
+  .eg-newsletter-bar-text { white-space: normal; font-size: 14px; }
+  .eg-newsletter-bar .eg-newsletter-bar-open { padding: 10px 14px; }
 }
 
 /* Selected tiles + selection toolbar in brand colours */

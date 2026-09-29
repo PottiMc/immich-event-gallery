@@ -21,6 +21,10 @@ export interface RuntimeSettings {
   newsletterEnabled?: boolean
   /** Number of photos before the newsletter band */
   newsletterAfter?: number
+  /** A second sign-up band after the last photo */
+  newsletterAtEnd?: boolean
+  /** A bar fixed to the bottom of the screen that opens the sign-up */
+  newsletterSticky?: boolean
 }
 
 /** Default position of the newsletter band: about three rows on a computer, four on a phone. */
@@ -50,6 +54,8 @@ function sanitize (raw: unknown): RuntimeSettings {
     const r = raw as Record<string, unknown>
     if (isDownloadQuality(r.downloadQuality)) settings.downloadQuality = r.downloadQuality
     if (typeof r.newsletterEnabled === 'boolean') settings.newsletterEnabled = r.newsletterEnabled
+    if (typeof r.newsletterAtEnd === 'boolean') settings.newsletterAtEnd = r.newsletterAtEnd
+    if (typeof r.newsletterSticky === 'boolean') settings.newsletterSticky = r.newsletterSticky
     if (Number.isInteger(r.newsletterAfter) && (r.newsletterAfter as number) >= 1 &&
       (r.newsletterAfter as number) <= NEWSLETTER_AFTER_MAX) settings.newsletterAfter = r.newsletterAfter as number
   }
@@ -63,6 +69,14 @@ export function newsletterSwitchedOn (): boolean {
 
 export function newsletterAfter (): number {
   return current.newsletterAfter || NEWSLETTER_AFTER_DEFAULT
+}
+
+export function newsletterAtEnd (): boolean {
+  return current.newsletterAtEnd === true
+}
+
+export function newsletterSticky (): boolean {
+  return current.newsletterSticky === true
 }
 
 /** Lay the runtime settings over the loaded config. */
