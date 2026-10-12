@@ -11,7 +11,7 @@ import { ComponentChildren } from 'preact'
 import { Lang, Messages, t } from './i18n'
 import { pendingCount } from './newsletter'
 import { DownloadQuality } from './runtime-settings'
-import { brandName } from './settings'
+import { brandName, cardIcon } from './settings'
 import { ThemeStyle } from './theme'
 import { BrandHead, LangSwitch, STATIC } from './views'
 
@@ -367,7 +367,8 @@ const ICONS = {
   camera: <><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/></>,
   globe: <><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.4 2.5 3.6 5.5 3.6 9s-1.2 6.5-3.6 9c-2.4-2.5-3.6-5.5-3.6-9S9.6 5.5 12 3z"/></>,
   lock: <><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7.5a4 4 0 0 1 8 0V11"/></>,
-  heart: <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>
+  heart: <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>,
+  glass: <><path d="M7 3h10v4.5a5 5 0 0 1-10 0z"/><path d="M12 12.5V21M8 21h8"/></>
 }
 
 function Icon ({ name }: { name: keyof typeof ICONS }) {
@@ -380,6 +381,7 @@ function Icon ({ name }: { name: keyof typeof ICONS }) {
 function Card ({ props }: { props: CardProps }) {
   const m = t(props.lang)
   const { options } = props
+  const icon = cardIcon()
   return (
     <section class="card">
       <img class="card-logo" src={brandUrl(options.dark ? 'logo-banner.png' : 'logo-light.png')} alt={brandName(props.lang)}/>
@@ -394,7 +396,7 @@ function Card ({ props }: { props: CardProps }) {
           <p><Icon name="lock"/>{m.card.altPassword(<strong class="card-password">{props.password}</strong>)}</p>
         </div>
       )}
-      <p class="card-thanks">{m.card.thanks}<Icon name="heart"/></p>
+      <p class="card-thanks">{m.card.thanks}{icon !== 'none' && <Icon name={icon}/>}</p>
     </section>
   )
 }

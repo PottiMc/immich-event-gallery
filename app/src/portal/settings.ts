@@ -134,6 +134,29 @@ export function newsletterText (lang: Lang = defaultLang()): string {
   return brandOption('newsletterText', '', lang) || t(lang).newsletter.text
 }
 
+/** First line of the landing page greeting; empty = the neutral default. */
+export function welcomeText (lang: Lang = defaultLang()): string {
+  return brandOption('welcomeText', '', lang) || t(lang).landing.lead1
+}
+
+/** Example password in the landing page's password field; empty = the neutral default. */
+export function passwordExample (lang: Lang = defaultLang()): string {
+  return brandOption('passwordExample', '', lang) || t(lang).landing.passwordExample
+}
+
+export const CARD_ICONS = ['heart', 'glass', 'none'] as const
+export type CardIcon = typeof CARD_ICONS[number]
+
+export function isCardIcon (value: unknown): value is CardIcon {
+  return typeof value === 'string' && (CARD_ICONS as readonly string[]).includes(value)
+}
+
+/** Symbol after the thank-you line on the print card. */
+export function cardIcon (): CardIcon {
+  const value = brandOption('cardIcon', '')
+  return isCardIcon(value) ? value : 'heart'
+}
+
 /** Phone / WhatsApp number for the e-mail signature; empty = left out. */
 export function phoneNumber (): string {
   return brandOption('phone', '')

@@ -40,7 +40,8 @@ import {
 } from './branding'
 import { Lang, langOf, t } from './i18n'
 import { settingsPersistent } from './runtime-settings'
-import { publicBaseUrl, shareUrl } from './settings'
+import { MIN_CUSTOM_WORDS, parseWordList } from './passwords'
+import { CardIcon, cardIcon, isCardIcon, publicBaseUrl, shareUrl } from './settings'
 import { contrast, DEFAULT_COLORS } from './theme'
 
 const URL_FIELDS = ['websiteUrl', 'imprintUrl', 'privacyUrl', 'shareUrl', 'instagramUrl'] as const
@@ -48,7 +49,8 @@ const MAX_NAME = 80
 const MAX_URL = 500
 const MAX_SHARE_TEXT = 300
 const MAX_PHONE = 40
-const TEXT_FIELDS = ['shareTextEn', 'shareTextDe', 'newsletterTextEn', 'newsletterTextDe'] as const
+const TEXT_FIELDS = ['shareTextEn', 'shareTextDe', 'newsletterTextEn', 'newsletterTextDe', 'welcomeTextEn', 'welcomeTextDe'] as const
+const MAX_WORD_LIST = 20000
 
 function stringFor (value: unknown, lang: Lang): string {
   if (typeof value === 'string') return value
@@ -76,8 +78,19 @@ function currentValues (): BrandTextValues {
     newsletterTextEn: stringFor(textValue('newsletterText'), 'en'),
     newsletterTextDe: stringFor(textValue('newsletterText'), 'de'),
     phone: stringFor(textValue('phone'), 'en'),
-    instagramUrl: stringFor(textValue('instagramUrl'), 'en')
+    instagramUrl: stringFor(textValue('instagramUrl'), 'en'),
+    welcomeTextEn: stringFor(textValue('welcomeText'), 'en'),
+    welcomeTextDe: stringFor(textValue('welcomeText'), 'de'),
+    passwordExample: stringFor(textValue('passwordExample'), 'en'),
+    cardIcon: cardIcon(),
+    passwordWords: wordListText(textValue('passwordWords'))
   }
+}
+
+/** A stored word list as the form shows it: one line, separated by commas. */
+function wordListText (value: unknown): string {
+  const parsed = parseWordList(value)
+  return parsed.ok ? parsed.words.join(', ') : Array.isArray(value) ? value.join(', ') : typeof value === 'string' ? value : ''
 }
 
 function postedValues (body: Record<string, unknown>): BrandTextValues {
@@ -93,7 +106,12 @@ function postedValues (body: Record<string, unknown>): BrandTextValues {
     newsletterTextEn: get('newsletterTextEn'),
     newsletterTextDe: get('newsletterTextDe'),
     phone: get('phone'),
-    instagramUrl: get('instagramUrl')
+    instagramUrl: get('instagramUrl'),
+    welcomeTextEn: get('welcomeTextEn'),
+    welcomeTextDe: get('welcomeTextDe'),
+    passwordExample: get('passwordExample'),
+    cardIcon: (isCardIcon(get('cardIcon')) ? get('cardIcon') : 'heart') as CardIcon,
+    passwordWords: get('passwordWords')
   }
 }
 
@@ -107,7 +125,10 @@ export function isWebAddress (value: string): boolean {
   }
 }
 
-export type ParsedTexts = { ok: true, texts: Record<string, unknown> } | { ok: false, field: keyof BrandTextValues, reason: 'url' | 'length' | 'phone' }
+export type ParsedTexts = { ok: true, texts: Record<string, unknown> }
+  | { ok: false, field: keyof BrandTextValues, reason: 'url' | 'length' | 'phone' }
+  | { ok: false, field: 'passwordWords', reason: 'word', word: string }
+  | { ok: false, field: 'passwordWords', reason: 'too-few', count: number }
 
 /**
  * Validate the texts form. Every key is stored, empty ones too: an empty name
@@ -125,6 +146,14 @@ export function parseBrandTexts (body: Record<string, unknown>): ParsedTexts {
   }
   if (values.phone.length > MAX_PHONE) return { ok: false, field: 'phone', reason: 'length' }
   if (!/^[+\d\s()/.-]*$/.test(values.phone)) return { ok: false, field: 'phone', reason: 'phone' }
+  if (values.passwordExample.length > MAX_NAME) return { ok: false, field: 'passwordExample', reason: 'length' }
+  if (values.passwordWords.length > MAX_WORD_LIST) return { ok: false, field: 'passwordWords', reason: 'length' }
+  const words = parseWordList(values.passwordWords)
+  if (!words.ok) {
+    return 'invalid' in words
+      ? { ok: false, field: 'passwordWords', reason: 'word', word: words.invalid }
+      : { ok: false, field: 'passwordWords', reason: 'too-few', count: words.tooFew }
+  }
   return {
     ok: true,
     texts: {
@@ -136,7 +165,11 @@ export function parseBrandTexts (body: Record<string, unknown>): ParsedTexts {
       shareText: { en: values.shareTextEn, de: values.shareTextDe },
       newsletterText: { en: values.newsletterTextEn, de: values.newsletterTextDe },
       phone: values.phone,
-      instagramUrl: values.instagramUrl
+      instagramUrl: values.instagramUrl,
+      welcomeText: { en: values.welcomeTextEn, de: values.welcomeTextDe },
+      passwordExample: values.passwordExample,
+      cardIcon: values.cardIcon,
+      passwordWords: words.words
     }
   }
 }
@@ -260,7 +293,12 @@ function renderBranding (req: Request, res: Response, status: number, options: R
       newsletterTextEn: sourceOf('newsletterText'),
       newsletterTextDe: sourceOf('newsletterText'),
       phone: sourceOf('phone'),
-      instagramUrl: sourceOf('instagramUrl')
+      instagramUrl: sourceOf('instagramUrl'),
+      welcomeTextEn: sourceOf('welcomeText'),
+      welcomeTextDe: sourceOf('welcomeText'),
+      passwordExample: sourceOf('passwordExample'),
+      cardIcon: sourceOf('cardIcon'),
+      passwordWords: sourceOf('passwordWords')
     },
     hasAdminTexts: hasAdminTexts(),
     notice,
@@ -275,7 +313,7 @@ function renderBranding (req: Request, res: Response, status: number, options: R
   })))
 }
 
-const form = express.urlencoded({ extended: false, limit: '16kb' })
+const form = express.urlencoded({ extended: false, limit: '64kb' })
 
 export function registerBrandingRoutes (app: Express) {
   app.get('/branding', (req, res) => renderBranding(req, res, 200))
@@ -293,7 +331,11 @@ export function registerBrandingRoutes (app: Express) {
         values: postedValues(req.body),
         error: parsed.reason === 'url'
           ? m.branding.invalidUrl(label)
-          : parsed.reason === 'phone' ? m.branding.invalidPhone : m.branding.tooLong(label)
+          : parsed.reason === 'phone'
+            ? m.branding.invalidPhone
+            : parsed.reason === 'word'
+              ? m.branding.invalidWord(parsed.word)
+              : parsed.reason === 'too-few' ? m.branding.tooFewWords(MIN_CUSTOM_WORDS, parsed.count) : m.branding.tooLong(label)
       })
       return
     }

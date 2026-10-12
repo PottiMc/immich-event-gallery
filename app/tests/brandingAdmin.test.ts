@@ -24,9 +24,14 @@ import {
 } from '../src/portal/branding'
 import { contrast, themeCss, themeVars } from '../src/portal/theme'
 import { Landing } from '../src/portal/views'
+import { PrintCard } from '../src/portal/admin-views'
+import { MIN_CUSTOM_WORDS, parseWordList, suggestPassword, WORDS } from '../src/portal/passwords'
 import {
   brandName,
+  cardIcon,
   imprintUrl,
+  passwordExample,
+  welcomeText,
   instagramUrl,
   newsletterText,
   phoneNumber,
@@ -180,6 +185,98 @@ describe('branding layers', () => {
     expect(isWebAddress('weingut.example')).toBe(false)
     expect(parseBrandTexts({ imprintUrl: 'javascript:alert(1)' })).toEqual({ ok: false, field: 'imprintUrl', reason: 'url' })
     expect(parseBrandTexts({ brandName: 'x'.repeat(81) })).toEqual({ ok: false, field: 'brandName', reason: 'length' })
+  })
+})
+
+describe('landing texts, card symbol and password words', () => {
+  const ownWords = Array.from({ length: MIN_CUSTOM_WORDS }, (_, i) => 'wort' + 'abcdefghijklmnopqrstuvwxyz'[i % 26] + 'xyz'[Math.floor(i / 26)])
+  const card = () => renderPage(h(PrintCard, {
+    lang: 'de',
+    defaultTitle: 'Tour',
+    query: '',
+    password: 'ahorn-laterne-4827',
+    hostLabel: 'photos.example.com',
+    qrSvg: '<svg></svg>',
+    options: { title: 'Tour', date: '', dark: false, layout: 'single' }
+  }))
+
+  it('uses neutral defaults without branding', () => {
+    expect(welcomeText('en')).toBe('Great to have you with us! 📸')
+    expect(passwordExample('de')).toBe('ahorn-laterne-4827')
+    expect(cardIcon()).toBe('heart')
+    const html = renderPage(h(Landing, { baseUrl: 'https://x', lang: 'de' }))
+    expect(html).toContain('Schön, dass du dabei warst! 📸')
+    expect(html).toContain('placeholder="Passwort, z.B. ahorn-laterne-4827"')
+    expect(WORDS.de).toContain(suggestPassword('de').split('-')[0])
+  })
+
+  it('takes greeting, example, symbol and words from branding.json', () => {
+    writeFileSync(join(folder, 'branding.json'), JSON.stringify({
+      welcomeText: { en: 'Cheers! 🍷', de: 'Prost! 🍷' },
+      passwordExample: 'riesling-karaffe-4827',
+      cardIcon: 'glass',
+      passwordWords: ['Riesling', 'Süße', ...ownWords]
+    }))
+    resetBrandingCache()
+    const html = renderPage(h(Landing, { baseUrl: 'https://x', lang: 'de' }))
+    expect(html).toContain('Prost! 🍷')
+    expect(html).toContain('placeholder="Passwort, z.B. riesling-karaffe-4827"')
+    expect(welcomeText('en')).toBe('Cheers! 🍷')
+    expect(cardIcon()).toBe('glass')
+    expect(card()).toContain('M7 3h10v4.5')
+    const allowed = ['riesling', 'suesse', ...ownWords]
+    for (const lang of ['en', 'de'] as const) {
+      const [a, b] = suggestPassword(lang).split('-')
+      expect(allowed).toContain(a)
+      expect(allowed).toContain(b)
+    }
+  })
+
+  it('ignores an unusable word list and unknown symbols', () => {
+    writeFileSync(join(folder, 'branding.json'), JSON.stringify({ cardIcon: 'rocket', passwordWords: ['eins', 'zwei'] }))
+    resetBrandingCache()
+    expect(cardIcon()).toBe('heart')
+    expect(WORDS.en).toContain(suggestPassword('en').split('-')[0])
+  })
+
+  it('hides the card symbol when set to none', () => {
+    writeFileSync(join(folder, 'branding.json'), JSON.stringify({ cardIcon: 'none' }))
+    resetBrandingCache()
+    expect(card()).not.toMatch(/card-thanks">[^<]*<svg/)
+  })
+
+  it('reads word lists as text and checks them', () => {
+    expect(parseWordList('')).toEqual({ ok: true, words: [] })
+    expect(parseWordList('Äpfel, äpfel; Birne\nkiwi')).toEqual({ ok: false, tooFew: 3 })
+    expect(parseWordList(['gut', 'nicht-gut'])).toEqual({ ok: false, invalid: 'nicht-gut' })
+    expect(parseWordList(['ab'])).toEqual({ ok: false, invalid: 'ab' })
+    const parsed = parseWordList(ownWords.join(' ') + ' Äpfel')
+    expect(parsed.ok && parsed.words.length).toBe(MIN_CUSTOM_WORDS + 1)
+    expect(parsed.ok && parsed.words.at(-1)).toBe('aepfel')
+  })
+
+  it('saves the new fields on the admin page', () => {
+    const parsed = parseBrandTexts({
+      welcomeTextEn: 'Cheers!',
+      welcomeTextDe: '',
+      passwordExample: 'riesling-karaffe-4827',
+      cardIcon: 'glass',
+      passwordWords: ownWords.join(', ')
+    })
+    expect(parsed.ok && saveBrandTexts(parsed.texts).ok).toBe(true)
+    expect(welcomeText('en')).toBe('Cheers!')
+    // An empty greeting means the default of that language
+    expect(welcomeText('de')).toBe('Schön, dass du dabei warst! 📸')
+    expect(passwordExample('en')).toBe('riesling-karaffe-4827')
+    expect(cardIcon()).toBe('glass')
+    expect(ownWords).toContain(suggestPassword('en').split('-')[0])
+
+    expect(parseBrandTexts({ passwordWords: 'eins zwei' })).toEqual({ ok: false, field: 'passwordWords', reason: 'too-few', count: 2 })
+    expect(parseBrandTexts({ passwordWords: 'gut <b>' })).toEqual({ ok: false, field: 'passwordWords', reason: 'word', word: '<b>' })
+    // Clearing the list brings back the built-in words
+    const cleared = parseBrandTexts({ passwordWords: '' })
+    expect(cleared.ok && saveBrandTexts(cleared.texts).ok).toBe(true)
+    expect(WORDS.de).toContain(suggestPassword('de').split('-')[0])
   })
 })
 

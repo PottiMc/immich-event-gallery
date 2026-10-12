@@ -6,7 +6,8 @@ import { ComponentChildren } from 'preact'
 import { AdminHeader } from './admin-views'
 import { BrandSource, MAX_BRAND_FILE_BYTES } from './branding'
 import { Lang, Messages, t } from './i18n'
-import { brandName } from './settings'
+import { MIN_CUSTOM_WORDS } from './passwords'
+import { brandName, CARD_ICONS, CardIcon } from './settings'
 import { BrandHead, STATIC } from './views'
 
 export interface BrandTextValues {
@@ -21,6 +22,11 @@ export interface BrandTextValues {
   newsletterTextDe: string
   phone: string
   instagramUrl: string
+  welcomeTextEn: string
+  welcomeTextDe: string
+  passwordExample: string
+  cardIcon: CardIcon
+  passwordWords: string
 }
 
 export interface ColorView {
@@ -80,19 +86,36 @@ interface FieldProps {
   type?: 'text' | 'url'
   placeholder?: string
   multiline?: boolean
+  rows?: number
+  maxLength?: number
 }
 
-function Field ({ name, label, hint, props, type = 'text', placeholder, multiline }: FieldProps) {
+function Field ({ name, label, hint, props, type = 'text', placeholder, multiline, rows = 2, maxLength }: FieldProps) {
   const m = t(props.lang)
   const id = 'brand-' + name
   return (
     <div class="adm-field">
       <label for={id}>{label} <SourceBadge source={props.sources[name]} m={m}/></label>
       {multiline
-        ? <textarea id={id} name={name} rows={2} maxLength={300} placeholder={placeholder} aria-describedby={id + '-hint'}>{props.values[name]}</textarea>
-        : <input id={id} name={name} type={type} value={props.values[name]} placeholder={placeholder} maxLength={type === 'url' ? 500 : 80}
+        ? <textarea id={id} name={name} rows={rows} maxLength={maxLength || 300} placeholder={placeholder} aria-describedby={id + '-hint'}>{props.values[name]}</textarea>
+        : <input id={id} name={name} type={type} value={props.values[name]} placeholder={placeholder} maxLength={maxLength || (type === 'url' ? 500 : 80)}
           autoComplete="off" spellcheck={false} aria-describedby={id + '-hint'}/>}
       <p class="adm-hint" id={id + '-hint'}>{hint}</p>
+    </div>
+  )
+}
+
+function CardIconField ({ props }: { props: BrandingPageProps }) {
+  const m = t(props.lang)
+  const b = m.branding
+  const labels: Record<CardIcon, string> = { heart: b.cardIconHeart, glass: b.cardIconGlass, none: b.cardIconNone }
+  return (
+    <div class="adm-field">
+      <label for="brand-cardIcon">{b.cardIcon} <SourceBadge source={props.sources.cardIcon} m={m}/></label>
+      <select id="brand-cardIcon" name="cardIcon" aria-describedby="brand-cardIcon-hint">
+        {CARD_ICONS.map(icon => <option key={icon} value={icon} selected={props.values.cardIcon === icon}>{labels[icon]}</option>)}
+      </select>
+      <p class="adm-hint" id="brand-cardIcon-hint">{b.cardIconHint}</p>
     </div>
   )
 }
@@ -256,6 +279,20 @@ export function BrandingPage (props: BrandingPageProps) {
                 <Field name="instagramUrl" label={b.instagramUrl} hint={b.instagramUrlHint} props={props} type="url"
                   placeholder="https://instagram.com/…"/>
               </div>
+              <h3 class="adm-subheading">{b.guestTextsHeading}</h3>
+              <div class="adm-field-row">
+                <Field name="welcomeTextEn" label={b.welcomeTextEn} hint={b.welcomeTextHint} props={props} multiline
+                  placeholder={t('en').landing.lead1}/>
+                <Field name="welcomeTextDe" label={b.welcomeTextDe} hint={b.welcomeTextHint} props={props} multiline
+                  placeholder={t('de').landing.lead1}/>
+              </div>
+              <div class="adm-field-row">
+                <Field name="passwordExample" label={b.passwordExample} hint={b.passwordExampleHint} props={props}
+                  placeholder={m.landing.passwordExample}/>
+                <CardIconField props={props}/>
+              </div>
+              <Field name="passwordWords" label={b.passwordWords} hint={b.passwordWordsHint(MIN_CUSTOM_WORDS)} props={props}
+                multiline rows={5} maxLength={20000}/>
               <button type="submit" class="adm-btn adm-btn-primary" disabled={!props.persistent}>{b.save}</button>
             </form>
             {props.hasAdminTexts && (

@@ -5,10 +5,15 @@
  * per language over 500 million combinations - more than enough together
  * with the login rate limits.
  * Only ASCII letters (no umlauts) so nobody has to hunt for special keys.
+ *
+ * Operators can bring their own words (`passwordWords` in branding.json or on
+ * the admin page); they then replace both built-in lists.
  */
 
 import crypto from 'crypto'
 import type { Lang } from '../shared/i18n'
+import { log } from '../utils/log'
+import { brandingTexts } from './branding'
 
 const unique = (words: string[]) => words.filter((w, i, all) => all.indexOf(w) === i)
 
@@ -89,8 +94,58 @@ export const WORDS: Record<Lang, string[]> = {
   ])
 }
 
+/** Fewer words would make the suggestions too easy to guess. */
+export const MIN_CUSTOM_WORDS = 50
+export const MAX_CUSTOM_WORDS = 2000
+
+const VALID_WORD = /^[a-z]{3,20}$/
+
+/** Lower case, umlauts written out, so "Süße" becomes "suesse". */
+export function normalizeWord (word: string): string {
+  return word.trim().toLowerCase()
+    .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
+}
+
+export type ParsedWords = { ok: true, words: string[] } | { ok: false, invalid: string } | { ok: false, tooFew: number }
+
+/**
+ * Read a word list: an array of words or one text separated by spaces, commas,
+ * semicolons or line breaks. Duplicates are dropped. An empty list is valid
+ * and means "use the built-in words".
+ */
+export function parseWordList (input: unknown): ParsedWords {
+  const raw = Array.isArray(input)
+    ? input.filter(w => typeof w === 'string') as string[]
+    : typeof input === 'string' ? input.split(/[\s,;]+/) : []
+  const words: string[] = []
+  for (const entry of raw) {
+    if (!entry.trim()) continue
+    const word = normalizeWord(entry)
+    if (!VALID_WORD.test(word)) return { ok: false, invalid: entry.trim() }
+    if (!words.includes(word)) words.push(word)
+  }
+  if (words.length && words.length < MIN_CUSTOM_WORDS) return { ok: false, tooFew: words.length }
+  return { ok: true, words: words.slice(0, MAX_CUSTOM_WORDS) }
+}
+
+let warnedAbout: unknown
+
+/** The operator's own words, or undefined to use the built-in lists. */
+export function customWords (): string[] | undefined {
+  const input = brandingTexts().passwordWords
+  if (input === undefined) return undefined
+  const parsed = parseWordList(input)
+  if (parsed.ok) return parsed.words.length ? parsed.words : undefined
+  if (warnedAbout !== input) {
+    warnedAbout = input
+    log.warn('Ignoring passwordWords in the branding: ' +
+      ('invalid' in parsed ? `"${parsed.invalid}" is not a usable word` : `only ${parsed.tooFew} words, at least ${MIN_CUSTOM_WORDS} needed`))
+  }
+  return undefined
+}
+
 export function suggestPassword (lang: Lang = 'en'): string {
-  const words = WORDS[lang] || WORDS.en
+  const words = customWords() || WORDS[lang] || WORDS.en
   const a = words[crypto.randomInt(words.length)]
   let b = words[crypto.randomInt(words.length)]
   while (b === a) b = words[crypto.randomInt(words.length)]

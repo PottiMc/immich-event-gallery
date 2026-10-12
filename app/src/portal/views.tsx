@@ -8,7 +8,7 @@ import { ComponentChildren } from 'preact'
 import { ASSET_VERSION } from '../version'
 import { brandUrl } from './branding'
 import { Lang, LANGS, t } from './i18n'
-import { brandName, imprintUrl, privacyUrl, sourceUrl, websiteUrl } from './settings'
+import { brandName, imprintUrl, passwordExample, privacyUrl, sourceUrl, websiteUrl, welcomeText } from './settings'
 import { themeColor, ThemeStyle } from './theme'
 
 export const STATIC = `/share/static/${ASSET_VERSION}`
@@ -151,7 +151,7 @@ export function Landing (props: LandingProps) {
         <section class="eg-card">
           <h1>{m.landing.heading}</h1>
           <p class="eg-lead">
-            {m.landing.lead1}<br/>
+            {welcomeText(props.lang)}<br/>
             {m.landing.lead2}
           </p>
           <form method="post" action="/" class="eg-form" autoComplete="off">
@@ -164,7 +164,7 @@ export function Landing (props: LandingProps) {
               autoCapitalize="none"
               autoCorrect="off"
               spellcheck={false}
-              placeholder={m.landing.placeholder}
+              placeholder={m.landing.placeholder(passwordExample(props.lang))}
               required
               autoFocus
               maxLength={200}

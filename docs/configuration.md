@@ -100,7 +100,8 @@ Without any branding the portal is neutral: it is called "Photo Portal" ("Bilder
 picture icon, and hides the website, imprint and privacy links. There are two ways to add your own brand, and neither
 ends up in the repository or the image, so nobody who pulls the project gets your logos:
 
-- **On the admin page** (tab *Branding*): edit the name, links and share texts, pick the colors, and upload logos and icons. Changes
+- **On the admin page** (tab *Branding*): edit the name, links, share texts, greeting, example password, card symbol
+  and password words, pick the colors, and upload logos and icons. Changes
   take effect immediately. They are stored in `DATA_DIR/branding/` (the writable data volume) and take precedence
   over the branding folder. *Reset* removes a value set there, so the branding folder or the default applies again.
   Uploads must be PNG (logos and icons), JPEG (`og-image.jpg`) or ICO/PNG (`favicon.ico`), at most 5 MB each; SVG is
@@ -140,6 +141,12 @@ Every file is optional. Whatever is missing falls back to the neutral default in
   },
   "phone": "+49 170 1234567",
   "instagramUrl": "https://instagram.com/example.events",
+  "welcomeText": {
+    "en": "Great to have you with us! 🎉",
+    "de": "Schön, dass du dabei warst! 🎉"
+  },
+  "passwordExample": "summer-party-2026",
+  "cardIcon": "heart",
   "colors": {
     "accent": "#ccac39",
     "button": "#a3005a",
@@ -160,6 +167,10 @@ Every file is optional. Whatever is missing falls back to the neutral default in
 | `newsletterText` | `News and upcoming events straight to your inbox.` / German equivalent | Text above the [newsletter](#newsletter) sign-up in the albums |
 | `phone` | empty (left out) | Phone / WhatsApp number in the signature of the newsletter confirmation e-mail |
 | `instagramUrl` | empty (left out) | Instagram profile in the signature of the newsletter confirmation e-mail |
+| `welcomeText` | `Great to have you with us! 📸` / German equivalent | First line of the greeting on the landing page |
+| `passwordExample` | `maple-lantern-4827` / `ahorn-laterne-4827` | Example in the empty password field on the landing page |
+| `cardIcon` | `heart` | Symbol after the thank-you line on the print card: `heart`, `glass` (wine glass) or `none` |
+| `passwordWords` | built-in neutral words in the admin page's language | Your own words for the password suggestions on the admin page, as a list `["word", …]` or one string separated by spaces or commas. At least 50 different words, letters only, 3–20 characters; umlauts become `ae`, `oe`, `ue`. The list applies to all languages. An unusable list is ignored with a warning in the log. |
 | `colors` | the values in the example | Brand colors as `#rrggbb`, see [Colors](#colors). Each one is optional. |
 | `sourceUrl` | this repository | Source code link on the licence page (`/license`, also `/lizenz`, linked as "License" in the footer). The AGPL requires it to point to the source of the version you run. |
 
