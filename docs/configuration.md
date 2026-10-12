@@ -125,21 +125,21 @@ Every file is optional. Whatever is missing falls back to the neutral default in
 
 ```json
 {
-  "brandName": "Weingut Beispiel",
-  "websiteUrl": "https://weingut.example",
-  "imprintUrl": "https://weingut.example/impressum",
-  "privacyUrl": "https://weingut.example/datenschutz",
+  "brandName": "Example Events",
+  "websiteUrl": "https://events.example",
+  "imprintUrl": "https://events.example/imprint",
+  "privacyUrl": "https://events.example/privacy",
   "shareText": {
-    "en": "That was “{title}” with Weingut Beispiel 🍷 – photo {number} of {total}",
-    "de": "Das war „{titel}“ mit dem Weingut Beispiel 🍷 – Bild {nr} von {anzahl}"
+    "en": "That was “{title}” with Example Events 🎉 – photo {number} of {total}",
+    "de": "Das war „{titel}“ mit Example Events 🎉 – Bild {nr} von {anzahl}"
   },
-  "shareUrl": "https://weingut.example",
+  "shareUrl": "https://events.example",
   "newsletterText": {
-    "en": "New wine tastings and hikes, about once a month.",
-    "de": "Neue Weinproben und Wanderungen, etwa einmal im Monat."
+    "en": "New events and dates, about once a month.",
+    "de": "Neue Events und Termine, etwa einmal im Monat."
   },
   "phone": "+49 170 1234567",
-  "instagramUrl": "https://instagram.com/weingut.beispiel",
+  "instagramUrl": "https://instagram.com/example.events",
   "colors": {
     "accent": "#ccac39",
     "button": "#a3005a",

@@ -14,7 +14,7 @@ export interface CardOptions {
 
 const MAX_LENGTH = 120
 
-// A date at the end of the title, e.g. "Wine hike - 24.09.2026" or "Tasting 2026-09-24"
+// A date at the end of the title, e.g. "Summer hike - 24.09.2026" or "Workshop 2026-09-24"
 const TRAILING_DATE = /^(.*?\S)(?:\s+|\s*[-–—|·,:]\s*)(\d{1,2}\.\s?\d{1,2}\.\s?(?:\d{4}|\d{2})|\d{4}-\d{2}-\d{2})$/
 
 /** Split a share title into title and date when it ends with a date. */

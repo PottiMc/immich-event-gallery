@@ -179,12 +179,23 @@ describe('share text', () => {
 
 describe('password suggestions', () => {
   it('builds word-word-digits from ASCII words', () => {
-    for (let i = 0; i < 50; i++) {
-      const pw = suggestPassword()
-      expect(pw).toMatch(/^[a-z]+-[a-z]+-\d{4}$/)
-      expect(isWeakPassword(pw)).toBe(false)
+    for (const lang of ['en', 'de'] as const) {
+      for (let i = 0; i < 50; i++) {
+        const pw = suggestPassword(lang)
+        expect(pw).toMatch(/^[a-z]+-[a-z]+-\d{4}$/)
+        expect(isWeakPassword(pw)).toBe(false)
+      }
+      expect(WORDS[lang].length).toBeGreaterThan(200)
+      for (const word of WORDS[lang]) expect(word).toMatch(/^[a-z]{3,}$/)
     }
-    expect(WORDS.length).toBeGreaterThan(180)
+  })
+
+  it('suggests words in the admin language', () => {
+    const [en] = suggestPassword('en').split('-')
+    const [de] = suggestPassword('de').split('-')
+    expect(WORDS.en).toContain(en)
+    expect(WORDS.de).toContain(de)
+    expect(WORDS.en).not.toEqual(WORDS.de)
   })
 
   it('flags weak passwords', () => {

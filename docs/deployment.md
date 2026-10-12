@@ -155,7 +155,7 @@ If the domain is proxied by Cloudflare (orange cloud), the portal sees Cloudflar
 1. In Immich, create an album and upload photos. Whole folders can be dragged into the browser. The album name is the
    title guests see.
 2. In the album, choose **Share → Create link**:
-   - Set a **password**. The admin page suggests some at the bottom, for example `riesling-karaffe-4827`.
+   - Set a **password**. The admin page suggests some at the bottom in its current language, for example `maple-lantern-4827`.
    - Set an **expiry date**, for example 60 days. After that, the album goes offline automatically.
    - Turn on *Allow download* if guests may download originals and ZIPs.
    - Leave *Show metadata* off.
@@ -177,8 +177,8 @@ password and an expiry date. Then hand out the access in one of these ways:
 guests) to the Immich album description:
 
 ```
-Share: That was the wine hike on the Saar with Weingut Beispiel 🍷 – photo {number} of {total}
-Teilen: Das war die Weinwanderung an der Saar mit dem Weingut Beispiel 🍷 – Bild {nr} von {anzahl}
+Share: That was the summer party with Example Events 🎉 – photo {number} of {total}
+Teilen: Das war das Sommerfest mit Example Events 🎉 – Bild {nr} von {anzahl}
 ```
 
 If only one of the lines is there, it is used for both languages. Guests do not see these lines. The rest of the description is shown above the photos. Without it, the default text from

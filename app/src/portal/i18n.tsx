@@ -42,10 +42,10 @@ const en = {
     title: 'Your event photos',
     description: 'Great to have you with us! Here you’ll find the photos from your event.',
     heading: 'Your photos from the event',
-    lead1: 'Great to have you with us! 🍷',
+    lead1: 'Great to have you with us! 📸',
     lead2: 'Enter the password you received and you’ll go straight to your photos.',
     passwordLabel: 'Password',
-    placeholder: 'Password, e.g. riesling-karaffe-4827',
+    placeholder: 'Password, e.g. maple-lantern-4827',
     submit: 'View photos',
     qrHint: 'Got a QR code? Just scan it with your phone camera – no password needed.',
     wrong: 'We couldn’t find an album for this password. Please check it again – upper and lower case, ' +
@@ -386,7 +386,7 @@ const en = {
       Use <code>Share:</code> for English and <code>Teilen:</code> for German guests; if there is only one, it is
       used for both.
     </>,
-    shareTextExample: (brand: string) => `Share: That was the wine hike on the Saar with ${brand} 🍷 – photo {number} of {total}`,
+    shareTextExample: (brand: string) => `Share: That was the summer party with ${brand} 🎉 – photo {number} of {total}`,
     suggestionsHeading: 'Password suggestions',
     newSuggestions: 'New suggestions'
   },
@@ -613,10 +613,10 @@ const de: Messages = {
     title: 'Deine Event-Bilder',
     description: 'Schön, dass du dabei warst! Hier findest du die Bilder von deinem Event.',
     heading: 'Deine Bilder vom Event',
-    lead1: 'Schön, dass du dabei warst! 🍷',
+    lead1: 'Schön, dass du dabei warst! 📸',
     lead2: 'Gib hier das Passwort ein, das du bekommen hast – dann geht’s direkt zu deinen Bildern.',
     passwordLabel: 'Passwort',
-    placeholder: 'Passwort, z.B. riesling-karaffe-4827',
+    placeholder: 'Passwort, z.B. ahorn-laterne-4827',
     submit: 'Bilder ansehen',
     qrHint: 'Du hast einen QR-Code bekommen? Einfach mit der Handykamera scannen – dann brauchst du kein Passwort.',
     wrong: 'Zu diesem Passwort wurde kein Album gefunden. Schau nochmal genau hin – ' +
@@ -955,7 +955,7 @@ const de: Messages = {
       <code>Teilen:</code> gilt für deutsche, <code>Share:</code> für englische Gäste; steht nur eine da, gilt sie
       für beide.
     </>,
-    shareTextExample: (brand: string) => `Teilen: Das war die Weinwanderung an der Saar mit ${brand} 🍷 – Bild {nr} von {anzahl}`,
+    shareTextExample: (brand: string) => `Teilen: Das war das Sommerfest mit ${brand} 🎉 – Bild {nr} von {anzahl}`,
     suggestionsHeading: 'Passwort-Vorschläge',
     newSuggestions: 'Neue Vorschläge'
   },

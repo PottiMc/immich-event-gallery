@@ -126,7 +126,7 @@ export function createAdminApp () {
       error: list.ok ? undefined : list.message,
       baseUrl,
       baseUrlMissing: missing,
-      suggestions: Array.from({ length: 6 }, suggestPassword),
+      suggestions: Array.from({ length: 6 }, () => suggestPassword(lang)),
       helpOpen: 'vorschlaege' in req.query,
       settings: {
         downloadQuality: downloadQuality(),

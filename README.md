@@ -42,7 +42,7 @@ When the link expires or is deleted, the album goes offline.
   remembered in a cookie.
 - **QR codes and direct links** per album. Guests can pass them on to each other ("Share album" dialog).
 - **Share to WhatsApp & co.** The photo itself goes out through the phone's native share sheet (Web Share API), with a
-  text like *"That was the wine hike – photo 12 of 48"*. On desktop it falls back to
+  text like *"That was the summer party – photo 12 of 48"*. On desktop it falls back to
   WhatsApp Web.
 - **Removal requests.** Guests can select photos and ask for them to be removed for privacy reasons. They have to
   pick a privacy reason, explain it and leave their name and e-mail address; the request is e-mailed to you

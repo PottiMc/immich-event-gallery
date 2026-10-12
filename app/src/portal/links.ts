@@ -136,7 +136,7 @@ export function linkTitle (link: PortalLink): string {
 
 /**
  * Normalise a password for comparison: case, whitespace, hyphens, underscores
- * and dots are ignored, so "Riesling-Karaffe 4827" matches "riesling karaffe-4827".
+ * and dots are ignored, so "Maple-Lantern 4827" matches "maple lantern-4827".
  * Guests type on phones with auto-capitalisation - this saves a lot of frustration.
  */
 export function normalizePassword (input: string): string {
