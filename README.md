@@ -7,6 +7,8 @@ It was built for small businesses that run events such as wine tastings or guide
 enter the password they were given (or scan a QR code) and land directly in *their* album. The source is published
 under the AGPL-3.0, and you are welcome to adapt it for your own events.
 
+![Album view with the neutral default branding](docs/screenshots/gallery.jpg)
+
 > The interface is available in **English** (default) and **German**, with a language switcher on every page. Code,
 > comments and documentation are in English. The repository
 > contains no brand logos or company details: out of the box the portal is neutral, and your own branding comes from
@@ -56,6 +58,22 @@ When the link expires or is deleted, the album goes offline.
   The pages are hidden from search engines.
 - Everything the upstream gallery offers: justified-rows layout, PhotoSwipe lightbox, videos and motion photos,
   single and ZIP downloads.
+
+## Screenshots
+
+All screenshots show the neutral default branding with sample photos.
+
+| Landing page | Album on a phone |
+|---|---|
+| ![Landing page with the password field](docs/screenshots/landing.png) | ![Album view on a phone](docs/screenshots/gallery-mobile.jpg) |
+
+| "Share album" dialog | Printable QR cards |
+|---|---|
+| ![Share album dialog with QR code](docs/screenshots/share-album.jpg) | ![Four printable QR cards on an A4 sheet](docs/screenshots/card.png) |
+
+| Admin: shares | Admin: statistics |
+|---|---|
+| ![Admin overview with all shares, passwords and warnings](docs/screenshots/admin.png) | ![Statistics page with visitors and downloads per day](docs/screenshots/admin-stats.png) |
 
 ## Getting started
 
@@ -137,6 +155,7 @@ conventions and for how upstream changes are merged.
 
 Based on [Immich Public Proxy](https://github.com/alangrainger/immich-public-proxy) by Alan Grainger, whose
 [documentation](https://docs.ipp.nz) still applies to every inherited option. Fonts:
-[Outfit](app/public/fonts/Outfit-LICENSE.txt) and [Inter](app/public/fonts/Inter-LICENSE.txt) (SIL Open Font License).
+[Outfit](app/public/fonts/Outfit-LICENSE.txt) and [Inter](app/public/fonts/Inter-LICENSE.txt) (SIL Open Font License). The sample photos in the screenshots are from
+[Unsplash](https://unsplash.com/license) via [Lorem Picsum](https://picsum.photos).
 
 Licensed under the [GNU Affero General Public License v3.0](LICENSE), like the original.
